@@ -1,0 +1,60 @@
+using System.Text.Json;
+using Microsoft.Extensions.Logging;
+using InnovativeLife.DataAccess.UiShellConfig;
+using InnovativeLife.Common;
+using InnovativeLife.WebApi.Common;
+
+namespace InnovativeLife.Services.UiShellConfig;
+
+public class UiShellConfigService : IUiShellConfigService
+{
+    private ILogger<UiShellConfigService> _logger;
+    private IUiShellConfigActions _uiShellConfigActions;
+
+    public UiShellConfigService(ILogger<UiShellConfigService> logger, IUiShellConfigActions uiShellConfigActions)
+    {
+        _logger = logger;
+        _uiShellConfigActions = uiShellConfigActions;
+    }
+
+    public async Task<WebResponse> Read(RequestContext userContext, string configId)
+    {
+        _logger.LogInformation("Executing GetUIConfig Read");
+
+        try
+        {
+            _logger.LogInformation("GetUiConfig Read Complete");
+
+            var result = await _uiShellConfigActions.Read(configId);
+            if (result.Item1.StatusType == WebResponse.StatusTypes.Success)
+            {
+                return StandardResponse.SuccessWithBody(JsonSerializer.Serialize(result.Item2));
+            }
+            else
+            {
+                return result.Item1;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.Message);
+            return StandardResponse.Error;
+        }
+    }
+
+    public async Task<WebResponse> Save(RequestContext userContext, string configId, UiShellConfigModel configModel)
+    {
+        _logger.LogInformation("Executing TenantService Save");
+
+        if (string.IsNullOrWhiteSpace(configId))
+        {
+            return StandardResponse.InvalidRequest;
+        }
+
+        configModel.configId = configId;
+        var result= await _uiShellConfigActions.Save(configId, configModel);
+
+        _logger.LogInformation("UiShellConfig Saved");
+        return result;
+    }
+}
