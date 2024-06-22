@@ -209,7 +209,7 @@ public class IdentityService : IIdentityService
         _logger.LogInformation($"Translating Firebase Auth Exception: {exception.Message}");
 
         var gcpMessage = exception.Message.ToLower();
-        var message = "Unknown Error from Firvase Auth occurred";
+        var message = "Unknown Error from Firbase Auth occurred";
 
         if (gcpMessage.Contains("email-already-exists"))
         {

@@ -18,12 +18,12 @@ public class TenantAddProcessor : ITenantAddProcessor
         _tenantActions = tenantActions;
         _identityService = identityService;
     }
-    public async Task<TenantAddResponse> Add(RequestContext userContext, TenantAddRequest request)
+    public async Task<TenantAddResponse> Add(IRequestContext requestContext, TenantAddRequest request)
     {
         _logger.LogInformation("Executing TenantService Add");
 
         // Root action - tenant must be in root tenancy or must be in dev mode
-        if (!userContext.rootPriviledge && !userContext.developmentMode)
+        if (!requestContext.rootPriviledge && !requestContext.developmentMode)
         {
             _logger.LogCritical("Non root user attempted to add a tenant");
             return new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.Exception, "Unauthorised Add");
@@ -60,7 +60,7 @@ public class TenantAddProcessor : ITenantAddProcessor
 
         // Add tenant to identity manager
         string identityManagerTenantId;
-        if (userContext.developmentMode)
+        if (requestContext.developmentMode)
         {
             _logger.LogInformation("Skipped Identity Service Add action in development mode");
             identityManagerTenantId = "DevMode";

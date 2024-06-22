@@ -17,7 +17,7 @@ public class UiShellConfigService : IUiShellConfigService
         _uiShellConfigActions = uiShellConfigActions;
     }
 
-    public async Task<WebResponse> Read(RequestContext userContext, string configId)
+    public async Task<WebResponse> Read(RequestContext requestContext, string configId)
     {
         _logger.LogInformation("Executing GetUIConfig Read");
 
@@ -42,7 +42,7 @@ public class UiShellConfigService : IUiShellConfigService
         }
     }
 
-    public async Task<WebResponse> Save(RequestContext userContext, string configId, UiShellConfigModel configModel)
+    public async Task<WebResponse> Save(RequestContext requestContext, string configId, UiShellConfigModel configModel)
     {
         _logger.LogInformation("Executing TenantService Save");
 

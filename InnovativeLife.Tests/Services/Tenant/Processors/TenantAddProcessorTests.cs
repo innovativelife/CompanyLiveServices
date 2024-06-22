@@ -19,10 +19,10 @@ public class TenantAddProcessorTests
         var identityService = Mock.Of<IIdentityService>();
         var tenantAddProcessor = new TenantAddProcessor(logger, tenantActions, identityService);
 
-        var userContext = new RequestContext();
-        userContext.rootPriviledge = false;
+        var requestContext = new RequestContext();
+        requestContext.rootPriviledge = false;
         var addRequest = new TenantAddRequest();
-        var result = await tenantAddProcessor.Add(userContext, addRequest);
+        var result = await tenantAddProcessor.Add(requestContext, addRequest);
 
         Assert.Equal(InnovativeLife.Services.Common.ServiceResponseBase.ResponseStatus.Exception, result.Status);
         Assert.Equal("Unauthorised Add", result.message);
@@ -39,10 +39,10 @@ public class TenantAddProcessorTests
         var identityService = Mock.Of<IIdentityService>();
         var tenantAddProcessor = new TenantAddProcessor(logger, tenantActions, identityService);
 
-        var userContext = new RequestContext();
-        userContext.rootPriviledge = true;
+        var requestContext = new RequestContext();
+        requestContext.rootPriviledge = true;
         var addRequest = new TenantAddRequest();
-        var result = await tenantAddProcessor.Add(userContext, addRequest);
+        var result = await tenantAddProcessor.Add(requestContext, addRequest);
 
         Assert.Equal(InnovativeLife.Services.Common.ServiceResponseBase.ResponseStatus.BusinessError, result.Status);
         Assert.Equal("Tenant ID cannot be left blank", result.message);
@@ -59,11 +59,11 @@ public class TenantAddProcessorTests
         var identityService = Mock.Of<IIdentityService>();
         var tenantAddProcessor = new TenantAddProcessor(logger, tenantActions, identityService);
 
-        var userContext = new RequestContext();
-        userContext.rootPriviledge = true;
+        var requestContext = new RequestContext();
+        requestContext.rootPriviledge = true;
         var addRequest = new TenantAddRequest();
         addRequest.tenantId = "xxx";
-        var result = await tenantAddProcessor.Add(userContext, addRequest);
+        var result = await tenantAddProcessor.Add(requestContext, addRequest);
 
         Assert.Equal(InnovativeLife.Services.Common.ServiceResponseBase.ResponseStatus.BusinessError, result.Status);
         Assert.Equal("Tenant Name cannot be left blank", result.message);
@@ -85,15 +85,15 @@ public class TenantAddProcessorTests
         var identityService = Mock.Of<InnovativeLife.GcpServices.Identity.IIdentityService>();
         var tenantAddProcessor = new InnovativeLife.Services.Tenant.Processors.TenantAddProcessor(logger, tenantActions.Object, identityService);
 
-        var userContext = new RequestContext();
-        userContext.rootPriviledge = true;
+        var requestContext = new RequestContext();
+        requestContext.rootPriviledge = true;
         var addRequest = new TenantAddRequest();
 
         // Different Id
         addRequest.tenantId = "yyy";
         // Duplicate name
         addRequest.tenantName = "xxx";
-        var result = await tenantAddProcessor.Add(userContext, addRequest);
+        var result = await tenantAddProcessor.Add(requestContext, addRequest);
 
         Assert.Equal(InnovativeLife.Services.Common.ServiceResponseBase.ResponseStatus.BusinessError, result.Status);
         Assert.Equal("Tenant with this ID already exists", result.message);
@@ -121,15 +121,15 @@ public class TenantAddProcessorTests
         var identityService = Mock.Of<InnovativeLife.GcpServices.Identity.IIdentityService>();
         var tenantAddProcessor = new InnovativeLife.Services.Tenant.Processors.TenantAddProcessor(logger, tenantActions.Object, identityService);
 
-        var userContext = new RequestContext();
-        userContext.rootPriviledge = true;
+        var requestContext = new RequestContext();
+        requestContext.rootPriviledge = true;
         var addRequest = new TenantAddRequest();
 
         // Different Id
         addRequest.tenantId = "yyy";
         // Duplicate name
         addRequest.tenantName = "xxx";
-        var result = await tenantAddProcessor.Add(userContext, addRequest);
+        var result = await tenantAddProcessor.Add(requestContext, addRequest);
 
         Assert.Equal(InnovativeLife.Services.Common.ServiceResponseBase.ResponseStatus.BusinessError, result.Status);
         Assert.Equal("Tenant with this name already exists", result.message);

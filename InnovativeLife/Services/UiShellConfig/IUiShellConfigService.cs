@@ -6,7 +6,7 @@ namespace InnovativeLife.Services.UiShellConfig;
 
 public interface IUiShellConfigService
 {
-     public Task<WebResponse> Read(RequestContext userContext, string configId);
+     public Task<WebResponse> Read(RequestContext requestContext, string configId);
 
-    public Task<WebResponse> Save(RequestContext userContext, string configId, UiShellConfigModel configModel);
+    public Task<WebResponse> Save(RequestContext requestContext, string configId, UiShellConfigModel configModel);
 }

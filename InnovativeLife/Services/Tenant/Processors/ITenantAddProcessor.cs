@@ -5,5 +5,5 @@ namespace InnovativeLife.Services.Tenant.Processors;
 
 public interface ITenantAddProcessor
 {
-    public Task<TenantAddResponse> Add(RequestContext userContext, TenantAddRequest request);
+    public Task<TenantAddResponse> Add(IRequestContext requestContext, TenantAddRequest request);
 }

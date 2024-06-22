@@ -1,33 +1,38 @@
 using Google.Cloud.Firestore;
+using InnovativeLife.WebApi.Common;
 
 namespace InnovativeLife.DataAccess.Employee;
 
 [FirestoreData]
-public class EmployeeModel
+public class Employee
 {
     [FirestoreProperty]
-    public string employeeId { get; set; }
+    public string tenantId { get; set; } = "";
     [FirestoreProperty]
-    public string tenantId { get; set; }
+    public string userUID { get; set; } = "";
+    [FirestoreProperty]
+    public bool tenantAdmin { get; set; }
+    [FirestoreProperty]
+    public string email { get; set; } = "";
+    [FirestoreProperty]
+    public string phoneNumber { get; set; } = "";
+    [FirestoreProperty]
+    public string firstName { get; set; } = "";
+    [FirestoreProperty]
+    public string lastName { get; set; } = "";
+    [FirestoreProperty]
+    public string preferredName { get; set; } = "";
+    [FirestoreProperty]
+    public string employeeNumber { get; set; } = "";
+    [FirestoreProperty]
+    public string leaderEmployeeId { get; set; } = "";
+    [FirestoreProperty]
+    public string positonTitle { get; set; } = "";
+      [FirestoreProperty]
+    public string personalDecription { get; set; } = "";
     [FirestoreProperty]
     public bool active { get; set; }
-    [FirestoreProperty]
-    public string userId { get; set; }
-    [FirestoreProperty]
-    public string employeeNumber { get; set; }
-    [FirestoreProperty]
-    public string leaderEmployeeId { get; set; }
-    [FirestoreProperty]
-    public string positonTitle { get; set; }
-    [FirestoreProperty]
-    public string emailAddress { get; set; }
-    [FirestoreProperty]
-    public string phoneNumber { get; set; }
-    [FirestoreProperty]
-    public string personalDecription { get; set; }
-    [FirestoreProperty]
-    public string managerId { get; set; }
-    [FirestoreProperty]
+    
     public List<EmployeeGroupMembership> employeeGroupMembershipList { get; set; }
     public List<EmployeeGroupMembership> favoritedEmployeeList { get; set; }
 }
@@ -46,4 +51,17 @@ public class FavoritedEmployeeModel
 {
     [FirestoreProperty]
     public string employeeId { get; set; }
+}
+
+[FirestoreData]
+public class TenantAccessModel
+{
+    [FirestoreProperty]
+    public string tenantId { get; set; }
+    [FirestoreProperty]
+    public string employeeId { get; set; }
+    [FirestoreProperty]
+    public string employeeGroupMembershipType { get; set; }
+    [FirestoreProperty]
+    public bool active { get; set; }
 }

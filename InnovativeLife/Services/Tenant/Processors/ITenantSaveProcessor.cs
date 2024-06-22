@@ -5,5 +5,5 @@ namespace InnovativeLife.Services.Tenant.Processors;
 
 public interface ITenantSaveProcessor
 {
-    public Task<TenantSaveResponse> Save(RequestContext userContext, TenantSaveRequest request);
+    public Task<TenantSaveResponse> Save(IRequestContext requestContext, TenantSaveRequest request);
 }

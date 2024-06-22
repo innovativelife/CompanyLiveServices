@@ -15,7 +15,7 @@ public class TenantSaveProcessor : ITenantSaveProcessor
         _logger = logger;
         _tenantActions = tenantActions;
     }
-    public async Task<TenantSaveResponse> Save(RequestContext userContext, TenantSaveRequest request)
+    public async Task<TenantSaveResponse> Save(IRequestContext requestContext, TenantSaveRequest request)
     {
         _logger.LogInformation("Executing TenantService Save");
 

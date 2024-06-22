@@ -2,26 +2,29 @@ using Microsoft.Extensions.Logging;
 using InnovativeLife.DataAccess.Tenant;
 using InnovativeLife.Common;
 using InnovativeLife.Services.Tenant.ServiceMessages;
+using InnovativeLife.Localization;
 
 namespace InnovativeLife.Services.Tenant.Processors;
 
 public class TenantReadProcessor : ITenantReadProcessor
 {
     private readonly ILogger<TenantAddProcessor> _logger;
+    private readonly IMessageService _messageService;
     private readonly ITenantActions _tenantActions;
 
-    public TenantReadProcessor(ILogger<TenantAddProcessor> logger, ITenantActions tenantActions)
+    public TenantReadProcessor(ILogger<TenantAddProcessor> logger, IMessageService messageService, ITenantActions tenantActions)
     {
         _logger = logger;
+        _messageService = messageService;
         _tenantActions = tenantActions;
     }
-    public async Task<TenantReadResponse> Read(RequestContext userContext, string tenantId)
+    public async Task<TenantReadResponse> Read(IRequestContext requestContext, string tenantId)
     {
         _logger.LogInformation("Executing TenantService Read");
 
         if (string.IsNullOrWhiteSpace(tenantId))
         {
-            return new TenantReadResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, "No Tenant Id supplied");
+            return new TenantReadResponse(Common.ServiceResponseBase.ResponseStatus.NotFound, _messageService.GetMessage("Tenant_Id_Mandatory"));
         }
 
         var result = await _tenantActions.Read(tenantId);
@@ -37,7 +40,7 @@ public class TenantReadProcessor : ITenantReadProcessor
         }
         else
         {
-            return new TenantReadResponse(Common.ServiceResponseBase.ResponseStatus.NotFound, $"Tenant not found.  TenantUd: {tenantId}");
+            return new TenantReadResponse(Common.ServiceResponseBase.ResponseStatus.NotFound, $"Tenant not found.  TenantId: {tenantId}");
         }
     }
 }
