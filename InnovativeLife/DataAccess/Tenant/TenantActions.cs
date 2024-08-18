@@ -36,6 +36,25 @@ public class TenantActions : ITenantActions
         }
     }
 
+    public async Task<Tuple<DalResponse, List<TenantModel?>>> ReadSet()
+    {
+        _logger.LogInformation("Reading list of tenants");
+        
+        var db = Utilities.connectToFirestore();
+        Query tenantQuery = db.Collection(TenantConstants.TenantCollection);
+        tenantQuery.Limit(100);
+        var snapshot = await tenantQuery.GetSnapshotAsync();
+
+        var tenantListModel = new List<TenantModel?>();
+        foreach (DocumentSnapshot documentSnapshot in snapshot.Documents)
+        {
+            var tenant = documentSnapshot.ConvertTo<TenantModel>();
+            tenantListModel.Add(tenant);
+        }
+
+        return new Tuple<DalResponse, List<TenantModel?>>(new DalResponse(DalResponse.ResponseStatus.Ok), tenantListModel);
+    }
+
     public async Task<Tuple<DalResponse, TenantModel?>> ReadByName(string tenantName)
     {
         _logger.LogInformation("Reading tenant by tenant name {0}", tenantName);

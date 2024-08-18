@@ -27,12 +27,17 @@ public class TenantService : ITenantService
 
     public async Task<TenantReadResponse> Read(IRequestContext requestContext, string tenantId)
     {
-        return await _tenantReadProcessor.Read(requestContext, tenantId);
+        return await _tenantReadProcessor.ReadSingleton(requestContext, tenantId);
     }
 
-    public async Task<TenantSaveResponse> Save(IRequestContext requestContext, TenantSaveRequest request)
+    public async Task<TenantReadSetResponse> ReadSet(IRequestContext requestContext)
     {
-        return await _tenantSaveProcessor.Save(requestContext, request);
+        return await _tenantReadProcessor.ReadSet(requestContext);
+    }
+
+    public async Task<TenantSaveResponse> Save(IRequestContext requestContext, string tenantId, TenantSaveRequest request)
+    {
+        return await _tenantSaveProcessor.Save(requestContext, tenantId, request);
     }
 
 }

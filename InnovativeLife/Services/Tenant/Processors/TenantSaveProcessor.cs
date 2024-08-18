@@ -15,13 +15,15 @@ public class TenantSaveProcessor : ITenantSaveProcessor
         _logger = logger;
         _tenantActions = tenantActions;
     }
-    public async Task<TenantSaveResponse> Save(IRequestContext requestContext, TenantSaveRequest request)
+    public async Task<TenantSaveResponse> Save(IRequestContext requestContext, string tenantId, TenantSaveRequest request)
     {
         _logger.LogInformation("Executing TenantService Save");
 
-        if (string.IsNullOrWhiteSpace(request.tenantId))
+        // Root action - tenant must be in root tenancy or must be in dev mode
+        if (!requestContext.rootPriviledge && !requestContext.developmentMode)
         {
-            return new TenantSaveResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, "Tenant Id cannot be left blank");
+            _logger.LogCritical("Non root user attempted to add a tenant");
+            return new TenantSaveResponse(Common.ServiceResponseBase.ResponseStatus.Exception, "Unauthorised Add");
         }
 
         if (string.IsNullOrWhiteSpace(request.tenantName))
@@ -30,7 +32,7 @@ public class TenantSaveProcessor : ITenantSaveProcessor
         }
 
         // Check Tenant already exists - New tenants must be added by "Add"
-        var readResult = await _tenantActions.Read(request.tenantId);
+        var readResult = await _tenantActions.Read(tenantId);
         if (!readResult.Item1.Success)
         {
             return new TenantSaveResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, "Tenant does not exist.  Use Add action to create a new tenant.");
@@ -39,8 +41,16 @@ public class TenantSaveProcessor : ITenantSaveProcessor
         // Update tenant
         var tenantModel = new TenantModel
         {
-            tenantId = request.tenantId,
+            tenantId = tenantId,
             tenantName = request.tenantName,
+            customerName = request.customerName,
+            primaryContactName = request.primaryContactName,
+            primaryContactEmail = request.primaryContactEmail,
+            primaryContactPhone = request.primaryContactPhone,
+            secondaryContactName = request.secondaryContactName,
+            secondaryContactEmail = request.secondaryContactEmail,
+            secondaryContactPhone = request.secondaryContactPhone,
+            renewalDate = DateTime.SpecifyKind(request.renewalDate, DateTimeKind.Utc),
             active = request.active
         };
 

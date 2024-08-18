@@ -74,17 +74,27 @@ public class Startup : FunctionsStartup
     {
         app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGet("/tenant/read/{tenantId}", async (ITenantService service, IRequestContext requestContext, string tenantId) =>
+                endpoints.MapGet("/tenants/", async (ITenantService service, IRequestContext requestContext) =>
+                    await service.ReadSet(requestContext)).RequireAuthorization("Admin")
+                .WithName("TenantReadSet")
+                .WithOpenApi();
+
+                endpoints.MapGet("/tenants/{tenantId}", async (ITenantService service, IRequestContext requestContext, string tenantId) =>
                     await service.Read(requestContext, tenantId)).RequireAuthorization("Admin")
                 .WithName("TenantRead")
                 .WithOpenApi();
 
-                endpoints.MapPost("/tenant/add", async (ITenantService service, TenantAddRequest addRequest, IRequestContext requestContext) => 
+                endpoints.MapPost("/tenants", async (ITenantService service, TenantAddRequest addRequest, IRequestContext requestContext) => 
                     await service.Add(requestContext, addRequest)).RequireAuthorization("Admin")
                 .WithName("TenantAdd")
                 .WithOpenApi();
 
-                endpoints.MapPost("/employee/add", async (IEmployeeService service, IRequestContext requestContext, EmployeeAddRequest addRequest) =>
+                endpoints.MapPut("/tenants/{tenantId}", async (ITenantService service, string tenantId, TenantSaveRequest saveRequest, IRequestContext requestContext) => 
+                    await service.Save(requestContext, tenantId, saveRequest)).RequireAuthorization("Admin")
+                .WithName("TenantSve")
+                .WithOpenApi();
+
+                endpoints.MapPost("/employees", async (IEmployeeService service, IRequestContext requestContext, EmployeeAddRequest addRequest) =>
                     await service.AddEmployee(requestContext, addRequest)).RequireAuthorization("Admin")
                 .WithName("EmployeeAdd")
                 .WithOpenApi();

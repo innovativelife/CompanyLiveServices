@@ -11,5 +11,7 @@ public interface ITenantService
 
     public Task<TenantReadResponse> Read(IRequestContext requestContext, string tenantId);
 
-    public Task<TenantSaveResponse> Save(IRequestContext requestContext, TenantSaveRequest request);
+    public Task<TenantReadSetResponse> ReadSet(IRequestContext requestContext);
+
+    public Task<TenantSaveResponse> Save(IRequestContext requestContext, string tenantId, TenantSaveRequest request);
 }

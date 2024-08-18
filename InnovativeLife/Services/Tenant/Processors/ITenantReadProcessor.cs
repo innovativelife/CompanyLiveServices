@@ -5,5 +5,7 @@ namespace InnovativeLife.Services.Tenant.Processors;
 
 public interface ITenantReadProcessor
 {
-    public Task<TenantReadResponse> Read(IRequestContext requestContext, string tenantId);
+    public Task<TenantReadResponse> ReadSingleton(IRequestContext requestContext, string tenantId);
+
+    public Task<TenantReadSetResponse> ReadSet(IRequestContext requestContext);
 }

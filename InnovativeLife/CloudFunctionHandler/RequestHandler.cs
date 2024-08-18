@@ -10,6 +10,6 @@ public class RequestHandler : IHttpFunction
     public async Task HandleAsync(HttpContext context)
     {
         context.Response.StatusCode = 404;
-        await context.Response.WriteAsync("Notfound");
+        await context.Response.WriteAsync("Not found");
     }
 }

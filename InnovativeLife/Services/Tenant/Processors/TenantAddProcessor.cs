@@ -81,6 +81,14 @@ public class TenantAddProcessor : ITenantAddProcessor
             tenantId = request.tenantId,
             identityManagerTenantId = identityManagerTenantId,
             tenantName = request.tenantName,
+            customerName = request.customerName,
+            primaryContactName = request.primaryContactName,
+            primaryContactEmail = request.primaryContactEmail,
+            primaryContactPhone = request.primaryContactPhone,
+            secondaryContactName = request.secondaryContactName,
+            secondaryContactEmail = request.secondaryContactEmail,
+            secondaryContactPhone = request.secondaryContactPhone,
+            renewalDate = DateTime.SpecifyKind(request.renewalDate, DateTimeKind.Utc),
             active = true
         };
         var saveResponse = await _tenantActions.Save(tenantModel);
