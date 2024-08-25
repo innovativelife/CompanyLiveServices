@@ -11,7 +11,7 @@
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceFolder}/InnovativeLife/bin/Debug/net8.0/InnovativeLife.dll",
-            "args": ["--target", "InnovativeLife.CloudFunctionHandler.RequestHandler", "--port", "8080"],
+            "args": ["--target", "InnovativeLife.WebApi.RequestHandler", "--port", "8080"],
             "cwd": "${workspaceFolder}",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
             "console": "internalConsole",

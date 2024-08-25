@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 using InnovativeLife.DataAccess.Tenant;
-using InnovativeLife.Common;
+using InnovativeLife.Security;
 using InnovativeLife.Services.Tenant.ServiceMessages;
 using InnovativeLife.GcpServices.Identity;
 
@@ -18,27 +18,21 @@ public class TenantAddProcessor : ITenantAddProcessor
         _tenantActions = tenantActions;
         _identityService = identityService;
     }
-    public async Task<TenantAddResponse> Add(IRequestContext requestContext, TenantAddRequest request)
+    public async Task<TenantAddResponse> Add(IUserContext requestContext, TenantAddRequest request)
     {
         _logger.LogInformation("Executing TenantService Add");
 
-        // Root action - tenant must be in root tenancy or must be in dev mode
-        if (!requestContext.rootPriviledge && !requestContext.developmentMode)
-        {
-            _logger.LogCritical("Non root user attempted to add a tenant");
-            return new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.Exception, "Unauthorised Add");
-        }
+        // // Root action - tenant must be in root tenancy or must be in dev mode
+        // if (!requestContext.rootPriviledge && !requestContext.developmentMode)
+        // {
+        //     _logger.LogCritical("Non root user attempted to add a tenant");
+        //     return new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.Exception, "Unauthorised Add");
+        // }
 
-        // Validate ID is not blank
-        if (string.IsNullOrWhiteSpace(request.tenantId))
+        var validationResult = request.Validate();
+        if (validationResult.Count > 0)
         {
-            return new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, "Tenant ID cannot be left blank");
-        }
-
-        // Validate tenant name
-        if (string.IsNullOrWhiteSpace(request.tenantName))
-        {
-            return new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, "Tenant Name cannot be left blank");
+            return new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, validationResult);
         }
 
         // Check if Tenant with this Id already exists
@@ -70,7 +64,7 @@ public class TenantAddProcessor : ITenantAddProcessor
             var addResult = await _identityService.AddTenant(request.tenantName);
             if (!addResult.Success)
             {
-                return new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, addResult.message);
+                return new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, addResult.Message);
             }
             identityManagerTenantId = addResult.tenantId;
         }

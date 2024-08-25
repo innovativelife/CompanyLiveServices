@@ -1,4 +1,4 @@
-namespace InnovativeLife.WebApi.Common;
+namespace InnovativeLife.WebApi;
 
 public static class StandardResponse
 {

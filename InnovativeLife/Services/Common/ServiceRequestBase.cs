@@ -1,9 +1,8 @@
-using InnovativeLife.Common;
+using InnovativeLife.Security;
 
 namespace InnovativeLife.Services.Common;
 
 public class ServiceRequestBase
 {
-    public RequestContext requestContext{ get; set; } = new RequestContext();
-
+    public UserContext requestContext{ get; set; } = new UserContext();
 }

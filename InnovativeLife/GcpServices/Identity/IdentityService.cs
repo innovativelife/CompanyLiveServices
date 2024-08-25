@@ -2,10 +2,12 @@ using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using FirebaseAdmin.Auth;
 using InnovativeLife.Common;
+using InnovativeLife.Security;
 using Microsoft.Extensions.Logging;
-using Firebase.Auth;
 using FirebaseAdmin.Auth.Multitenancy;
 using InnovativeLife.GcpServices.Identity.ServiceMessages;
+using Microsoft.AspNetCore.Authentication;
+using System.Security.Claims;
 
 namespace InnovativeLife.GcpServices.Identity;
 
@@ -18,9 +20,9 @@ public class IdentityService : IIdentityService
     }
 
     // Use google's Auth API to validate the bearer token, and that the user is valid for tenant
-    public async Task<Tuple<bool, RequestContext?>> AuthenticateUserAndTenant(string authToken, string tenantId)
+    public async Task<AuthenticateResult> AuthenticateUserAndTenant(string authToken, string tenantId, IUserContext userContext, string schemeName)
     {
-        _logger.LogInformation("About to validate token for user and tenant");
+        _logger.LogInformation($"About to validate token for user {userContext.uId} and tenant {tenantId}", LogLevel.Information);
 
         if (FirebaseAuth.DefaultInstance == null)
         {
@@ -31,88 +33,107 @@ public class IdentityService : IIdentityService
             });
         }
 
-        var authManager = FirebaseAuth.DefaultInstance!.TenantManager.AuthForTenant(tenantId);
-        var validateResult = await ValidateToken(authToken, tenantId, authManager);
-
-
-        if (!validateResult.Item1)
+        if (userContext.developmentMode)
         {
-            return new Tuple<bool, RequestContext?>(false, null);
+            _logger.LogInformation("Skipping token validation - user is in dev mode");
+
+            userContext.SetDevelopmentModeContext();
+        }
+        else
+        {
+            var authManager = FirebaseAuth.DefaultInstance!.TenantManager.AuthForTenant(tenantId);
+            var validateResult = await ValidateToken(authToken, authManager);
+
+            if (!validateResult.Item1)
+            {
+                return AuthenticateResult.Fail("Token validation failed");
+            }
+
+            var decodedToken = validateResult.Item2;
+
+            _logger.LogInformation($"Verify passed ok");
+
+            if (! await GetUserAndTenant(tenantId, authManager, decodedToken, userContext))
+            {
+                 return AuthenticateResult.Fail("Failed to retrieve user or tenant");
+            }
         }
 
-        var decodedToken = validateResult.Item2;
-        if (decodedToken == null)
-        {
-            _logger.LogInformation($"Could not get user or tenant");
-            return new Tuple<bool, RequestContext?>(false, null);
-        }
+        _logger.LogInformation($"About to get claims from userContext for uId: {userContext.uId}");
+        var claims = AuthorizationPolicies.GetClaims(userContext, _logger);
+        var claimsIdentity = new ClaimsIdentity(claims, schemeName);
+        var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
 
-        _logger.LogInformation($"Verify passed ok");
-
-        return await GetUserAndTenant(tenantId, authManager, decodedToken);
+        return AuthenticateResult.Success(new AuthenticationTicket(claimsPrincipal, schemeName));
     }
 
     // Validate the bearer token
-    private async Task<Tuple<bool, FirebaseToken?>> ValidateToken(string authToken, string tenantId, FirebaseAdmin.Auth.Multitenancy.TenantAwareFirebaseAuth authManager)
+    private async Task<Tuple<bool, string>> ValidateToken(string authToken, TenantAwareFirebaseAuth authManager)
     {
         FirebaseToken decodedToken;
         try
         {
             _logger.LogInformation($"About to call VerifyIdTokenAsync for token with length {authToken.Length}");
             decodedToken = await authManager.VerifyIdTokenAsync(authToken);
-            return new Tuple<bool, FirebaseToken?>(true, decodedToken);
+
+            if (decodedToken == null)
+            {
+                _logger.LogInformation("Token validation fialed - decoded token is null");
+                return new Tuple<bool, string>(false, "");
+            }
+
+            return new Tuple<bool, string>(true, decodedToken.Uid); ;
         }
         catch (Exception ex)
         {
-            _logger.LogInformation($"Authentication failed: {ex.Message}");
-            return new Tuple<bool, FirebaseToken?>(false, null);
+            _logger.LogInformation($"Authentication failed with exception during token validation: {ex.Message}");
+            return new Tuple<bool, string>(false, "");
         }
     }
 
     // Get User and Tenant Details
-    private async Task<Tuple<bool, RequestContext?>> GetUserAndTenant(string tenantId, TenantAwareFirebaseAuth authManager, FirebaseToken decodedToken)
+    private async Task<bool> GetUserAndTenant(string tenantId, TenantAwareFirebaseAuth authManager, string uId, IUserContext userContext)
     {
         try
         {
-            _logger.LogInformation($"Uid: {decodedToken.Uid}");
-            UserRecord userRecord = await authManager.GetUserAsync(decodedToken.Uid);
+            _logger.LogInformation($"Executing GetUserAndTenant for tenantID: {tenantId} Uid: {uId}");
+            UserRecord userRecord = await authManager.GetUserAsync(uId);
 
             if (userRecord == null)
             {
                 _logger.LogInformation($"Could not get user record");
-                return new Tuple<bool, RequestContext?>(false, null);
+                return false;
             }
 
-            _logger.LogInformation($"Retrieved user details - Email: {userRecord.Email}");
+            _logger.LogInformation($"Retrieved user details - UiD:         {userRecord.Uid}");
+            _logger.LogInformation($"Retrieved user details - DisplayName: {userRecord.DisplayName}");
+            _logger.LogInformation($"Retrieved user details - TenantId:    {userRecord.TenantId}");
+            _logger.LogInformation($"Retrieved user details - Disabled:    {userRecord.Disabled}");
+            _logger.LogInformation($"Retrieved user details - Email:       {userRecord.Email}");
+            _logger.LogInformation($"Retrieved user details - PhoneNumber: {userRecord.PhoneNumber}");
 
             var tenant = await FirebaseAuth.DefaultInstance!.TenantManager.GetTenantAsync(tenantId);
 
-            return new Tuple<bool, RequestContext?>(true, InitialiseRequestContext(userRecord, tenant));
+            _logger.LogInformation($"Retrieved tenant details - DisplayName: {tenant.DisplayName}");
+
+            userContext.uId = userRecord.Uid;
+            userContext.displayName = userRecord.DisplayName;
+            userContext.active = !userRecord.Disabled;
+            userContext.email = userRecord.Email;
+            userContext.phoneNumber = userRecord.PhoneNumber;
+            userContext.tenantId = userRecord.TenantId;
+            userContext.tenantName = tenant.DisplayName;
+            userContext.rootAdmin = tenant.TenantId == GcpConstants.RootTenantId;
+
+            _logger.LogInformation($"Root Tenant? {userContext.rootAdmin}");
+
+            return true;
         }
         catch (Exception ex)
         {
-            _logger.LogInformation($"Error attempting to read user or tenant record: {ex.Message}");
-            return new Tuple<bool, RequestContext?>(false, null);
+            _logger.LogError($"Error attempting to read user or tenant record: {ex.Message}");
+            return false;
         }
-    }
-
-    private RequestContext InitialiseRequestContext(UserRecord userRecord, Tenant tenant)
-    {
-        var result = new RequestContext
-        {
-            uId = userRecord.Uid,
-            tenantId = userRecord.TenantId,
-            active = !userRecord.Disabled,
-            email = userRecord.Email,
-            phoneNumber = userRecord.PhoneNumber,
-            displayName = userRecord.DisplayName,
-            tenantName = tenant.DisplayName,
-
-            // Set priviledges
-            rootPriviledge = tenant.TenantId == GcpConstants.RootTenantId
-        };
-
-        return result;
     }
 
     public async Task<AddTenantResponse> AddTenant(string displayName)
@@ -161,7 +182,7 @@ public class IdentityService : IIdentityService
             if (result == null)
             {
                 _logger.LogError($"null result returned from CreateUserAsync");
-                return new AddUserToTenantResponse( Services.Common.ServiceResponseBase.ResponseStatus.Exception, "Error creating user - null returned");
+                return new AddUserToTenantResponse(Services.Common.ServiceResponseBase.ResponseStatus.Exception, "Error creating user - null returned");
             }
 
             _logger.LogInformation($"User created with Uid: {result.Uid}");
@@ -209,7 +230,7 @@ public class IdentityService : IIdentityService
         _logger.LogInformation($"Translating Firebase Auth Exception: {exception.Message}");
 
         var gcpMessage = exception.Message.ToLower();
-        var message = "Unknown Error from Firbase Auth occurred";
+        var message = "Unknown Error from Firebase Auth occurred";
 
         if (gcpMessage.Contains("email-already-exists"))
         {
@@ -269,6 +290,11 @@ public class IdentityService : IIdentityService
         if (gcpMessage.Contains("user-not-found"))
         {
             message = "There is no existing user record corresponding to the provided identifier.";
+        }
+
+        if (gcpMessage.Contains("invalid_display_name"))
+        {
+            message = "Tenant display name should start with a letter and consistent of letters, digits and hyphens and be 4 to 20 characters in length.";
         }
 
         return message;

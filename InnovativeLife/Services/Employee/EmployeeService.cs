@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using InnovativeLife.DataAccess.Employee;
-using InnovativeLife.Common;
-using InnovativeLife.WebApi.Common;
+using InnovativeLife.Security;
+using InnovativeLife.WebApi;
 using InnovativeLife.GcpServices.Identity;
 using InnovativeLife.Services.Employee.ServiceMessages;
 using InnovativeLife.Services.Employee.Processors;
@@ -21,12 +21,12 @@ public class EmployeeService : IEmployeeService
         _employeeCreateProcessor = employeeCreateProcessor;
     }
 
-    public async Task<EmployeeAddResponse> AddEmployee(IRequestContext requestContext, EmployeeAddRequest request)
+    public async Task<EmployeeAddResponse> AddEmployee(IUserContext requestContext, EmployeeAddRequest request)
     {
         return await _employeeCreateProcessor.AddEmployee(requestContext, request);
     }
 
-    public async Task<WebResponse> SetAdminPrivilege(IRequestContext requestContext, string uId, bool AdminPrivilege)
+    public async Task<WebResponse> SetAdminPrivilege(IUserContext requestContext, string uId, bool AdminPrivilege)
     {
         _logger.LogInformation("Executing SetAdminPrivilege Service");
 

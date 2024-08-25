@@ -1,9 +1,9 @@
 using InnovativeLife.Services.Tenant.ServiceMessages;
-using InnovativeLife.Common;
+using InnovativeLife.Security;
 
 namespace InnovativeLife.Services.Tenant.Processors;
 
 public interface ITenantAddProcessor
 {
-    public Task<TenantAddResponse> Add(IRequestContext requestContext, TenantAddRequest request);
+    public Task<TenantAddResponse> Add(IUserContext requestContext, TenantAddRequest request);
 }

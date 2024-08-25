@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Logging;
 using InnovativeLife.DataAccess.Tenant;
-using InnovativeLife.Common;
+using InnovativeLife.Security;
 using InnovativeLife.Services.Tenant.ServiceMessages;
 using InnovativeLife.Localization;
-using Google.Protobuf;
+using Microsoft.AspNetCore.Http;
 
 namespace InnovativeLife.Services.Tenant.Processors;
 
@@ -12,14 +12,16 @@ public class TenantReadProcessor : ITenantReadProcessor
     private readonly ILogger<TenantAddProcessor> _logger;
     private readonly IMessageService _messageService;
     private readonly ITenantActions _tenantActions;
+    private readonly IHttpContextAccessor _httpContext;
 
-    public TenantReadProcessor(ILogger<TenantAddProcessor> logger, IMessageService messageService, ITenantActions tenantActions)
+    public TenantReadProcessor(ILogger<TenantAddProcessor> logger, IMessageService messageService, ITenantActions tenantActions, IHttpContextAccessor httpContext)
     {
         _logger = logger;
         _messageService = messageService;
         _tenantActions = tenantActions;
+        _httpContext = httpContext;
     }
-    public async Task<TenantReadResponse> ReadSingleton(IRequestContext requestContext, string tenantId)
+    public async Task<TenantReadResponse> ReadSingleton(IUserContext requestContext, string tenantId)
     {
         _logger.LogInformation("Executing TenantService Read");
 
@@ -42,7 +44,7 @@ public class TenantReadProcessor : ITenantReadProcessor
         }
     }
 
-    public async Task<TenantReadSetResponse> ReadSet(IRequestContext requestContext)
+    public async Task<TenantReadSetResponse> ReadSet(IUserContext requestContext)
     {
         _logger.LogInformation("Executing TenantService Read");
 

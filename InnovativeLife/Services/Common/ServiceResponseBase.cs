@@ -6,13 +6,19 @@ public class ServiceResponseBase
 {
     public ServiceResponseBase(ResponseStatus status, string message)
     {
-        this.message = message;
+        this.Message = message;
+        Status = status;
+    }
+
+    public ServiceResponseBase(ResponseStatus status, List<string> messages)
+    {
+        this.Messages = messages;
         Status = status;
     }
 
     public ServiceResponseBase(DalResponse.ResponseStatus status, string message)
     {
-        this.message = message;
+        this.Message = message;
         switch (status){
             case DalResponse.ResponseStatus.Ok:
                 this.Status = ResponseStatus.Ok;
@@ -44,7 +50,19 @@ public class ServiceResponseBase
         BadRequest
     }
 
-    public string message {get; set;} = "";
+    public string Message {
+        get
+        {
+            var error = Messages.Count > 2 ? "errors" : "error";
+            return  Messages.Count == 0 ? "" : Messages[0] + (Messages.Count > 1 ? $" (plus {Messages.Count - 1} other {error})" : "");
+        } 
+        set
+        {
+            Messages.Add(value); 
+        }
+    }
+
+    public List<string> Messages {get; set;} = new List<string>();
 
     public ResponseStatus Status {get; set;} = ResponseStatus.Ok;
 

@@ -1,11 +1,12 @@
-using InnovativeLife.Common;
+using InnovativeLife.Security;
 using InnovativeLife.GcpServices.Identity.ServiceMessages;
+using Microsoft.AspNetCore.Authentication;
 
 namespace InnovativeLife.GcpServices.Identity;
 
 public interface IIdentityService
 {
-    public Task<Tuple<bool, RequestContext?>> AuthenticateUserAndTenant(string authToken, string tenantId);
+    public Task<AuthenticateResult> AuthenticateUserAndTenant(string authToken, string tenantId, IUserContext userContext, string schemeName);
 
     public Task<AddTenantResponse> AddTenant(string displayName);
 

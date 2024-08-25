@@ -1,7 +1,6 @@
 using Google.Cloud.Functions.Hosting;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using InnovativeLife.CloudFunctionHandler;
 using InnovativeLife.Services.Tenant;
 using InnovativeLife.Services.Tenant.ServiceMessages;
 using InnovativeLife.Services.Tenant.Processors;
@@ -14,10 +13,10 @@ using InnovativeLife.GcpServices.Identity;
 using InnovativeLife.Services.Employee.Processors;
 using InnovativeLife.Localization;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using InnovativeLife.Common;
+using InnovativeLife.Security;
 using InnovativeLife.Services.Employee.ServiceMessages;
+using Microsoft.AspNetCore.Http;
 
 namespace InnovativeLife;
 
@@ -39,8 +38,7 @@ public class Startup : FunctionsStartup
         services
             .AddSingleton<IMessageService, MessageService>()
             .AddSingleton<IIdentityService, IdentityService>()
-            .AddSingleton<IAuthorizationHandler, AuthorizationRequirementHandler>()
-            .AddSingleton<IRequestContext, RequestContext>()
+            .AddSingleton<IUserContext, UserContext>()
             .AddSingleton<IUiShellConfigService, UiShellConfigService>()
             .AddSingleton<IUiShellConfigActions, UiShellConfigActions>()
             .AddSingleton<IEmployeeService, EmployeeService>()
@@ -55,17 +53,12 @@ public class Startup : FunctionsStartup
         services.AddHttpContextAccessor();
         services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
-        services.AddAuthentication("GoogleIdentityPlatform")
-            .AddScheme<SimpleOptions, SimpleAuthHandler>("from startup", o => 
-                {
-                    o.DisplayMessage = "************************** Hello from statup";
-                    o.ForwardDefaultSelector = ctx =>
-                        ctx.Request.Path.StartsWithSegments("/") ? "/" : null;
-                });
-        services.AddAuthorization(options =>
-        {
-            options.AddPolicy("Admin", p => p.AddRequirements(new AuthorizationRequirement("Admin")));
-        });
+        services.AddAuthentication(GoogleIdentityAuthenticationOptions.DefaultScheme)
+            .AddScheme<GoogleIdentityAuthenticationOptions, GoogleIdentityAuthenticationHandler>
+                (GoogleIdentityAuthenticationOptions.DefaultScheme,
+                options => { });
+        services.AddAuthorizationBuilder()
+            .AddPolicy("SuperUserRequired", policy => AuthorizationPolicies.GetSuperUserPolicy(policy));
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
     }
@@ -74,28 +67,49 @@ public class Startup : FunctionsStartup
     {
         app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGet("/tenants/", async (ITenantService service, IRequestContext requestContext) =>
-                    await service.ReadSet(requestContext)).RequireAuthorization("Admin")
+                endpoints.MapGet("/tenants/", async (ITenantService service, IUserContext requestContext) =>
+                    await service.ReadSet(requestContext))
                 .WithName("TenantReadSet")
-                .WithOpenApi();
+                .RequireAuthorization("SuperUserRequired")
+                .WithOpenApi(operation => new(operation)
+                {
+                    Summary = "Get tenants",
+                    Description = "Get list of tenants that have been configured."
+                });
 
-                endpoints.MapGet("/tenants/{tenantId}", async (ITenantService service, IRequestContext requestContext, string tenantId) =>
-                    await service.Read(requestContext, tenantId)).RequireAuthorization("Admin")
+                endpoints.MapGet("/tenants/{tenantId}", async (ITenantService service, IUserContext requestContext, string tenantId) =>
+                    await service.Read(requestContext, tenantId))
                 .WithName("TenantRead")
-                .WithOpenApi();
+                .RequireAuthorization("SuperUserRequired")
+                .WithOpenApi(operation => new(operation)
+                {
+                    Summary = "Get tenant by ID",
+                    Description = "Returns details for a single tenant"
+                });
 
-                endpoints.MapPost("/tenants", async (ITenantService service, TenantAddRequest addRequest, IRequestContext requestContext) => 
-                    await service.Add(requestContext, addRequest)).RequireAuthorization("Admin")
+                endpoints.MapPost("/tenants", async (ITenantService service, TenantAddRequest addRequest, IUserContext requestContext) =>
+                    await service.Add(requestContext, addRequest))
                 .WithName("TenantAdd")
-                .WithOpenApi();
+                .RequireAuthorization("SuperUserRequired")
+                .Accepts<TenantSaveRequest>("application/json")
+                .WithOpenApi(operation => new(operation)
+                {
+                    Summary = "Add tenant",
+                    Description = "Add a new tenant."
+                });
 
-                endpoints.MapPut("/tenants/{tenantId}", async (ITenantService service, string tenantId, TenantSaveRequest saveRequest, IRequestContext requestContext) => 
-                    await service.Save(requestContext, tenantId, saveRequest)).RequireAuthorization("Admin")
-                .WithName("TenantSve")
-                .WithOpenApi();
+                endpoints.MapPut("/tenants/{tenantId}", async (ITenantService service, string tenantId, TenantSaveRequest saveRequest, IUserContext requestContext) =>
+                    await service.Save(requestContext, tenantId, saveRequest))
+                .WithName("TenantSave")
+                .RequireAuthorization("SuperUserRequired")
+                .WithOpenApi(operation => new(operation)
+                {
+                    Summary = "Update tenant",
+                    Description = "Update the details of an existing tenant."
+                });
 
-                endpoints.MapPost("/employees", async (IEmployeeService service, IRequestContext requestContext, EmployeeAddRequest addRequest) =>
-                    await service.AddEmployee(requestContext, addRequest)).RequireAuthorization("Admin")
+                endpoints.MapPost("/employees", async (IEmployeeService service, IUserContext requestContext, EmployeeAddRequest addRequest) =>
+                    await service.AddEmployee(requestContext, addRequest))
                 .WithName("EmployeeAdd")
                 .WithOpenApi();
             });

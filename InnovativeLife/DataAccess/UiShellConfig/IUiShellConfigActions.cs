@@ -1,4 +1,4 @@
-using InnovativeLife.WebApi.Common;
+using InnovativeLife.WebApi;
 
 namespace InnovativeLife.DataAccess.UiShellConfig;
 

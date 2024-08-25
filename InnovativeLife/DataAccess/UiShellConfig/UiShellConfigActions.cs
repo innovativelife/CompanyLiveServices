@@ -1,5 +1,5 @@
 using Google.Cloud.Firestore;
-using InnovativeLife.WebApi.Common;
+using InnovativeLife.WebApi;
 using Microsoft.Extensions.Logging;
 
 namespace InnovativeLife.DataAccess.UiShellConfig;

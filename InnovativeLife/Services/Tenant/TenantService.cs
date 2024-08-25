@@ -1,10 +1,8 @@
 using Microsoft.Extensions.Logging;
 using InnovativeLife.DataAccess.Tenant;
-using InnovativeLife.Common;
+using InnovativeLife.Security;
 using InnovativeLife.Services.Tenant.ServiceMessages;
 using InnovativeLife.Services.Tenant.Processors;
-using InnovativeLife.Services.Common;
-using Microsoft.AspNetCore.Http;
 
 namespace InnovativeLife.Services.Tenant;
 public class TenantService : ITenantService
@@ -20,24 +18,23 @@ public class TenantService : ITenantService
         _tenantSaveProcessor = tenantSaveProcessor;
     }
 
-    public async Task<TenantAddResponse> Add(IRequestContext requestContext, TenantAddRequest request)
+    public async Task<TenantAddResponse> Add(IUserContext requestContext, TenantAddRequest request)
     {
         return await _tenantAddProcessor.Add(requestContext, request);
     }
 
-    public async Task<TenantReadResponse> Read(IRequestContext requestContext, string tenantId)
+    public async Task<TenantReadResponse> Read(IUserContext requestContext, string tenantId)
     {
         return await _tenantReadProcessor.ReadSingleton(requestContext, tenantId);
     }
 
-    public async Task<TenantReadSetResponse> ReadSet(IRequestContext requestContext)
+    public async Task<TenantReadSetResponse> ReadSet(IUserContext requestContext)
     {
         return await _tenantReadProcessor.ReadSet(requestContext);
     }
 
-    public async Task<TenantSaveResponse> Save(IRequestContext requestContext, string tenantId, TenantSaveRequest request)
+    public async Task<TenantSaveResponse> Save(IUserContext requestContext, string tenantId, TenantSaveRequest request)
     {
         return await _tenantSaveProcessor.Save(requestContext, tenantId, request);
     }
-
 }

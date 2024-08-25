@@ -1,11 +1,12 @@
 using InnovativeLife.Services.Tenant.ServiceMessages;
-using InnovativeLife.Common;
+using InnovativeLife.Security;
+using Microsoft.AspNetCore.Http;
 
 namespace InnovativeLife.Services.Tenant.Processors;
 
 public interface ITenantReadProcessor
 {
-    public Task<TenantReadResponse> ReadSingleton(IRequestContext requestContext, string tenantId);
+    public Task<TenantReadResponse> ReadSingleton(IUserContext requestContext, string tenantId);
 
-    public Task<TenantReadSetResponse> ReadSet(IRequestContext requestContext);
+    public Task<TenantReadSetResponse> ReadSet(IUserContext requestContext);
 }

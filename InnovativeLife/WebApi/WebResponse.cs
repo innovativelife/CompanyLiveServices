@@ -1,6 +1,6 @@
 using InnovativeLife.Services.Common;
 
-namespace InnovativeLife.WebApi.Common;
+namespace InnovativeLife.WebApi;
 
 public class WebResponse
 {

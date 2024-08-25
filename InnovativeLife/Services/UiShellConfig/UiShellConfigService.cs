@@ -1,8 +1,8 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using InnovativeLife.DataAccess.UiShellConfig;
-using InnovativeLife.Common;
-using InnovativeLife.WebApi.Common;
+using InnovativeLife.Security;
+using InnovativeLife.WebApi;
 
 namespace InnovativeLife.Services.UiShellConfig;
 
@@ -17,7 +17,7 @@ public class UiShellConfigService : IUiShellConfigService
         _uiShellConfigActions = uiShellConfigActions;
     }
 
-    public async Task<WebResponse> Read(RequestContext requestContext, string configId)
+    public async Task<WebResponse> Read(UserContext requestContext, string configId)
     {
         _logger.LogInformation("Executing GetUIConfig Read");
 
@@ -42,7 +42,7 @@ public class UiShellConfigService : IUiShellConfigService
         }
     }
 
-    public async Task<WebResponse> Save(RequestContext requestContext, string configId, UiShellConfigModel configModel)
+    public async Task<WebResponse> Save(UserContext requestContext, string configId, UiShellConfigModel configModel)
     {
         _logger.LogInformation("Executing TenantService Save");
 

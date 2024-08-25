@@ -2,7 +2,7 @@ using Google.Cloud.Functions.Framework;
 using Google.Cloud.Functions.Hosting;
 using Microsoft.AspNetCore.Http;
 
-namespace InnovativeLife.CloudFunctionHandler;
+namespace InnovativeLife.WebApi;
 
 [FunctionsStartup(typeof(Startup))]
 public class RequestHandler : IHttpFunction

@@ -1,9 +1,9 @@
 using InnovativeLife.Services.Tenant.ServiceMessages;
-using InnovativeLife.Common;
+using InnovativeLife.Security;
 
 namespace InnovativeLife.Services.Tenant.Processors;
 
 public interface ITenantSaveProcessor
 {
-    public Task<TenantSaveResponse> Save(IRequestContext requestContext, string tenantId, TenantSaveRequest request);
+    public Task<TenantSaveResponse> Save(IUserContext requestContext, string tenantId, TenantSaveRequest request);
 }

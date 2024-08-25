@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 using InnovativeLife.Services.Employee.ServiceMessages;
-using InnovativeLife.Common;
+using InnovativeLife.Security;
 using InnovativeLife.GcpServices.Identity;
 using InnovativeLife.DataAccess.Employee;
 using InnovativeLife.Localization;
@@ -22,7 +22,7 @@ public class EmployeeAddProcessor : IEmployeeAddProcessor
         _employeeActions = employeeActions;
     }
 
-    public async Task<EmployeeAddResponse> AddEmployee(IRequestContext requestContext, EmployeeAddRequest request)
+    public async Task<EmployeeAddResponse> AddEmployee(IUserContext requestContext, EmployeeAddRequest request)
     {
         _logger.LogInformation("Executing CreateUser Service");
 
@@ -59,7 +59,7 @@ public class EmployeeAddProcessor : IEmployeeAddProcessor
                 var addUserToTenantResult = await _identityService.AddUserToTenant(requestContext.tenantId, request.displayName, request.email, request.phoneNumber, request.initialPassword);
                 if (!addUserToTenantResult.Success)
                 {
-                    return new EmployeeAddResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, $"Failed to create user: {addUserToTenantResult.message}");
+                    return new EmployeeAddResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, $"Failed to create user: {addUserToTenantResult.Message}");
                 }
                 EmployeeUID = addUserToTenantResult.uId;
             }
