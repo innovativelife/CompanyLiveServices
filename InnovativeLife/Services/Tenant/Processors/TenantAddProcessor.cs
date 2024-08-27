@@ -22,13 +22,6 @@ public class TenantAddProcessor : ITenantAddProcessor
     {
         _logger.LogInformation("Executing TenantService Add");
 
-        // // Root action - tenant must be in root tenancy or must be in dev mode
-        // if (!requestContext.rootPriviledge && !requestContext.developmentMode)
-        // {
-        //     _logger.LogCritical("Non root user attempted to add a tenant");
-        //     return new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.Exception, "Unauthorised Add");
-        // }
-
         var validationResult = request.Validate();
         if (validationResult.Count > 0)
         {
@@ -89,7 +82,18 @@ public class TenantAddProcessor : ITenantAddProcessor
 
         if (saveResponse.Success)
         {
-            return new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.Ok, "Tenant added succesfully");
+            var processorResponse = new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.Ok, "Tenant added succesfully");
+            processorResponse.tenant.tenantId = tenantModel.tenantId;
+            processorResponse.tenant.identityManagerTenantId = tenantModel.identityManagerTenantId;
+            processorResponse.tenant.tenantName = tenantModel.tenantName;
+            processorResponse.tenant.customerName = tenantModel.customerName;
+            processorResponse.tenant.primaryContactName = tenantModel.primaryContactName;
+            processorResponse.tenant.primaryContactPhone = tenantModel.primaryContactPhone;
+            processorResponse.tenant.secondaryContactName = tenantModel.secondaryContactName;
+            processorResponse.tenant.secondaryContactEmail = tenantModel.secondaryContactEmail;
+            processorResponse.tenant.renewalDate = tenantModel.renewalDate;
+            processorResponse.tenant.active = tenantModel.active;
+            return processorResponse;
         }
         else
         {

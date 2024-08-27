@@ -110,8 +110,13 @@ public class Startup : FunctionsStartup
 
                 endpoints.MapPost("/employees", async (IEmployeeService service, IUserContext requestContext, EmployeeAddRequest addRequest) =>
                     await service.AddEmployee(requestContext, addRequest))
+                .RequireAuthorization("SuperUserRequired")
                 .WithName("EmployeeAdd")
-                .WithOpenApi();
+                .WithOpenApi(operation => new(operation)
+                {
+                    Summary = "Add employee",
+                    Description = "Add a new employee to a tenant."
+                });
             });
     }
 }

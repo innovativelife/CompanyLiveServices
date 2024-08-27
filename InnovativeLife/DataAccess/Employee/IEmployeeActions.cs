@@ -6,5 +6,5 @@ public interface IEmployeeActions
 {
     public Task<Tuple<DalResponse, Employee?>> ReadByUID(string userUID);
     public Task<Tuple<DalResponse, Employee?>> ReadByIdentifier(string identifier);
-    public Task<Tuple<DalResponse, Employee?>> Save(string userUID, Employee employeeModel);
+    public Task<DalResponse> Save(string userUID, Employee employeeModel);
 }

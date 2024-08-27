@@ -24,41 +24,31 @@ public class EmployeeAddProcessor : IEmployeeAddProcessor
 
     public async Task<EmployeeAddResponse> AddEmployee(IUserContext requestContext, EmployeeAddRequest request)
     {
-        _logger.LogInformation("Executing CreateUser Service");
+        _logger.LogInformation($"EmployeeAddProcessor.AddEmployee: Executing CreateUser Service for Employee Number {request.employeeNumber}");
 
         try
         {
-            // Validate  Tenant ID is not blank
-            if (string.IsNullOrWhiteSpace(request.tenantId))
+             var validationResult = request.Validate();
+            if (validationResult.Count > 0)
             {
-                return new EmployeeAddResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, _messageService.GetMessage("Tenant_Id_Mandatory"));
-            }
-
-            // Validate  firstName is not blank
-            if (string.IsNullOrWhiteSpace(request.firstName))
-            {
-                return new EmployeeAddResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, _messageService.GetMessage("First_Name_Mandatory"));
-            }
-
-            // Validate  lastName is not blank
-            if (string.IsNullOrWhiteSpace(request.lastName))
-            {
-                return new EmployeeAddResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, _messageService.GetMessage("Last_Name_Mandatory"));
+                return new EmployeeAddResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, validationResult);
             }
 
             string EmployeeUID;
 
             if (requestContext.developmentMode)
             {
-                _logger.LogInformation("Development mode - User creation skipped");
+                _logger.LogInformation("EmployeeAddProcessor.AddEmployee: Development mode - User creation skipped");
                 EmployeeUID = Guid.NewGuid().ToString();
             }
             else
             {
                 // Add user to the tenancy of the executing user
-                var addUserToTenantResult = await _identityService.AddUserToTenant(requestContext.tenantId, request.displayName, request.email, request.phoneNumber, request.initialPassword);
+                var addUserToTenantResult = await _identityService.AddUserToTenant(request.tenantId, request.displayName, request.email, request.phoneNumber, request.initialPassword, requestContext);
                 if (!addUserToTenantResult.Success)
                 {
+                _logger.LogInformation($"EmployeeAddProcessor.AddEmployee: Failed to create user -  {addUserToTenantResult.Message}");
+
                     return new EmployeeAddResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, $"Failed to create user: {addUserToTenantResult.Message}");
                 }
                 EmployeeUID = addUserToTenantResult.uId;
@@ -79,7 +69,7 @@ public class EmployeeAddProcessor : IEmployeeAddProcessor
 
             var saveUserResult = await _employeeActions.Save(EmployeeUID, employeeModel);
 
-            if (saveUserResult.Item1.Success)
+            if (saveUserResult.Success)
             {
                 return new EmployeeAddResponse(Common.ServiceResponseBase.ResponseStatus.Ok, "User created");
             }
@@ -91,7 +81,7 @@ public class EmployeeAddProcessor : IEmployeeAddProcessor
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Exception caught in CreateUser service: {ex.Message}");
+            _logger.LogError($"EmployeeAddProcessor.AddEmployee: Exception caught in CreateUser service: {ex.Message}");
             return new EmployeeAddResponse(Common.ServiceResponseBase.ResponseStatus.Exception, ex.Message);
         }
     }

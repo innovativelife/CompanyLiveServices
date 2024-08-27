@@ -28,26 +28,27 @@ public class EmployeeService : IEmployeeService
 
     public async Task<WebResponse> SetAdminPrivilege(IUserContext requestContext, string uId, bool AdminPrivilege)
     {
-        _logger.LogInformation("Executing SetAdminPrivilege Service");
+        _logger.LogInformation("EmployeeService.SetAdminPrivilege: Executing SetAdminPrivilege Service");
 
         if (requestContext.developmentMode)
         {
-            return new WebResponse(Common.ServiceResponseBase.ResponseStatus.Ok, "Development mode - Setting Admin Privilege skipped");
+            return new WebResponse(Common.ServiceResponseBase.ResponseStatus.Ok, "EmployeeService.SetAdminPrivilege: Development mode - Setting Admin Privilege skipped");
         }
 
         try
         {
-            var result = await _identityService.SetAdminAuthorisationForUser(requestContext.tenantId, uId, AdminPrivilege);
+            var result = await _identityService.SetAdminAuthorisationForUser(requestContext.tenantId, uId, AdminPrivilege, requestContext);
             if (!result.Item1)
             {
-                return new WebResponse(WebResponse.StatusTypes.Error, "Failed to set admin status");
+                _logger.LogError($"EmployeeService.SetAdminPrivilege: Failed to set admin status for User for {uId}");
+                return new WebResponse(WebResponse.StatusTypes.Error, "Failed to set admin status for User for {uId}");
             }
 
-            return new WebResponse(Common.ServiceResponseBase.ResponseStatus.Ok, $"User privilegef for {uId} set to: {AdminPrivilege}");
+            return new WebResponse(Common.ServiceResponseBase.ResponseStatus.Ok, $"User privilege for {uId} set to: {AdminPrivilege}");
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Exception caught in SetAdminPrivilege service: {ex.Message}");
+            _logger.LogError($"EmployeeService.SetAdminPrivilege: Exception caught in SetAdminPrivilege service: {ex.Message}");
             return new WebResponse(WebResponse.StatusTypes.Error, ex.Message);
         }
     }

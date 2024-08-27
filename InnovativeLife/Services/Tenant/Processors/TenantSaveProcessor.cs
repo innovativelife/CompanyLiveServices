@@ -19,6 +19,12 @@ public class TenantSaveProcessor : ITenantSaveProcessor
     {
         _logger.LogInformation("Executing TenantService Save");
 
+           var validationResult = request.Validate();
+        if (validationResult.Count > 0)
+        {
+            return new TenantSaveResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, validationResult);
+        }
+
         // Root action - tenant must be in root tenancy or must be in dev mode
         if (!requestContext.rootAdmin && !requestContext.developmentMode)
         {

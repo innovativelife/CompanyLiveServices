@@ -40,7 +40,7 @@ public static class AuthorizationPolicies
             // new Claim(PhoneNumberClaim, userContext.phoneNumber),
             // new Claim(TenantIdClaim, userContext.tenantId),
             // new Claim(TenantNameClaim, userContext.tenantName),
-            // new Claim(TenantAdminClaim, (userContext.tenantAdmin || userContext.rootAdmin).ToString()),
+            new Claim(TenantAdminClaim, (userContext.tenantAdmin || userContext.rootAdmin).ToString()),
             new Claim(RootAdminClaim, (userContext.rootAdmin || userContext.developmentMode).ToString()),
             new Claim(DevelopmentModeClaim, userContext.developmentMode.ToString())
         };

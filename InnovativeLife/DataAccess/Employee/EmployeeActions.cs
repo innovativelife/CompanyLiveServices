@@ -14,50 +14,83 @@ public class EmployeeActions : IEmployeeActions
 
     async Task<Tuple<DalResponse, Employee?>> IEmployeeActions.ReadByIdentifier(string identifier)
     {
-        var db = Utilities.connectToFirestore();
-        Query employeeQuery = db.Collection(EmployeeContants.employeeCollection).WhereEqualTo(EmployeeContants.userUID, identifier);
-        QuerySnapshot employeeQuerySnapshot = await employeeQuery.GetSnapshotAsync();
-
-        if (employeeQuerySnapshot.Count == 0)
+        try
         {
-            return new Tuple<DalResponse, Employee?>(new DalResponse(DalResponse.ResponseStatus.NotFound), null);
+            _logger.LogInformation($"EmployeeActions.ReadByIdentifier: User Read by Identifier Starting - {identifier}");
+
+            var db = Utilities.connectToFirestore();
+            Query employeeQuery = db.Collection(EmployeeContants.employeeCollection).WhereEqualTo(EmployeeContants.userUID, identifier);
+            QuerySnapshot employeeQuerySnapshot = await employeeQuery.GetSnapshotAsync();
+
+            if (employeeQuerySnapshot.Count == 0)
+            {
+                return new Tuple<DalResponse, Employee?>(new DalResponse(DalResponse.ResponseStatus.NotFound), null);
+            }
+
+            var value = employeeQuerySnapshot[0].ConvertTo<Employee>();
+
+            _logger.LogInformation($"EmployeeActions.ReadByIdentifier: User Read by Identifier Complete - {identifier}");
+
+            return new Tuple<DalResponse, Employee?>(new DalResponse(DalResponse.ResponseStatus.Ok), value);
         }
+        catch (Exception ex)
+        {
+            _logger.LogInformation($"EmployeeActions.ReadByIdentifier: Exception {ex.Message}");
 
-        var value = employeeQuerySnapshot[0].ConvertTo<Employee>();
-
-        _logger.LogInformation("User Read by Identifier Complete");
-
-        return new Tuple<DalResponse, Employee?>(new DalResponse(DalResponse.ResponseStatus.Ok), value);
+            return new Tuple<DalResponse, Employee?>(new DalResponse(DalResponse.ResponseStatus.Exception), new Employee());
+        }
     }
 
     async Task<Tuple<DalResponse, Employee?>> IEmployeeActions.ReadByUID(string userUID)
     {
-        var db = Utilities.connectToFirestore();
-        Query employeeQuery = db.Collection(EmployeeContants.employeeCollection).WhereEqualTo(EmployeeContants.userUID, userUID);
-        QuerySnapshot employeeQuerySnapshot = await employeeQuery.GetSnapshotAsync();
-
-        if (employeeQuerySnapshot.Count == 0)
+        try
         {
-            return new Tuple<DalResponse, Employee?>(new DalResponse(DalResponse.ResponseStatus.NotFound), null);
+            _logger.LogInformation($"EmployeeActions.ReadByUID: Employee Read by UID Starting = {userUID}");
+
+            var db = Utilities.connectToFirestore();
+            Query employeeQuery = db.Collection(EmployeeContants.employeeCollection).WhereEqualTo(EmployeeContants.userUID, userUID);
+            QuerySnapshot employeeQuerySnapshot = await employeeQuery.GetSnapshotAsync();
+
+            if (employeeQuerySnapshot.Count == 0)
+            {
+                return new Tuple<DalResponse, Employee?>(new DalResponse(DalResponse.ResponseStatus.NotFound), null);
+            }
+
+            var value = employeeQuerySnapshot[0].ConvertTo<Employee>();
+
+            _logger.LogInformation($"EmployeeActions.ReadByUID: Employee Read by UID Complete = {userUID}");
+
+            return new Tuple<DalResponse, Employee?>(new DalResponse(DalResponse.ResponseStatus.Ok), value);
         }
+        catch (Exception ex)
+        {
+            _logger.LogError($"EmployeeActions.ReadByUID: Exception {ex.Message}");
 
-        var value = employeeQuerySnapshot[0].ConvertTo<Employee>();
-
-        _logger.LogInformation("Employee Read by UID Complete");
-
-        return new Tuple<DalResponse, Employee?>(new DalResponse(DalResponse.ResponseStatus.Ok), value);
+            return new Tuple<DalResponse, Employee?>(new DalResponse(DalResponse.ResponseStatus.Ok), new Employee());
+        }
     }
 
-    async Task<Tuple<DalResponse, Employee?>> IEmployeeActions.Save(string userUID, Employee employeeModel)
+    async Task<DalResponse> IEmployeeActions.Save(string userUID, Employee employeeModel)
     {
-         _logger.LogInformation("Reading employee {0}", employeeModel.userUID);
+        try
+        {
+            _logger.LogInformation($"EmployeeActions.Save: Starting read for employee UID - {employeeModel.userUID}");
 
-        var db = Utilities.connectToFirestore();
-        CollectionReference collection = db.Collection(EmployeeContants.employeeCollection);
-        DocumentReference employeeRef = db.Collection(EmployeeContants.employeeCollection).Document(userUID);
+            var db = Utilities.connectToFirestore();
+            CollectionReference collection = db.Collection(EmployeeContants.employeeCollection);
+            DocumentReference employeeRef = db.Collection(EmployeeContants.employeeCollection).Document(userUID);
 
-        var result = await employeeRef.SetAsync(employeeModel);
+            var result = await employeeRef.SetAsync(employeeModel);
 
-        return new Tuple<DalResponse, Employee?>(new DalResponse(DalResponse.ResponseStatus.Ok), employeeModel);
+            _logger.LogInformation($"EmployeeActions.Save: Finished read for employee {employeeModel.userUID}");
+
+            return new DalResponse(DalResponse.ResponseStatus.Ok);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogInformation($"EmployeeActions.Save: Exception {ex.Message}");
+
+            return new DalResponse(DalResponse.ResponseStatus.Exception);
+        }
     }
 }
