@@ -25,7 +25,7 @@ public class Employee
     [FirestoreProperty]
     public string employeeNumber { get; set; } = "";
     [FirestoreProperty]
-    public string leaderEmployeeId { get; set; } = "";
+    public string leaderEmployeeNumber { get; set; } = "";
     [FirestoreProperty]
     public string positonTitle { get; set; } = "";
       [FirestoreProperty]

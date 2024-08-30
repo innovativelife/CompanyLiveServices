@@ -10,10 +10,10 @@ public class EmployeeAddRequest : ServiceRequestObjectBase
     public bool tenantAdmin { get; set; } = false;
 
     [Required(ErrorMessage = "Employee Email ID must be provided.")]
-
     [EmailAddress]
     public string email { get; set; } = "";
 
+    [Required(ErrorMessage = "Employee Phone number must be provided.")]
     [Phone]
     public string phoneNumber { get; set; } = "";
     public string initialPassword { get; set; } = "";
@@ -34,7 +34,7 @@ public class EmployeeAddRequest : ServiceRequestObjectBase
         get { return preferredName + " " + lastName; }
     }
     public string employeeNumber { get; set; } = "";
-    public string leaderEmployeeId { get; set; } = "";
+    public string leaderEmployeeNumber { get; set; } = "";
     public string positonTitle { get; set; } = "";
     public string personalDecription { get; set; } = "";
     public bool active { get; set; } = true;

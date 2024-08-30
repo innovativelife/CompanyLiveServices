@@ -17,6 +17,8 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using InnovativeLife.Security;
 using InnovativeLife.Services.Employee.ServiceMessages;
 using Microsoft.AspNetCore.Http;
+using InnovativeLife.Services.Common;
+using Microsoft.AspNetCore.Mvc;
 
 namespace InnovativeLife;
 
@@ -68,7 +70,7 @@ public class Startup : FunctionsStartup
         app.UseEndpoints(endpoints =>
             {
                 endpoints.MapGet("/tenants/", async (ITenantService service, IUserContext requestContext) =>
-                    await service.ReadSet(requestContext))
+                    (await service.ReadSet(requestContext)).GetAspNetResult())
                 .WithName("TenantReadSet")
                 .RequireAuthorization("SuperUserRequired")
                 .WithOpenApi(operation => new(operation)
@@ -78,7 +80,7 @@ public class Startup : FunctionsStartup
                 });
 
                 endpoints.MapGet("/tenants/{tenantId}", async (ITenantService service, IUserContext requestContext, string tenantId) =>
-                    await service.Read(requestContext, tenantId))
+                    (await service.Read(requestContext, tenantId)).GetAspNetResult())
                 .WithName("TenantRead")
                 .RequireAuthorization("SuperUserRequired")
                 .WithOpenApi(operation => new(operation)
@@ -88,7 +90,7 @@ public class Startup : FunctionsStartup
                 });
 
                 endpoints.MapPost("/tenants", async (ITenantService service, TenantAddRequest addRequest, IUserContext requestContext) =>
-                    await service.Add(requestContext, addRequest))
+                    (await service.Add(requestContext, addRequest)).GetAspNetResult())
                 .WithName("TenantAdd")
                 .RequireAuthorization("SuperUserRequired")
                 .Accepts<TenantSaveRequest>("application/json")
@@ -99,7 +101,7 @@ public class Startup : FunctionsStartup
                 });
 
                 endpoints.MapPut("/tenants/{tenantId}", async (ITenantService service, string tenantId, TenantSaveRequest saveRequest, IUserContext requestContext) =>
-                    await service.Save(requestContext, tenantId, saveRequest))
+                    (await service.Save(requestContext, tenantId, saveRequest)).GetAspNetResult())
                 .WithName("TenantSave")
                 .RequireAuthorization("SuperUserRequired")
                 .WithOpenApi(operation => new(operation)
@@ -109,7 +111,7 @@ public class Startup : FunctionsStartup
                 });
 
                 endpoints.MapPost("/employees", async (IEmployeeService service, IUserContext requestContext, EmployeeAddRequest addRequest) =>
-                    await service.AddEmployee(requestContext, addRequest))
+                    (await service.AddEmployee(requestContext, addRequest)).GetAspNetResult())
                 .RequireAuthorization("SuperUserRequired")
                 .WithName("EmployeeAdd")
                 .WithOpenApi(operation => new(operation)

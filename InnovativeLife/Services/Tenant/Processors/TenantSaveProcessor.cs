@@ -19,7 +19,7 @@ public class TenantSaveProcessor : ITenantSaveProcessor
     {
         _logger.LogInformation("Executing TenantService Save");
 
-           var validationResult = request.Validate();
+        var validationResult = request.Validate();
         if (validationResult.Count > 0)
         {
             return new TenantSaveResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, validationResult);
@@ -41,7 +41,7 @@ public class TenantSaveProcessor : ITenantSaveProcessor
         var readResult = await _tenantActions.Read(tenantId);
         if (!readResult.Item1.Success)
         {
-            return new TenantSaveResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, "Tenant does not exist.  Use Add action to create a new tenant.");
+            return new TenantSaveResponse(Common.ServiceResponseBase.ResponseStatus.NotFound, "Tenant does not exist.  Use Add action to create a new tenant.");
         }
 
         // Update tenant
@@ -60,9 +60,33 @@ public class TenantSaveProcessor : ITenantSaveProcessor
             active = request.active
         };
 
-        var saveResult = await _tenantActions.Save(tenantModel);
+        var saveResponse = await _tenantActions.Save(tenantModel);
 
-        _logger.LogInformation("TenantService Saved succesfully");
-        return new TenantSaveResponse(saveResult.Status, "Tenant saved succesfully");
+        if (saveResponse.Success)
+        {
+            _logger.LogInformation("TenantService Saved successfully");
+
+            var processorResponse = new TenantSaveResponse(Common.ServiceResponseBase.ResponseStatus.Ok, "Tenant updated successfully")
+            {
+                tenant = new TenantItem
+                {
+                    tenantId = tenantModel.tenantId,
+                    identityManagerTenantId = tenantModel.identityManagerTenantId,
+                    tenantName = tenantModel.tenantName,
+                    customerName = tenantModel.customerName,
+                    primaryContactName = tenantModel.primaryContactName,
+                    primaryContactPhone = tenantModel.primaryContactPhone,
+                    secondaryContactName = tenantModel.secondaryContactName,
+                    secondaryContactEmail = tenantModel.secondaryContactEmail,
+                    renewalDate = tenantModel.renewalDate,
+                    active = tenantModel.active
+                }
+            };
+            return processorResponse;
+        }
+        else
+        {
+            return new TenantSaveResponse(Common.ServiceResponseBase.ResponseStatus.Exception, "Tenant could not be added due to unexpected DB error");
+        }
     }
 }

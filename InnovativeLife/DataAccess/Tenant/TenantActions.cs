@@ -103,7 +103,7 @@ public class TenantActions : ITenantActions
         }
         catch (Exception ex)
         {
-            _logger.LogError($"TenantActions.Save: Error reading tenant by tenant name: {ex.Message}");
+            _logger.LogError($"TenantActions.Save: Error saving tenant: {ex.Message}");
             return new DalResponse(DalResponse.ResponseStatus.Exception);
         }
     }

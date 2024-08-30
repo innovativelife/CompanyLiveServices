@@ -53,9 +53,9 @@ public class IdentityService : IIdentityService
 
             _logger.LogInformation($"IdentityService.AuthenticateUserAndTenant: Verify passed ok");
 
-            if (! await GetUserAndTenant(tenantId, authManager, decodedToken, userContext))
+            if (!await GetUserAndTenant(tenantId, authManager, decodedToken, userContext))
             {
-                 return AuthenticateResult.Fail("IdentityService.AuthenticateUserAndTenant: Failed to retrieve user or tenant");
+                return AuthenticateResult.Fail("IdentityService.AuthenticateUserAndTenant: Failed to retrieve user or tenant");
             }
         }
 
@@ -166,7 +166,7 @@ public class IdentityService : IIdentityService
 
             if (requestContext.rootAdmin)
             {
-                 _logger.LogWarning($"IdentityService.AddUserToTenant: Service being run by RootAdmin user {requestContext.uId} in tenant {requestContext.tenantId}");
+                _logger.LogWarning($"IdentityService.AddUserToTenant: Service being run by RootAdmin user {requestContext.uId} in tenant {requestContext.tenantId}");
             }
 
             var authManager = FirebaseAuth.DefaultInstance!.TenantManager.AuthForTenant(tenantId);
@@ -181,22 +181,6 @@ public class IdentityService : IIdentityService
                 PhotoUrl = "https://Myphoto.com/image.jpeg",
                 Disabled = false,
             };
-
-            try{
-
-            // ToDo: Fix - Experimantal code
-            // Getting error when trying to add user to tenant via the root user 
-            // Trying to add a claim
-            _logger.LogInformation($"EXPERIMENT = IdentityService.AddUserToTenant: About to set custom claims");
-
-            var claim = new Dictionary<string, object>();
-            claim.Add("admin", true);
-            await authManager.SetCustomUserClaimsAsync("FjbBMUqJmnWhSL5JDtF1mQJMUGd2", claim);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"EXPERIMENT = IdentityService.AddUserToTenant attempting to set custom claim: Exception - {ex.Message}");
-            }
 
             _logger.LogInformation($"IdentityService.AddUserToTenant: About to create user in tenant");
             var result = await authManager.CreateUserAsync(userRecord);
@@ -256,7 +240,7 @@ public class IdentityService : IIdentityService
         var gcpMessage = exception.Message.ToLower();
         var message = "Unknown Error from Firebase Auth occurred";
 
-        if (gcpMessage.Contains("email_already_exists"))
+        if (gcpMessage.Contains("email_exists"))
         {
             message = "The provided email is already in use by an existing user. Each user must have a unique email.";
         }
@@ -301,7 +285,7 @@ public class IdentityService : IIdentityService
             message = "The provided uid must be a non-empty string with at most 128 characters.";
         }
 
-        if (gcpMessage.Contains("phone_number_already_exists"))
+        if (gcpMessage.Contains("phone_number_exists"))
         {
             message = "The provided phoneNumber is already in use by an existing user. Each user must have a unique phoneNumber.";
         }

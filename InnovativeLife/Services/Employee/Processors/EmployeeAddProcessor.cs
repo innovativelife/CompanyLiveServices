@@ -31,7 +31,7 @@ public class EmployeeAddProcessor : IEmployeeAddProcessor
              var validationResult = request.Validate();
             if (validationResult.Count > 0)
             {
-                return new EmployeeAddResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, validationResult);
+                return new EmployeeAddResponse(Common.ServiceResponseBase.ResponseStatus.InvalidData, validationResult);
             }
 
             string EmployeeUID;

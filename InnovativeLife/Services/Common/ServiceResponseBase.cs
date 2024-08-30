@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Http;
 using InnovativeLife.DataAccess.Common;
+using System.ComponentModel.Design;
 
 namespace InnovativeLife.Services.Common;
 
@@ -19,9 +21,16 @@ public class ServiceResponseBase
     public ServiceResponseBase(DalResponse.ResponseStatus status, string message)
     {
         this.Message = message;
-        switch (status){
+        switch (status)
+        {
             case DalResponse.ResponseStatus.Ok:
                 this.Status = ResponseStatus.Ok;
+                break;
+            case DalResponse.ResponseStatus.Added:
+                this.Status = ResponseStatus.Added;
+                break;
+            case DalResponse.ResponseStatus.Duplicate:
+                this.Status = ResponseStatus.Duplicate;
                 break;
             case DalResponse.ResponseStatus.BusinessError:
                 this.Status = ResponseStatus.BusinessError;
@@ -41,6 +50,12 @@ public class ServiceResponseBase
     {
         Ok,
 
+        Added,
+
+        Duplicate,
+
+        InvalidData,
+
         BusinessError,
 
         NotFound,
@@ -50,21 +65,39 @@ public class ServiceResponseBase
         BadRequest
     }
 
-    public string Message {
+    public string Message
+    {
         get
         {
             var error = Messages.Count > 2 ? "errors" : "error";
-            return  Messages.Count == 0 ? "" : Messages[0] + (Messages.Count > 1 ? $" (plus {Messages.Count - 1} other {error})" : "");
-        } 
+            return Messages.Count == 0 ? "" : Messages[0] + (Messages.Count > 1 ? $" (plus {Messages.Count - 1} other {error})" : "");
+        }
         set
         {
-            Messages.Add(value); 
+            Messages.Add(value);
         }
     }
 
-    public List<string> Messages {get; set;} = new List<string>();
+    public List<string> Messages { get; set; } = new List<string>();
 
-    public ResponseStatus Status {get; set;} = ResponseStatus.Ok;
+    public ResponseStatus Status { get; set; } = ResponseStatus.Ok;
 
     public bool Success { get { return (Status == ResponseStatus.Ok); } }
+
+    public IResult GetAspNetResult()
+    {
+        switch (this.Status)
+        {
+            case ResponseStatus.Ok:
+                return Results.Ok(this);
+            case ResponseStatus.Added:
+                return Results.Created("", this);
+            case ResponseStatus.Duplicate:
+                return Results.Conflict(this);
+            case ResponseStatus.InvalidData:
+                return Results.UnprocessableEntity(this);
+        }
+
+        return Results.NotFound(this);
+    }
 }

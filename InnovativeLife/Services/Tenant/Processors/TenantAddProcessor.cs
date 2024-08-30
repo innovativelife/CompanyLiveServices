@@ -25,7 +25,7 @@ public class TenantAddProcessor : ITenantAddProcessor
         var validationResult = request.Validate();
         if (validationResult.Count > 0)
         {
-            return new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, validationResult);
+            return new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.InvalidData, validationResult);
         }
 
         // Check if Tenant with this Id already exists
@@ -34,7 +34,7 @@ public class TenantAddProcessor : ITenantAddProcessor
         if (readByIdResult.Item1.Success)
         {
             // Tenant Found in DB
-            return new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, "Tenant with this ID already exists");
+            return new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.Duplicate, "Tenant with this ID already exists");
         }
 
         // Check if Tenant with this name already exists
@@ -42,7 +42,7 @@ public class TenantAddProcessor : ITenantAddProcessor
         if (readByNameResult.Item1.Success)
         {
             // Tenant Found in DB
-            return new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, "Tenant with this name already exists");
+            return new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.Duplicate, "Tenant with this name already exists");
         }
 
         // Add tenant to identity manager
@@ -82,17 +82,22 @@ public class TenantAddProcessor : ITenantAddProcessor
 
         if (saveResponse.Success)
         {
-            var processorResponse = new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.Ok, "Tenant added succesfully");
-            processorResponse.tenant.tenantId = tenantModel.tenantId;
-            processorResponse.tenant.identityManagerTenantId = tenantModel.identityManagerTenantId;
-            processorResponse.tenant.tenantName = tenantModel.tenantName;
-            processorResponse.tenant.customerName = tenantModel.customerName;
-            processorResponse.tenant.primaryContactName = tenantModel.primaryContactName;
-            processorResponse.tenant.primaryContactPhone = tenantModel.primaryContactPhone;
-            processorResponse.tenant.secondaryContactName = tenantModel.secondaryContactName;
-            processorResponse.tenant.secondaryContactEmail = tenantModel.secondaryContactEmail;
-            processorResponse.tenant.renewalDate = tenantModel.renewalDate;
-            processorResponse.tenant.active = tenantModel.active;
+            var processorResponse = new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.Added, "Tenant added succesfully")
+            {
+                tenant = new TenantItem
+                {
+                    tenantId = tenantModel.tenantId,
+                    identityManagerTenantId = tenantModel.identityManagerTenantId,
+                    tenantName = tenantModel.tenantName,
+                    customerName = tenantModel.customerName,
+                    primaryContactName = tenantModel.primaryContactName,
+                    primaryContactPhone = tenantModel.primaryContactPhone,
+                    secondaryContactName = tenantModel.secondaryContactName,
+                    secondaryContactEmail = tenantModel.secondaryContactEmail,
+                    renewalDate = tenantModel.renewalDate,
+                    active = tenantModel.active
+                }
+            };
             return processorResponse;
         }
         else
