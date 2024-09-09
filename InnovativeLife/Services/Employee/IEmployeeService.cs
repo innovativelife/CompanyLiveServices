@@ -12,9 +12,7 @@ public interface IEmployeeService
 
     public Task<EmployeeReadResponse> ReadByEmployeeUID(IUserContext requestContext, string employeeUID);
 
-    public Task<EmployeeReadResponse> ReadByEmpoyeeNumber(IUserContext requestContext, string employeeNumber);
+    public Task<EmployeeSaveResponse> Save(IUserContext requestContext, string employeeUID, EmployeeSaveRequest request);
 
-    public Task<EmployeeReadResponse> ReadByEmailAddress(IUserContext requestContext, string emailAddress);
-
-    public Task<EmployeeSaveResponse> Save(IUserContext requestContext, string employeeUID ,EmployeeSaveRequest request);
+    public Task<EmployeeSearchResponse> SearchEmployee(IUserContext requestContext, string? employeeNumber, string? email, string? firstName, string? lastName, string? leaderEmployeeNumber);
 }

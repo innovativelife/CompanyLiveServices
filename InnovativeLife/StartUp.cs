@@ -133,17 +133,7 @@ public class Startup : FunctionsStartup
             Description = "Add a new employee to a tenant."
         });
 
-        endpoints.MapGet("/employees/{employeeNumber}", async (IEmployeeService service, IUserContext requestContext, string employeeNumber) =>
-            (await service.ReadByEmpoyeeNumber(requestContext, employeeNumber)).GetAspNetResult())
-        .RequireAuthorization("TenantAdmin")
-        .WithName("ReadEmployeeByUid")
-        .WithOpenApi(operation => new(operation)
-        {
-            Summary = "Read employee by employee number",
-            Description = "Read employee by employee number"
-        });
-
-        endpoints.MapGet("/employees/uid/{employeeUID}", async (IEmployeeService service, IUserContext requestContext, string employeeUID) =>
+        endpoints.MapGet("/employees/{employeeUID}", async (IEmployeeService service, IUserContext requestContext, string employeeUID) =>
             (await service.ReadByEmployeeUID(requestContext, employeeUID)).GetAspNetResult())
         .RequireAuthorization("TenantAdmin")
         .WithName("ReadEmployeeByNumber")
@@ -151,16 +141,6 @@ public class Startup : FunctionsStartup
         {
             Summary = "Read employee by employee uid",
             Description = "Read employee by Employee ID - Guid generated when the employee is created"
-        });
-
-        endpoints.MapGet("/employees/emailAddress/{emailAddress}", async (IEmployeeService service, IUserContext requestContext, string emailAddress) =>
-            (await service.ReadByEmailAddress(requestContext, emailAddress)).GetAspNetResult())
-        .RequireAuthorization("TenantAdmin")
-        .WithName("ReadEmployeeByEmailAddress")
-        .WithOpenApi(operation => new(operation)
-        {
-            Summary = "Read employee by email address",
-            Description = "Read employee by email address"
         });
 
         endpoints.MapPut("/employees/{employeeUID}/{adminPrivilege}", async (IEmployeeService service, IUserContext requestContext, string employeeUID, bool adminPrivilege) =>
@@ -181,6 +161,16 @@ public class Startup : FunctionsStartup
         {
             Summary = "Update employee",
             Description = "Update employee details."
+        });
+
+        endpoints.MapGet("/employees", async (IEmployeeService service, IUserContext requestContext, string? employeeNumber, string? email, string? firstName, string? lastName, string? leaderEmployeeNumber) =>
+            (await service.SearchEmployee(requestContext, employeeNumber, email, firstName, lastName, leaderEmployeeNumber)).GetAspNetResult())
+        .RequireAuthorization("TenantAdmin")
+        .WithName("EmployeeSearch")
+        .WithOpenApi(operation => new(operation)
+        {
+            Summary = "Read employee by email address",
+            Description = "Read employee by email address"
         });
     }
 }

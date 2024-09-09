@@ -52,8 +52,8 @@ public class EmployeeSaveProcessor : IEmployeeSaveProcessor
             // Check uniqueness of key email (if it is being updated)
             if (existingEmployee.Item2.email != request.email)
             {
-                var readByEmailAddressResult = await _employeeActions.ReadByEmailAddress(request.email);
-                if (readByEmailAddressResult.Item1.Success)
+                var readByEmailResult = await _employeeActions.ReadByEmail(request.email);
+                if (readByEmailResult.Item1.Success)
                 {
                     return new EmployeeSaveResponse(Common.ServiceResponseBase.ResponseStatus.InvalidData, "Employee already exists with this Email Address - must be unique");
                 }

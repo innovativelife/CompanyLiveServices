@@ -42,19 +42,14 @@ public class EmployeeService : IEmployeeService
     {
         return await _employeeReadProcessor.ReadByEmployeeUID(requestContext, employeeUID);
     }
-
-    public async Task<EmployeeReadResponse> ReadByEmpoyeeNumber(IUserContext requestContext, string employeeNumber)
-    {
-        return await _employeeReadProcessor.ReadByEmpoyeeNumber(requestContext, employeeNumber);
-    }
-
-    public async  Task<EmployeeReadResponse> ReadByEmailAddress(IUserContext requestContext, string emailAddress)
-    {
-        return await _employeeReadProcessor.ReadByEmailAddress(requestContext, emailAddress);
-    }
     
     public async Task<EmployeeSaveResponse> Save(IUserContext requestContext, string employeeUID, EmployeeSaveRequest request)
     {
         return await _employeeSaveProcessor.SaveEmployee(requestContext, employeeUID, request);
+    }
+
+    public async Task<EmployeeSearchResponse> SearchEmployee(IUserContext requestContext, string? employeeNumber, string? email, string? firstName, string? lastName, string? leaderEmployeeNumber)
+    {
+        return await _employeeReadProcessor.SearchEmployee(requestContext, employeeNumber, email, firstName, lastName, leaderEmployeeNumber);
     }
 }
