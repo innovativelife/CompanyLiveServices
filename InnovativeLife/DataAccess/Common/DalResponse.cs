@@ -13,6 +13,10 @@ public class DalResponse
     {
         Ok,
 
+        Added,
+        
+        Duplicate,
+
         BusinessError,
 
         NotFound,

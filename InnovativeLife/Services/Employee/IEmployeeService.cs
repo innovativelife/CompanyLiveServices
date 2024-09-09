@@ -6,13 +6,15 @@ namespace InnovativeLife.Services.Employee;
 
 public interface IEmployeeService
 {
-    public Task<EmployeeAddResponse> AddEmployee(IUserContext requestContext, EmployeeAddRequest request);
+    public Task<EmployeeAddResponse> Add(IUserContext requestContext, EmployeeAddRequest request);
 
-    public Task<WebResponse> SetAdminPrivilege(IUserContext requestContext, string uId, bool AdminPrivilege);
+    public Task<EmployeeSetAdminPrivilegeResponse> SetAdminPrivilege(IUserContext requestContext, string employeeUID, bool AdminPrivilege);
 
-    // public Task<WebResponse> ReadByUID(RequestContext requestContext, string userUID);
+    public Task<EmployeeReadResponse> ReadByEmployeeUID(IUserContext requestContext, string employeeUID);
 
-    // public Task<WebResponse> ReadByIdentifier(RequestContext requestContext, string identifier);
+    public Task<EmployeeReadResponse> ReadByEmpoyeeNumber(IUserContext requestContext, string employeeNumber);
 
-    // public Task<WebResponse> Save(RequestContext requestContext, string userUID, UserModel userModel);
+    public Task<EmployeeReadResponse> ReadByEmailAddress(IUserContext requestContext, string emailAddress);
+
+    public Task<EmployeeSaveResponse> Save(IUserContext requestContext, string employeeUID ,EmployeeSaveRequest request);
 }

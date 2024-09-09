@@ -5,6 +5,7 @@ using InnovativeLife.WebApi;
 using InnovativeLife.GcpServices.Identity;
 using InnovativeLife.Services.Employee.ServiceMessages;
 using InnovativeLife.Services.Employee.Processors;
+using System.Runtime.CompilerServices;
 
 namespace InnovativeLife.Services.Employee;
 
@@ -12,101 +13,48 @@ public class EmployeeService : IEmployeeService
 {
     private ILogger<EmployeeService> _logger;
     private IEmployeeAddProcessor _employeeCreateProcessor;
+    private IEmployeeSetAdminPrivilegeProcessor _employeeSetAdminPrivilegeProcessor;
+    private IEmployeeReadProcessor _employeeReadProcessor;
+    private IEmployeeSaveProcessor _employeeSaveProcessor;
     private IIdentityService _identityService;
 
-    public EmployeeService(ILogger<EmployeeService> logger, IIdentityService identityService, IEmployeeAddProcessor employeeCreateProcessor)
+    public EmployeeService(ILogger<EmployeeService> logger, IIdentityService identityService, IEmployeeAddProcessor employeeCreateProcessor, IEmployeeSetAdminPrivilegeProcessor employeeSetAdminPrivilegeProcessor, IEmployeeReadProcessor employeeReadProcessor, IEmployeeSaveProcessor employeeSaveProcessor)
     {
         _logger = logger;
         _identityService = identityService;
         _employeeCreateProcessor = employeeCreateProcessor;
+        _employeeSetAdminPrivilegeProcessor = employeeSetAdminPrivilegeProcessor;
+        _employeeSaveProcessor = employeeSaveProcessor;
+        _employeeReadProcessor = employeeReadProcessor;
     }
 
-    public async Task<EmployeeAddResponse> AddEmployee(IUserContext requestContext, EmployeeAddRequest request)
+    public async Task<EmployeeAddResponse> Add(IUserContext requestContext, EmployeeAddRequest request)
     {
         return await _employeeCreateProcessor.AddEmployee(requestContext, request);
     }
 
-    public async Task<WebResponse> SetAdminPrivilege(IUserContext requestContext, string uId, bool AdminPrivilege)
+    public async Task<EmployeeSetAdminPrivilegeResponse> SetAdminPrivilege(IUserContext requestContext, string employeeUID, bool adminPrivilege)
     {
-        _logger.LogInformation("Executing SetAdminPrivilege Service");
-
-        if (requestContext.developmentMode)
-        {
-            return new WebResponse(Common.ServiceResponseBase.ResponseStatus.Ok, "Development mode - Setting Admin Privilege skipped");
-        }
-
-        try
-        {
-            var result = await _identityService.SetAdminAuthorisationForUser(requestContext.tenantId, uId, AdminPrivilege);
-            if (!result.Item1)
-            {
-                return new WebResponse(WebResponse.StatusTypes.Error, "Failed to set admin status");
-            }
-
-            return new WebResponse(Common.ServiceResponseBase.ResponseStatus.Ok, $"User privilegef for {uId} set to: {AdminPrivilege}");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError($"Exception caught in SetAdminPrivilege service: {ex.Message}");
-            return new WebResponse(WebResponse.StatusTypes.Error, ex.Message);
-        }
+        return await _employeeSetAdminPrivilegeProcessor.SetAdminPrivilege(requestContext, employeeUID, adminPrivilege);
     }
 
-    // async Task<WebResponse> IUserService.ReadByIdentifier(RequestContext requestContext, string identifier)
-    // {
-    //     _logger.LogInformation("Executing User Read by Identifier");
+    public async Task<EmployeeReadResponse> ReadByEmployeeUID(IUserContext requestContext, string employeeUID)
+    {
+        return await _employeeReadProcessor.ReadByEmployeeUID(requestContext, employeeUID);
+    }
 
-    //     if (string.IsNullOrWhiteSpace(identifier))
-    //     {
-    //         return StandardResponse.InvalidRequest;
-    //     }
+    public async Task<EmployeeReadResponse> ReadByEmpoyeeNumber(IUserContext requestContext, string employeeNumber)
+    {
+        return await _employeeReadProcessor.ReadByEmpoyeeNumber(requestContext, employeeNumber);
+    }
 
-    //     var result = await _userActions.ReadByIdentifier(identifier);
-
-    //     if (result.Item1.Success)
-    //     {
-    //         return StandardResponse.SuccessWithBody(JsonSerializer.Serialize(result.Item2));
-    //     }
-    //     else
-    //     {
-    //         return result.Item1;
-    //     }
-    // }
-
-    // async Task<WebResponse> IUserService.ReadByUID(RequestContext requestContext, string userUID)
-    // {
-    //     _logger.LogInformation("Executing User Read by Identifier");
-
-    //     if (string.IsNullOrWhiteSpace(userUID))
-    //     {
-    //         return StandardResponse.InvalidRequest;
-    //     }
-
-    //     var result = await _userActions.ReadByUID(userUID);
-
-    //     if (result.Item1.Success)
-    //     {
-    //         return StandardResponse.SuccessWithBody(JsonSerializer.Serialize(result.Item2));
-    //     }
-    //     else
-    //     {
-    //         return result.Item1;
-    //     }
-    // }
-
-    // async Task<WebResponse> IUserService.Save(RequestContext requestContext, string userUID, UserModel userModel)
-    // {
-    //     _logger.LogInformation("Executing User Save");
-
-    //     if (string.IsNullOrWhiteSpace(userUID))
-    //     {
-    //         return StandardResponse.InvalidRequest;
-    //     }
-
-    //     userModel.userUID = userUID;
-    //     var result = await _userActions.Save(userUID, userModel);
-
-    //     _logger.LogInformation("UiShellConfig Saved");
-    //     return result;
-    // }
+    public async  Task<EmployeeReadResponse> ReadByEmailAddress(IUserContext requestContext, string emailAddress)
+    {
+        return await _employeeReadProcessor.ReadByEmailAddress(requestContext, emailAddress);
+    }
+    
+    public async Task<EmployeeSaveResponse> Save(IUserContext requestContext, string employeeUID, EmployeeSaveRequest request)
+    {
+        return await _employeeSaveProcessor.SaveEmployee(requestContext, employeeUID, request);
+    }
 }

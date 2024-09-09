@@ -9,9 +9,9 @@ public class Employee
     [FirestoreProperty]
     public string tenantId { get; set; } = "";
     [FirestoreProperty]
-    public string userUID { get; set; } = "";
+    public string employeeUID { get; set; } = "";
     [FirestoreProperty]
-    public bool tenantAdmin { get; set; }
+    public bool adminPrivilege { get; set; }
     [FirestoreProperty]
     public string email { get; set; } = "";
     [FirestoreProperty]
@@ -25,43 +25,42 @@ public class Employee
     [FirestoreProperty]
     public string employeeNumber { get; set; } = "";
     [FirestoreProperty]
-    public string leaderEmployeeId { get; set; } = "";
+    public string leaderEmployeeNumber { get; set; } = "";
     [FirestoreProperty]
-    public string positonTitle { get; set; } = "";
+    public string positionTitle { get; set; } = "";
       [FirestoreProperty]
-    public string personalDecription { get; set; } = "";
+    public string personalDescription { get; set; } = "";
     [FirestoreProperty]
     public bool active { get; set; }
-    
-    public List<EmployeeGroupMembership> employeeGroupMembershipList { get; set; }
-    public List<EmployeeGroupMembership> favoritedEmployeeList { get; set; }
+    // public List<EmployeeGroupMembership> employeeGroupMembershipList { get; set; }
+    // public List<EmployeeGroupMembership> favoritedEmployeeList { get; set; }
 }
 
-[FirestoreData]
-public class EmployeeGroupMembership
-{
-    [FirestoreProperty]
-    public string employeeId { get; set; }
-    [FirestoreProperty]
-    public string employeeGroupMembershipType { get; set; }
-}
+// [FirestoreData]
+// public class EmployeeGroupMembership
+// {
+//     [FirestoreProperty]
+//     public string employeeNumber { get; set; }
+//     [FirestoreProperty]
+//     public string employeeGroupMembershipType { get; set; }
+// }
 
-[FirestoreData]
-public class FavoritedEmployeeModel
-{
-    [FirestoreProperty]
-    public string employeeId { get; set; }
-}
+// [FirestoreData]
+// public class FavoritedEmployeeModel
+// {
+//     [FirestoreProperty]
+//     public string employeeNumber { get; set; }
+// }
 
-[FirestoreData]
-public class TenantAccessModel
-{
-    [FirestoreProperty]
-    public string tenantId { get; set; }
-    [FirestoreProperty]
-    public string employeeId { get; set; }
-    [FirestoreProperty]
-    public string employeeGroupMembershipType { get; set; }
-    [FirestoreProperty]
-    public bool active { get; set; }
-}
+// [FirestoreData]
+// public class TenantAccessModel
+// {
+//     [FirestoreProperty]
+//     public string tenantId { get; set; }
+//     [FirestoreProperty]
+//     public string employeeNumber { get; set; }
+//     [FirestoreProperty]
+//     public string employeeGroupMembershipType { get; set; }
+//     [FirestoreProperty]
+//     public bool active { get; set; }
+// }

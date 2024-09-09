@@ -19,12 +19,10 @@ public class UiShellConfigService : IUiShellConfigService
 
     public async Task<WebResponse> Read(UserContext requestContext, string configId)
     {
-        _logger.LogInformation("Executing GetUIConfig Read");
+        _logger.LogInformation("UiShellConfigService.Read: Executing GetUIConfig Read");
 
         try
         {
-            _logger.LogInformation("GetUiConfig Read Complete");
-
             var result = await _uiShellConfigActions.Read(configId);
             if (result.Item1.StatusType == WebResponse.StatusTypes.Success)
             {
@@ -37,7 +35,7 @@ public class UiShellConfigService : IUiShellConfigService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex.Message);
+            _logger.LogError($"UiShellConfigService.Read: Exception - {ex.Message}");
             return StandardResponse.Error;
         }
     }

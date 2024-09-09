@@ -14,32 +14,48 @@ public class UiShellConfigActions : IUiShellConfigActions
 
     public async Task<Tuple<WebResponse, UiShellConfigModel?>> Read(string configId)
     {
-        var db = Utilities.connectToFirestore();
-        Query uiShellConfigQuery = db.Collection(UiShellConfigConstants.uiShellConfigCollectionName).WhereEqualTo(UiShellConfigConstants.configId, configId);
-        QuerySnapshot uiShellConfigQuerySnapshot = await uiShellConfigQuery.GetSnapshotAsync();
-
-        if (uiShellConfigQuerySnapshot.Count == 0)
+        try
         {
-            return new Tuple<WebResponse, UiShellConfigModel?>(StandardResponse.NotFound, null);
+            var db = Utilities.connectToFirestore();
+            Query uiShellConfigQuery = db.Collection(UiShellConfigConstants.uiShellConfigCollectionName).WhereEqualTo(UiShellConfigConstants.configId, configId);
+            QuerySnapshot uiShellConfigQuerySnapshot = await uiShellConfigQuery.GetSnapshotAsync();
+
+            if (uiShellConfigQuerySnapshot.Count == 0)
+            {
+                return new Tuple<WebResponse, UiShellConfigModel?>(StandardResponse.NotFound, null);
+            }
+
+            var value = uiShellConfigQuerySnapshot[0].ConvertTo<UiShellConfigModel>();
+
+            _logger.LogInformation("UiShellConfigActions.Read: GetUiConfig Read Complete");
+
+            return new Tuple<WebResponse, UiShellConfigModel?>(StandardResponse.Success, value);
         }
-
-        var value = uiShellConfigQuerySnapshot[0].ConvertTo<UiShellConfigModel>();
-
-        _logger.LogInformation("GetUiConfig Read Complete");
-
-        return new Tuple<WebResponse, UiShellConfigModel?>(StandardResponse.Success, value);
+        catch (Exception ex)
+        {
+            _logger.LogError($"UiShellConfigActions.Read: Exception {ex.Message}");
+            return new Tuple<WebResponse, UiShellConfigModel?>(StandardResponse.Error, new UiShellConfigModel());
+        }
     }
 
     public async Task<WebResponse> Save(string configId, UiShellConfigModel uiShellConfigModel)
     {
-        _logger.LogInformation("Reading ui config {0}", uiShellConfigModel.configId);
+        try
+        {
+            _logger.LogInformation("UiShellConfigActions.Save: Reading ui config {0}", uiShellConfigModel.configId);
 
-        var db = Utilities.connectToFirestore();
-        CollectionReference collection = db.Collection(UiShellConfigConstants.uiShellConfigCollectionName);
-        DocumentReference uiConfigRef = db.Collection(UiShellConfigConstants.uiShellConfigCollectionName).Document(uiShellConfigModel.configId);
+            var db = Utilities.connectToFirestore();
+            CollectionReference collection = db.Collection(UiShellConfigConstants.uiShellConfigCollectionName);
+            DocumentReference uiConfigRef = db.Collection(UiShellConfigConstants.uiShellConfigCollectionName).Document(uiShellConfigModel.configId);
 
-        var result = await uiConfigRef.SetAsync(uiShellConfigModel);
+            var result = await uiConfigRef.SetAsync(uiShellConfigModel);
 
-        return StandardResponse.SuccessWithBody(result.UpdateTime.ToString());
+            return StandardResponse.SuccessWithBody(result.UpdateTime.ToString());
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"UiShellConfigActions.Save: Exception - {ex.Message}");
+            return new WebResponse(WebResponse.StatusTypes.Error, "Error");
+        }
     }
 }

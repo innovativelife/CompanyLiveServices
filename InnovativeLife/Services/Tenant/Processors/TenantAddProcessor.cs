@@ -22,17 +22,10 @@ public class TenantAddProcessor : ITenantAddProcessor
     {
         _logger.LogInformation("Executing TenantService Add");
 
-        // // Root action - tenant must be in root tenancy or must be in dev mode
-        // if (!requestContext.rootPriviledge && !requestContext.developmentMode)
-        // {
-        //     _logger.LogCritical("Non root user attempted to add a tenant");
-        //     return new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.Exception, "Unauthorised Add");
-        // }
-
         var validationResult = request.Validate();
         if (validationResult.Count > 0)
         {
-            return new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, validationResult);
+            return new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.InvalidData, validationResult);
         }
 
         // Check if Tenant with this Id already exists
@@ -41,7 +34,7 @@ public class TenantAddProcessor : ITenantAddProcessor
         if (readByIdResult.Item1.Success)
         {
             // Tenant Found in DB
-            return new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, "Tenant with this ID already exists");
+            return new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.Duplicate, "Tenant with this ID already exists");
         }
 
         // Check if Tenant with this name already exists
@@ -49,7 +42,7 @@ public class TenantAddProcessor : ITenantAddProcessor
         if (readByNameResult.Item1.Success)
         {
             // Tenant Found in DB
-            return new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, "Tenant with this name already exists");
+            return new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.Duplicate, "Tenant with this name already exists");
         }
 
         // Add tenant to identity manager
@@ -89,7 +82,23 @@ public class TenantAddProcessor : ITenantAddProcessor
 
         if (saveResponse.Success)
         {
-            return new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.Ok, "Tenant added succesfully");
+            var processorResponse = new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.Added, "Tenant added succesfully")
+            {
+                tenant = new TenantItem
+                {
+                    tenantId = tenantModel.tenantId,
+                    identityManagerTenantId = tenantModel.identityManagerTenantId,
+                    tenantName = tenantModel.tenantName,
+                    customerName = tenantModel.customerName,
+                    primaryContactName = tenantModel.primaryContactName,
+                    primaryContactPhone = tenantModel.primaryContactPhone,
+                    secondaryContactName = tenantModel.secondaryContactName,
+                    secondaryContactEmail = tenantModel.secondaryContactEmail,
+                    renewalDate = tenantModel.renewalDate,
+                    active = tenantModel.active
+                }
+            };
+            return processorResponse;
         }
         else
         {

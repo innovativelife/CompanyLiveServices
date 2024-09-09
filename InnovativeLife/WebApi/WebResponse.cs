@@ -10,6 +10,7 @@ public class WebResponse
         InvalidRequest = 400,
         Unauthorised = 401,
         NotFound = 404,
+        InvalidData = 422,
         Error = 500,
     }
 
@@ -29,6 +30,10 @@ public class WebResponse
 
          case ServiceResponseBase.ResponseStatus.BadRequest:
             StatusType = StatusTypes.InvalidRequest;
+            break;
+
+        case ServiceResponseBase.ResponseStatus.InvalidData:
+            StatusType = StatusTypes.InvalidData;
             break;
 
         case ServiceResponseBase.ResponseStatus.BusinessError:
