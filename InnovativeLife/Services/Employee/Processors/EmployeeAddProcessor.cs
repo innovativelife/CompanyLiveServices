@@ -44,8 +44,8 @@ public class EmployeeAddProcessor : IEmployeeAddProcessor
             }
             
             // Check uniqueness of key email
-            var readByEmailAddressResult = await _employeeActions.ReadByEmailAddress(request.email);
-            if (readByEmailAddressResult.Item1.Success)
+            var readByEmailResult = await _employeeActions.ReadByEmail(request.email);
+            if (readByEmailResult.Item1.Success)
             {
                 return new EmployeeAddResponse(Common.ServiceResponseBase.ResponseStatus.InvalidData, "Employee already exists with this Email Address - must be unique");
             }

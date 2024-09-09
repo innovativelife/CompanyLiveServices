@@ -21,7 +21,7 @@ public class EmployeeReadProcessor : IEmployeeReadProcessor
 
     public async Task<EmployeeReadResponse> ReadByEmployeeUID(IUserContext requestContext, string employeeUID)
     {
-         _logger.LogInformation("Executing TenantService ReadByEmpoyeeNumber");
+        _logger.LogInformation("Executing TenantService ReadByEmpoyeeNumber");
 
         if (string.IsNullOrWhiteSpace(employeeUID))
         {
@@ -42,50 +42,23 @@ public class EmployeeReadProcessor : IEmployeeReadProcessor
         }
     }
 
-    public async Task<EmployeeReadResponse> ReadByEmpoyeeNumber(IUserContext requestContext, string employeeNumber)
+    public async Task<EmployeeSearchResponse> SearchEmployee(IUserContext requestContext, string? employeeNumber, string? email, string? firstName, string? lastName, string? leaderEmployeeNumber)
     {
-        _logger.LogInformation("Executing TenantService ReadByEmpoyeeNumber");
+        var searchResult = await _employeeActions.Search(requestContext.tenantId, employeeNumber, email, firstName, lastName, leaderEmployeeNumber);
 
-        if (string.IsNullOrWhiteSpace(employeeNumber))
+        if (searchResult.Item1.Success)
         {
-            return new EmployeeReadResponse(Common.ServiceResponseBase.ResponseStatus.NotFound, _messageService.GetMessage(MessageService.Employee_Number_Mandatory));
-        }
-
-        var result = await _employeeActions.ReadByEmployeeNumber(employeeNumber);
-
-        if (result.Item1.Success)
-        {
-            var response = new EmployeeReadResponse(Common.ServiceResponseBase.ResponseStatus.Ok, "Employee Found");
-            response.employee = getEmployeeItemFromEmployeeModel(result.Item2);
+            var employeeList = new List<EmployeeItem>();
+            foreach (var item in searchResult.Item2)
+            {
+                employeeList.Add(getEmployeeItemFromEmployeeModel(item));
+            }
+            var response = new EmployeeSearchResponse(Common.ServiceResponseBase.ResponseStatus.Ok, $"{employeeList.Count} Employee(s) Found");
+            response.employees = employeeList;
             return response;
         }
-        else
-        {
-            return new EmployeeReadResponse(Common.ServiceResponseBase.ResponseStatus.NotFound, $"Employee not found.  Employee Number: {employeeNumber}");
-        }
-    }
 
-    public async Task<EmployeeReadResponse> ReadByEmailAddress(IUserContext requestContext, string emailAddress)
-    {
-         _logger.LogInformation("Executing TenantService ReadByEmailAddress");
-
-        if (string.IsNullOrWhiteSpace(emailAddress))
-        {
-            return new EmployeeReadResponse(Common.ServiceResponseBase.ResponseStatus.NotFound, _messageService.GetMessage(MessageService.Email_Address_Mandatory));
-        }
-
-        var result = await _employeeActions.ReadByEmailAddress(emailAddress);
-
-        if (result.Item1.Success)
-        {
-            var response = new EmployeeReadResponse(Common.ServiceResponseBase.ResponseStatus.Ok, "Employee Found");
-            response.employee = getEmployeeItemFromEmployeeModel(result.Item2);
-            return response;
-        }
-        else
-        {
-            return new EmployeeReadResponse(Common.ServiceResponseBase.ResponseStatus.NotFound, $"Employee not found.  Email address: {emailAddress}");
-        }
+        return new EmployeeSearchResponse(Common.ServiceResponseBase.ResponseStatus.NotFound, "Employee search returned no results");
     }
 
     private EmployeeItem getEmployeeItemFromEmployeeModel(DataAccess.Employee.Employee employee)
@@ -101,8 +74,8 @@ public class EmployeeReadProcessor : IEmployeeReadProcessor
             employee.employeeNumber,
             employee.leaderEmployeeNumber,
             employee.positionTitle,
-            employee.personalDescription, 
-            employee.active, 
+            employee.personalDescription,
+            employee.active,
             employee.adminPrivilege
         );
     }
