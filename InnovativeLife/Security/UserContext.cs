@@ -12,7 +12,7 @@ public interface IUserContext
     public string phoneNumber { get; set; }
     public string tenantId { get; set; }
     public string tenantName { get; set; }
-    public bool tenantAdmin { get; set; }
+    public bool adminPrivilege { get; set; }
     public bool rootAdmin { get; set; }
     public bool developmentMode { get; set; }
     public void SetDevelopmentModeContext();
@@ -28,7 +28,7 @@ public class UserContext : IUserContext
     public string phoneNumber { get; set; } = "";
     public string tenantId { get; set; } = "";
     public string tenantName { get; set; } = "";
-    public bool tenantAdmin { get; set; } = false;
+    public bool adminPrivilege { get; set; } = false;
     public bool rootAdmin { get; set; } = false;
     public bool developmentMode { get; set; } = false;
 
@@ -42,5 +42,6 @@ public class UserContext : IUserContext
         tenantId = "LocalDevTenantId";
         tenantName = "Local Dev Tenant";
         developmentMode = true;
+        adminPrivilege = true;
     }
 }

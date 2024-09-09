@@ -8,15 +8,18 @@ using FirebaseAdmin.Auth.Multitenancy;
 using InnovativeLife.GcpServices.Identity.ServiceMessages;
 using Microsoft.AspNetCore.Authentication;
 using System.Security.Claims;
+using InnovativeLife.Services.Employee;
 
 namespace InnovativeLife.GcpServices.Identity;
 
 public class IdentityService : IIdentityService
 {
     private readonly ILogger<IdentityService> _logger;
-    public IdentityService(ILogger<IdentityService> logger)
+    // private readonly IEmployeeService _employeeService;
+    public IdentityService(ILogger<IdentityService> logger)//, IEmployeeService employeeService)
     {
         _logger = logger;
+        // _employeeService = employeeService;
     }
 
     // Use google's Auth API to validate the bearer token, and that the user is valid for tenant
@@ -57,6 +60,16 @@ public class IdentityService : IIdentityService
             {
                 return AuthenticateResult.Fail("IdentityService.AuthenticateUserAndTenant: Failed to retrieve user or tenant");
             }
+
+            // // Get Employee Details
+            // var getEmployeeResult = await _employeeService.ReadByEmployeeUID(userContext, userContext.uId);
+            // if (!getEmployeeResult.Success)
+            // {
+            //     _logger.LogError($"Failed to retrieve employee details for uid: {userContext.uId}");
+            //     return AuthenticateResult.Fail("IdentityService.AuthenticateUserAndTenant: failed to retribe employee details for user");
+            // }
+
+            // userContext.adminPrivilege = getEmployeeResult.employee!.adminPrivilege;
         }
 
         _logger.LogInformation($"IdentityService.AuthenticateUserAndTenant: About to get claims from userContext for uId: {userContext.uId}");

@@ -32,7 +32,7 @@ public class GroupAssociation
 public class GroupMember
 {
     [FirestoreProperty]
-    public string employeeId { get; set; }
+    public string employeeNumber { get; set; }
     [FirestoreProperty]
     public string employeeGroupMembershipType { get; set; }
 }

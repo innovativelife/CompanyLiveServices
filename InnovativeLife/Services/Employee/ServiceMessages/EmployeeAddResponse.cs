@@ -6,4 +6,6 @@ public class EmployeeAddResponse : ServiceResponseBase
 {
          public EmployeeAddResponse(ResponseStatus status, string message) : base(status, message) { }
          public EmployeeAddResponse(ResponseStatus status, List<string> messages) : base(status, messages) { }
+
+         public EmployeeItem? employee{ get; set; }
 }

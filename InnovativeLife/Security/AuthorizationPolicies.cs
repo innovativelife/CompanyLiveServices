@@ -13,7 +13,7 @@ public static class AuthorizationPolicies
     private const string PhoneNumberClaim = "PhoneNumber";
     private const string TenantIdClaim = "TenantId";
     private const string TenantNameClaim = "TenantName";
-    private const string TenantAdminClaim = "TenantAdminClaim";
+    private const string AdminPrivilegeClaim = "TenantAdmin";
     private const string RootAdminClaim = "RootAdmin";
     private const string DevelopmentModeClaim = "DevelopmentMode";
 
@@ -22,9 +22,9 @@ public static class AuthorizationPolicies
         policy.RequireClaim(RootAdminClaim, ["True"]);
     }
 
-    public static void GetTenantAdminPolicy(AuthorizationPolicyBuilder policy)
+    public static void GetAdminPrivilegePolicy(AuthorizationPolicyBuilder policy)
     {
-        policy.RequireClaim(TenantAdminClaim, "True");
+        policy.RequireClaim(AdminPrivilegeClaim, "True");
     }
 
     public static List<Claim> GetClaims(IUserContext userContext, ILogger logger)
@@ -40,7 +40,7 @@ public static class AuthorizationPolicies
             // new Claim(PhoneNumberClaim, userContext.phoneNumber),
             // new Claim(TenantIdClaim, userContext.tenantId),
             // new Claim(TenantNameClaim, userContext.tenantName),
-            new Claim(TenantAdminClaim, (userContext.tenantAdmin || userContext.rootAdmin).ToString()),
+            new Claim(AdminPrivilegeClaim, (userContext.adminPrivilege || userContext.rootAdmin).ToString()),
             new Claim(RootAdminClaim, (userContext.rootAdmin || userContext.developmentMode).ToString()),
             new Claim(DevelopmentModeClaim, userContext.developmentMode.ToString())
         };

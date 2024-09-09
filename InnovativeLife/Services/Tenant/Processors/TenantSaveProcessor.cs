@@ -22,13 +22,13 @@ public class TenantSaveProcessor : ITenantSaveProcessor
         var validationResult = request.Validate();
         if (validationResult.Count > 0)
         {
-            return new TenantSaveResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, validationResult);
+            return new TenantSaveResponse(Common.ServiceResponseBase.ResponseStatus.InvalidData, validationResult);
         }
 
         // Root action - tenant must be in root tenancy or must be in dev mode
         if (!requestContext.rootAdmin && !requestContext.developmentMode)
         {
-            _logger.LogCritical("Non root user attempted to add a tenant");
+            _logger.LogCritical("Non root user attempted to update a tenant");
             return new TenantSaveResponse(Common.ServiceResponseBase.ResponseStatus.Exception, "Unauthorised Add");
         }
 
