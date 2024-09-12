@@ -41,7 +41,7 @@ public static class AuthorizationPolicies
             // new Claim(TenantIdClaim, userContext.tenantId),
             // new Claim(TenantNameClaim, userContext.tenantName),
             new Claim(AdminPrivilegeClaim, (userContext.adminPrivilege || userContext.rootAdmin).ToString()),
-            new Claim(RootAdminClaim, (userContext.rootAdmin || userContext.developmentMode).ToString()),
+            new Claim(RootAdminClaim, userContext.rootAdmin.ToString()),
             new Claim(DevelopmentModeClaim, userContext.developmentMode.ToString())
         };
     }

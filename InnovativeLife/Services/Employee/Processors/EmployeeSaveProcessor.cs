@@ -19,7 +19,7 @@ public class EmployeeSaveProcessor : IEmployeeSaveProcessor
         _employeeActions = employeeActions;
     }
 
-    public async Task<EmployeeSaveResponse> SaveEmployee(IUserContext requestContext, string employeeUID, EmployeeSaveRequest request)
+    public async Task<EmployeeSaveResponse> SaveEmployee(IUserContext requestContext, string tenantId, string employeeUID, EmployeeSaveRequest request)
     {
         _logger.LogInformation($"EmployeeSaveProcessor.SaveEmployee: Executing Save Service for Employee UID {employeeUID}");
 
@@ -33,7 +33,7 @@ public class EmployeeSaveProcessor : IEmployeeSaveProcessor
             }
 
             // Retrieve existing details
-            var existingEmployee = await _employeeActions.ReadByEmployeeUID(employeeUID);
+            var existingEmployee = await _employeeActions.ReadByEmployeeUID(tenantId, employeeUID);
             if (!existingEmployee.Item1.Success)
             {
                 return new EmployeeSaveResponse(Common.ServiceResponseBase.ResponseStatus.NotFound, $"Employee with Employee UID {employeeUID} does not exist");
@@ -42,7 +42,7 @@ public class EmployeeSaveProcessor : IEmployeeSaveProcessor
             // Check uniqueness of key employeeNumber (if it is being updated)
             if (existingEmployee.Item2.employeeNumber != request.employeeNumber)
             {
-                var readByEmployeeNumberResult = await _employeeActions.ReadByEmployeeNumber(request.employeeNumber);
+                var readByEmployeeNumberResult = await _employeeActions.ReadByEmployeeNumber(tenantId, request.employeeNumber);
                 if (readByEmployeeNumberResult.Item1.Success)
                 {
                     return new EmployeeSaveResponse(Common.ServiceResponseBase.ResponseStatus.InvalidData, "Employee already exists with this Employee Number - must be unique");
@@ -52,7 +52,7 @@ public class EmployeeSaveProcessor : IEmployeeSaveProcessor
             // Check uniqueness of key email (if it is being updated)
             if (existingEmployee.Item2.email != request.email)
             {
-                var readByEmailResult = await _employeeActions.ReadByEmail(request.email);
+                var readByEmailResult = await _employeeActions.ReadByEmail(tenantId, request.email);
                 if (readByEmailResult.Item1.Success)
                 {
                     return new EmployeeSaveResponse(Common.ServiceResponseBase.ResponseStatus.InvalidData, "Employee already exists with this Email Address - must be unique");
@@ -64,7 +64,7 @@ public class EmployeeSaveProcessor : IEmployeeSaveProcessor
             {
                 if (request.leaderEmployeeNumber.Trim().Length > 0)
                 {
-                    var readByLeaderEmployeeNumberResult = await _employeeActions.ReadByEmployeeNumber(request.leaderEmployeeNumber);
+                    var readByLeaderEmployeeNumberResult = await _employeeActions.ReadByEmployeeNumber(tenantId, request.leaderEmployeeNumber);
                     if (!readByLeaderEmployeeNumberResult.Item1.Success)
                     {
                         return new EmployeeSaveResponse(Common.ServiceResponseBase.ResponseStatus.InvalidData, "No employee exists with this Leader Employee Number");
@@ -75,7 +75,7 @@ public class EmployeeSaveProcessor : IEmployeeSaveProcessor
             // Create the employee for user in the DB
             var employeeModel = new DataAccess.Employee.Employee
             {
-                tenantId = existingEmployee.Item2.tenantId,
+                tenantId = tenantId,
                 firstName = request.firstName,
                 lastName = request.lastName,
                 preferredName = request.preferredName,
@@ -90,7 +90,7 @@ public class EmployeeSaveProcessor : IEmployeeSaveProcessor
                 adminPrivilege = existingEmployee.Item2.adminPrivilege
             };
 
-            var saveUserResult = await _employeeActions.Save(employeeUID, employeeModel);
+            var saveUserResult = await _employeeActions.Save(tenantId, employeeUID, employeeModel);
 
             if (saveUserResult.Success)
             {
@@ -98,7 +98,7 @@ public class EmployeeSaveProcessor : IEmployeeSaveProcessor
                 var response = new EmployeeSaveResponse(Common.ServiceResponseBase.ResponseStatus.Added, "Employee updated successfully");
                 response.employee = new EmployeeItem
                 (
-                    employeeModel.tenantId,
+                    tenantId,
                     employeeModel.employeeUID,
                     employeeModel.email,
                     employeeModel.phoneNumber,
@@ -123,7 +123,7 @@ public class EmployeeSaveProcessor : IEmployeeSaveProcessor
         }
         catch (Exception ex)
         {
-            _logger.LogError($"EmployeeAddProcessor.AddEmployee: Exception caught in CreateUser service: {ex.Message}");
+            _logger.LogError($"EmployeeAddProcessor.AddEmployee: Exception caught in SaveEmployee service: {ex.Message}");
             return new EmployeeSaveResponse(Common.ServiceResponseBase.ResponseStatus.Exception, "Unexpected error occurred while saving employee");
         }
     }

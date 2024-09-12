@@ -28,28 +28,28 @@ public class EmployeeService : IEmployeeService
         _employeeReadProcessor = employeeReadProcessor;
     }
 
-    public async Task<EmployeeAddResponse> Add(IUserContext requestContext, EmployeeAddRequest request)
+    public async Task<EmployeeAddResponse> Add(IUserContext requestContext, string tenantId, EmployeeAddRequest request)
     {
-        return await _employeeCreateProcessor.AddEmployee(requestContext, request);
+        return await _employeeCreateProcessor.AddEmployee(requestContext, tenantId, request);
     }
 
-    public async Task<EmployeeSetAdminPrivilegeResponse> SetAdminPrivilege(IUserContext requestContext, string employeeUID, bool adminPrivilege)
+    public async Task<EmployeeSetAdminPrivilegeResponse> SetAdminPrivilege(IUserContext requestContext, string tenantId, string employeeUID, bool adminPrivilege)
     {
-        return await _employeeSetAdminPrivilegeProcessor.SetAdminPrivilege(requestContext, employeeUID, adminPrivilege);
+        return await _employeeSetAdminPrivilegeProcessor.SetAdminPrivilege(requestContext, tenantId, employeeUID, adminPrivilege);
     }
 
-    public async Task<EmployeeReadResponse> ReadByEmployeeUID(IUserContext requestContext, string employeeUID)
+    public async Task<EmployeeReadResponse> ReadByEmployeeUID(IUserContext requestContext, string tenantId, string employeeUID)
     {
-        return await _employeeReadProcessor.ReadByEmployeeUID(requestContext, employeeUID);
+        return await _employeeReadProcessor.ReadByEmployeeUID(requestContext, tenantId, employeeUID);
     }
     
-    public async Task<EmployeeSaveResponse> Save(IUserContext requestContext, string employeeUID, EmployeeSaveRequest request)
+    public async Task<EmployeeSaveResponse> Save(IUserContext requestContext, string tenantId, string employeeUID, EmployeeSaveRequest request)
     {
-        return await _employeeSaveProcessor.SaveEmployee(requestContext, employeeUID, request);
+        return await _employeeSaveProcessor.SaveEmployee(requestContext, tenantId, employeeUID, request);
     }
 
-    public async Task<EmployeeSearchResponse> SearchEmployee(IUserContext requestContext, string? employeeNumber, string? email, string? firstName, string? lastName, string? leaderEmployeeNumber)
+    public async Task<EmployeeSearchResponse> SearchEmployee(IUserContext requestContext, string tenantId, string? employeeNumber, string? email, string? firstName, string? lastName, string? leaderEmployeeNumber)
     {
-        return await _employeeReadProcessor.SearchEmployee(requestContext, employeeNumber, email, firstName, lastName, leaderEmployeeNumber);
+        return await _employeeReadProcessor.SearchEmployee(requestContext, tenantId, employeeNumber, email, firstName, lastName, leaderEmployeeNumber);
     }
 }

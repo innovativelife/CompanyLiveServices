@@ -4,6 +4,9 @@ namespace InnovativeLife.Services.Employee.ServiceMessages;
 
 public class EmployeeItem
 {
+    public EmployeeItem()
+    {}
+    
     public EmployeeItem(
         string tenantId,
         string employeeUID,
@@ -36,7 +39,7 @@ public class EmployeeItem
 
     public string tenantId { get; set; } = "";
 
-    public string employeeUID { get; set; }
+    public string employeeUID { get; set; } = "";
 
     public string email { get; set; } = "";
 

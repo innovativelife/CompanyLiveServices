@@ -5,5 +5,5 @@ namespace InnovativeLife.Services.Employee.Processors;
 
 public interface IEmployeeSaveProcessor
 {
-    public  Task<EmployeeSaveResponse> SaveEmployee(IUserContext requestContext, string employeeUID, EmployeeSaveRequest request);
+    public  Task<EmployeeSaveResponse> SaveEmployee(IUserContext requestContext, string tenantId, string employeeUID, EmployeeSaveRequest request);
 }

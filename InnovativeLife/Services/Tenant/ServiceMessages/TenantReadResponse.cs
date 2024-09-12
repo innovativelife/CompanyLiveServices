@@ -6,5 +6,5 @@ public class TenantReadResponse : ServiceResponseBase
 {
     public TenantReadResponse(ResponseStatus status, string message) : base(status, message) { }
 
-    public TenantItem tenant { get; set; } = new TenantItem();
+    public TenantItem tenant { get; set; }
 }

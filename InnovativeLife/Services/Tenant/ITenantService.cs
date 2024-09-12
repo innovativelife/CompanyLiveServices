@@ -7,7 +7,7 @@ public interface ITenantService
 {
     public Task<TenantAddResponse> Add(IUserContext requestContext, TenantAddRequest request);
 
-    public Task<TenantReadResponse> Read(IUserContext requestContext, string tenantId);
+    public Task<TenantReadResponse> ReadSingleton(IUserContext requestContext, string tenantId);
 
     public Task<TenantReadSetResponse> ReadSet(IUserContext requestContext);
 

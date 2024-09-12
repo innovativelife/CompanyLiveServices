@@ -5,8 +5,6 @@ namespace InnovativeLife.Services.Employee.ServiceMessages;
 
 public class EmployeeAddRequest : ServiceRequestObjectBase
 {
-    public string tenantId { get; set; } = "";
-
     [Required(ErrorMessage = "Employee Email ID must be provided.")]
     [EmailAddress]
     public string email { get; set; } = "";

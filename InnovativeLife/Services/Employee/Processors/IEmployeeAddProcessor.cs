@@ -5,5 +5,5 @@ namespace InnovativeLife.Services.Employee.Processors;
 
 public interface IEmployeeAddProcessor
 {
-    public  Task<EmployeeAddResponse> AddEmployee(IUserContext requestContext, EmployeeAddRequest request);
+    public  Task<EmployeeAddResponse> AddEmployee(IUserContext requestContext, string tenantId, EmployeeAddRequest request);
 }
