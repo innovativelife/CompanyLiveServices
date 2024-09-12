@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using InnovativeLife.GcpServices.Identity;
+using System.Security.Claims;
+using InnovativeLife.Common;
 
 namespace InnovativeLife.Security;
 
@@ -24,31 +26,72 @@ public class GoogleIdentityAuthenticationHandler : AuthenticationHandler<GoogleI
     {
         _logger.LogInformation("Executing GoogleIdentityAuthenticationHandler.HandleAuthenticateAsync");
 
-        _userContext.developmentMode = InDevMode();
-
-        if (!Request.Headers.ContainsKey(Options.TokenHeaderName))
+        if (InDevMode())
         {
-            _logger.LogWarning("GoogleIdentityAuthenticationHandler.HandleAuthenticateAsyncMissing authorization token in header");
-            return AuthenticateResult.Fail($"Missing header: {Options.TokenHeaderName}");
+            return SetUpDevelopmentModeContext();
+        }
+        else
+        {
+            return await Authenticate();
         }
 
-        var authToken = GetAuthTokenFromHeader(Request);
-        if (!authToken.Item1)
+        AuthenticateResult SetUpDevelopmentModeContext()
         {
-            _logger.LogWarning("GoogleIdentityAuthenticationHandler.HandleAuthenticateAsync: Invalid format of auth token");
-            return AuthenticateResult.Fail($"Invalid Authorisation Token");
+
+            if (Request == null || !Request.Headers.ContainsKey(Options.TentantIdHeader))
+            {
+                _logger.LogInformation($"GoogleIdentityAuthenticationHandler.GetTenantFromHeader: {Options.TentantIdHeader} must be included in header in dev mode");
+                return AuthenticateResult.Fail($"{Options.TentantIdHeader} must be included in header in dev mode");
+            }
+            var tenantId = Request.Headers[Options.TentantIdHeader].ToString();
+
+            if (Request == null || !Request.Headers.ContainsKey(Options.UiDHeader))
+            {
+                _logger.LogInformation($"GoogleIdentityAuthenticationHandler.GetTenantFromHeader: {Options.UiDHeader} must be included in header in dev mode");
+                return AuthenticateResult.Fail($"{Options.UiDHeader} must be included in header in dev mode");
+            }
+            var uId = Request.Headers[Options.UiDHeader].ToString();
+
+            _logger.LogInformation($"GoogleIdentityAuthenticationHandler.GetTenantFromHeader: {Options.TentantIdHeader} from header is {tenantId}");
+            _logger.LogInformation($"GoogleIdentityAuthenticationHandler.GetTenantFromHeader: {Options.UiDHeader} from header is {uId}");
+
+            _userContext.SetDevelopmentModeContext(tenantId, uId);
+
+            var claims = AuthorizationPolicies.GetClaims(_userContext, _logger);
+            var claimsIdentity = new ClaimsIdentity(claims, this.Scheme.Name);
+            var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+
+            return AuthenticateResult.Success(new AuthenticationTicket(claimsPrincipal, this.Scheme.Name));
         }
 
-        var tenant = GetTenantFromHeader(Request);
-        if (!tenant.Item1)
+        async Task<AuthenticateResult> Authenticate()
         {
-            _logger.LogWarning("GoogleIdentityAuthenticationHandler.HandleAuthenticateAsync: tenantId not included in header");
-            return AuthenticateResult.Fail($"tenantId not included in header");
-        }
-        _logger.LogInformation($"GoogleIdentityAuthenticationHandler.HandleAuthenticateAsync: Tenant ID from header is: {tenant}");
+            _userContext.developmentMode = false;
 
-        _logger.LogInformation("GoogleIdentityAuthenticationHandler.HandleAuthenticateAsync: About to validate token and tenant");
-        return await _identityService.AuthenticateUserAndTenant(authToken.Item2!, tenant.Item2!, _userContext, this.Scheme.Name);
+            if (!Request.Headers.ContainsKey(Options.TokenHeaderName))
+            {
+                _logger.LogWarning("GoogleIdentityAuthenticationHandler.HandleAuthenticateAsyncMissing authorization token in header");
+                return AuthenticateResult.Fail($"Missing header: {Options.TokenHeaderName}");
+            }
+
+            var authToken = GetAuthTokenFromHeader(Request);
+            if (!authToken.Item1)
+            {
+                _logger.LogWarning("GoogleIdentityAuthenticationHandler.HandleAuthenticateAsync: Invalid format of auth token");
+                return AuthenticateResult.Fail($"Invalid Authorisation Token");
+            }
+
+            var tenant = GetTenantFromUrl(Request);
+            if (!tenant.Item1)
+            {
+                _logger.LogWarning("GoogleIdentityAuthenticationHandler.HandleAuthenticateAsync: tenantId not included in url");
+                return AuthenticateResult.Fail($"tenantId not included in url");
+            }
+            _logger.LogInformation($"GoogleIdentityAuthenticationHandler.HandleAuthenticateAsync: Tenant ID from URL is: {tenant}");
+
+            _logger.LogInformation("GoogleIdentityAuthenticationHandler.HandleAuthenticateAsync: About to validate token and tenant");
+            return await _identityService.AuthenticateUserAndTenant(authToken.Item2!, tenant.Item2!, _userContext, this.Scheme.Name);
+        }
     }
 
     private bool InDevMode()
@@ -81,19 +124,33 @@ public class GoogleIdentityAuthenticationHandler : AuthenticationHandler<GoogleI
         return new Tuple<bool, string?>(true, token);
     }
 
-    // Extract the tenant from the Http Header.  This is a customer attribute required for many requests of the CompanyLive Services.
-    private Tuple<bool, string?> GetTenantFromHeader(HttpRequest request)
+    // Extract the tenant id from the URL
+    private Tuple<bool, string?> GetTenantFromUrl(HttpRequest request)
     {
         _logger.LogInformation("GoogleIdentityAuthenticationHandler.GetTenantFromHeader: About to validate tenant Id");
-        if (request == null || !request.Headers.ContainsKey(Options.TentantIdHeader))
+
+        // All URL's are of form: /[EntityName]/[tenantId]/{extra segments as required}  eg. Employees/tenant1 for operations on employees in Tenant 1
+        if (request == null || request.Path == null || String.IsNullOrEmpty(request.Path.Value))
         {
-            _logger.LogInformation($"GoogleIdentityAuthenticationHandler.GetTenantFromHeader: {Options.TentantIdHeader} not included in header");
-            return new Tuple<bool, string?>(false, ""); ;
+            _logger.LogError("Null request or path?");
+            return new Tuple<bool, string?>(false, "");
         }
 
-        var tenantId = request.Headers[Options.TentantIdHeader].ToString();
-        _logger.LogInformation($"GoogleIdentityAuthenticationHandler.GetTenantFromHeader: {Options.TentantIdHeader} from header is {tenantId}");
+        var urlParts = request.Path.Value.Split("/");
 
-        return new Tuple<bool, string?>(true, tenantId);
+        // If a tenant operation, then tenant is not required.  This operation must be performed by user in Root tenant.
+        if (urlParts.Length <= 3 && urlParts[1].ToLower() == "tenants")
+        {
+            return new Tuple<bool, string?>(true, GcpConstants.RootTenantId);
+        }
+
+        // Otherwise, Tenant must be second URL parameter
+        if (urlParts.Length < 3)
+        {
+            _logger.LogError("Invalid URL path");
+            return new Tuple<bool, string?>(false, "Invalid URL");
+        }
+
+        return new Tuple<bool, string?>(true, urlParts[2]);
     }
 }

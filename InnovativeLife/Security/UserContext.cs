@@ -15,7 +15,7 @@ public interface IUserContext
     public bool adminPrivilege { get; set; }
     public bool rootAdmin { get; set; }
     public bool developmentMode { get; set; }
-    public void SetDevelopmentModeContext();
+    public void SetDevelopmentModeContext(string uid, string tenantId);
 }
 
 public class UserContext : IUserContext
@@ -32,16 +32,18 @@ public class UserContext : IUserContext
     public bool rootAdmin { get; set; } = false;
     public bool developmentMode { get; set; } = false;
 
-    public void SetDevelopmentModeContext()
+    public void SetDevelopmentModeContext(string requestTenantId, string requestUid)
     {
-        uId = "LocalDevUid";
-        displayName = "Local Dev User";
-        active = true;
-        email = "localdev@testing123.com";
-        phoneNumber = "0428283192";
-        tenantId = "LocalDevTenantId";
-        tenantName = "Local Dev Tenant";
-        developmentMode = true;
-        adminPrivilege = true;
+        this.developmentMode = true;
+
+        this.rootAdmin = requestTenantId == "Root";
+        this.uId = requestUid;
+        this.tenantName = requestTenantId;
+
+        this.displayName = "Local Dev User";
+        this.email = "localdev@testing123.com";
+        this.phoneNumber = "0428283192";
+        this.active = true;
+        this.adminPrivilege = true;
     }
 }

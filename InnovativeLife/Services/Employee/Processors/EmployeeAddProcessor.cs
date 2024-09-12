@@ -23,9 +23,9 @@ public class EmployeeAddProcessor : IEmployeeAddProcessor
         _employeeActions = employeeActions;
     }
 
-    public async Task<EmployeeAddResponse> AddEmployee(IUserContext requestContext, EmployeeAddRequest request)
+    public async Task<EmployeeAddResponse> AddEmployee(IUserContext requestContext, string tenantId, EmployeeAddRequest request)
     {
-        _logger.LogInformation($"EmployeeAddProcessor.AddEmployee: Executing CreateUser Service for Employee Number {request.employeeNumber}");
+        _logger.LogInformation($"EmployeeAddProcessor.AddEmployee: Executing AddEmployee Service for Employee Number {request.employeeNumber}");
 
         try
         {
@@ -37,14 +37,14 @@ public class EmployeeAddProcessor : IEmployeeAddProcessor
             }
 
             // Check uniqueness of key employeeNumber
-            var readByEmployeeNumberResult = await _employeeActions.ReadByEmployeeNumber(request.employeeNumber);
+            var readByEmployeeNumberResult = await _employeeActions.ReadByEmployeeNumber(tenantId, request.employeeNumber);
             if (readByEmployeeNumberResult.Item1.Success)
             {
                 return new EmployeeAddResponse(Common.ServiceResponseBase.ResponseStatus.InvalidData, "Employee already exists with this Employee Number - must be unique");
             }
             
             // Check uniqueness of key email
-            var readByEmailResult = await _employeeActions.ReadByEmail(request.email);
+            var readByEmailResult = await _employeeActions.ReadByEmail(tenantId, request.email);
             if (readByEmailResult.Item1.Success)
             {
                 return new EmployeeAddResponse(Common.ServiceResponseBase.ResponseStatus.InvalidData, "Employee already exists with this Email Address - must be unique");
@@ -53,41 +53,41 @@ public class EmployeeAddProcessor : IEmployeeAddProcessor
             // Check leader exists
             if (request.leaderEmployeeNumber.Trim().Length > 0)
             {
-                var readByLeaderEmployeeNumberResult = await _employeeActions.ReadByEmployeeNumber(request.leaderEmployeeNumber);
+                var readByLeaderEmployeeNumberResult = await _employeeActions.ReadByEmployeeNumber(tenantId, request.leaderEmployeeNumber);
                 if (!readByLeaderEmployeeNumberResult.Item1.Success)
                 {
                     return new EmployeeAddResponse(Common.ServiceResponseBase.ResponseStatus.InvalidData, "No employee exists with this Leader Employee Number");
                 }
             }
 
-            string EmployeeUID;
+            string employeeUID = "";
 
             if (requestContext.developmentMode)
             {
                 _logger.LogInformation("EmployeeAddProcessor.AddEmployee: Development mode - User creation skipped");
-                EmployeeUID = Guid.NewGuid().ToString();
+                employeeUID = Guid.NewGuid().ToString();
             }
             else
             {
                 // Add user to the tenancy of the executing user
-                var addUserToTenantResult = await _identityService.AddUserToTenant(request.tenantId, request.displayName, request.email, request.phoneNumber, request.initialPassword, requestContext);
+                var addUserToTenantResult = await _identityService.AddUserToTenant(tenantId, request.displayName, request.email, request.phoneNumber, request.initialPassword, requestContext);
                 if (!addUserToTenantResult.Success)
                 {
                     _logger.LogInformation($"EmployeeAddProcessor.AddEmployee: Failed to create user  in GCP Identity Service -  {addUserToTenantResult.Message}");
 
                     return new EmployeeAddResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, $"Failed to create user in GCP Identity Service");
                 }
-                EmployeeUID = addUserToTenantResult.uId;
+                employeeUID = addUserToTenantResult.uId;
             }
 
             // Create the employee for user in the DB
             var employeeModel = new DataAccess.Employee.Employee
             {
-                tenantId = request.tenantId,
+                tenantId = tenantId,
                 firstName = request.firstName,
                 lastName = request.lastName,
                 preferredName = request.preferredName,
-                employeeUID = EmployeeUID,
+                employeeUID = employeeUID,
                 email = request.email,
                 phoneNumber = request.phoneNumber,
                 employeeNumber = request.employeeNumber,
@@ -98,7 +98,7 @@ public class EmployeeAddProcessor : IEmployeeAddProcessor
                 adminPrivilege = false
             };
 
-            var saveUserResult = await _employeeActions.Save(EmployeeUID, employeeModel);
+            var saveUserResult = await _employeeActions.Save(tenantId, employeeUID, employeeModel);
 
             if (saveUserResult.Success)
             {
@@ -106,7 +106,7 @@ public class EmployeeAddProcessor : IEmployeeAddProcessor
                 var response = new EmployeeAddResponse(Common.ServiceResponseBase.ResponseStatus.Added, "Employee created");
                 response.employee = new EmployeeItem
                 (
-                    employeeModel.tenantId,
+                    tenantId,
                     employeeModel.employeeUID,
                     employeeModel.email,
                     employeeModel.phoneNumber,

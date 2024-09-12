@@ -23,7 +23,7 @@ public class TenantService : ITenantService
         return await _tenantAddProcessor.Add(requestContext, request);
     }
 
-    public async Task<TenantReadResponse> Read(IUserContext requestContext, string tenantId)
+    public async Task<TenantReadResponse> ReadSingleton(IUserContext requestContext, string tenantId)
     {
         return await _tenantReadProcessor.ReadSingleton(requestContext, tenantId);
     }

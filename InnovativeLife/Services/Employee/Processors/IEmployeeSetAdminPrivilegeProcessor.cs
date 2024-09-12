@@ -5,5 +5,5 @@ namespace InnovativeLife.Services.Employee.Processors;
 
 public interface IEmployeeSetAdminPrivilegeProcessor
 {
-    public  Task<EmployeeSetAdminPrivilegeResponse> SetAdminPrivilege(IUserContext requestContext, string uId, bool adminPrivilege);
+    public  Task<EmployeeSetAdminPrivilegeResponse> SetAdminPrivilege(IUserContext requestContext, string tenantId, string uId, bool adminPrivilege);
 }

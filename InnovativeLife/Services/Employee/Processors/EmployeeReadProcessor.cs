@@ -19,7 +19,7 @@ public class EmployeeReadProcessor : IEmployeeReadProcessor
         _employeeActions = employeeActions;
     }
 
-    public async Task<EmployeeReadResponse> ReadByEmployeeUID(IUserContext requestContext, string employeeUID)
+    public async Task<EmployeeReadResponse> ReadByEmployeeUID(IUserContext requestContext, string tenantId, string employeeUID)
     {
         _logger.LogInformation("Executing TenantService ReadByEmpoyeeNumber");
 
@@ -28,12 +28,12 @@ public class EmployeeReadProcessor : IEmployeeReadProcessor
             return new EmployeeReadResponse(Common.ServiceResponseBase.ResponseStatus.NotFound, _messageService.GetMessage(MessageService.Employee_UID_Mandatory));
         }
 
-        var result = await _employeeActions.ReadByEmployeeUID(employeeUID);
+        var result = await _employeeActions.ReadByEmployeeUID(tenantId, employeeUID);
 
         if (result.Item1.Success)
         {
             var response = new EmployeeReadResponse(Common.ServiceResponseBase.ResponseStatus.Ok, "Employee Found");
-            response.employee = getEmployeeItemFromEmployeeModel(result.Item2);
+            response.employee = getEmployeeItemFromEmployeeModel(tenantId, result.Item2);
             return response;
         }
         else
@@ -42,7 +42,7 @@ public class EmployeeReadProcessor : IEmployeeReadProcessor
         }
     }
 
-    public async Task<EmployeeSearchResponse> SearchEmployee(IUserContext requestContext, string? employeeNumber, string? email, string? firstName, string? lastName, string? leaderEmployeeNumber)
+    public async Task<EmployeeSearchResponse> SearchEmployee(IUserContext requestContext, string tenantId, string? employeeNumber, string? email, string? firstName, string? lastName, string? leaderEmployeeNumber)
     {
         var searchResult = await _employeeActions.Search(requestContext.tenantId, employeeNumber, email, firstName, lastName, leaderEmployeeNumber);
 
@@ -51,7 +51,7 @@ public class EmployeeReadProcessor : IEmployeeReadProcessor
             var employeeList = new List<EmployeeItem>();
             foreach (var item in searchResult.Item2)
             {
-                employeeList.Add(getEmployeeItemFromEmployeeModel(item));
+                employeeList.Add(getEmployeeItemFromEmployeeModel(tenantId, item));
             }
             var response = new EmployeeSearchResponse(Common.ServiceResponseBase.ResponseStatus.Ok, $"{employeeList.Count} Employee(s) Found");
             response.employees = employeeList;
@@ -61,10 +61,10 @@ public class EmployeeReadProcessor : IEmployeeReadProcessor
         return new EmployeeSearchResponse(Common.ServiceResponseBase.ResponseStatus.NotFound, "Employee search returned no results");
     }
 
-    private EmployeeItem getEmployeeItemFromEmployeeModel(DataAccess.Employee.Employee employee)
+    private EmployeeItem getEmployeeItemFromEmployeeModel(string tenantId, DataAccess.Employee.Employee employee)
     {
         return new EmployeeItem(
-            employee.tenantId,
+            tenantId,
             employee.employeeUID,
             employee.email,
             employee.phoneNumber,

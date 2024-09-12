@@ -9,23 +9,26 @@ using InnovativeLife.GcpServices.Identity.ServiceMessages;
 using Microsoft.AspNetCore.Authentication;
 using System.Security.Claims;
 using InnovativeLife.Services.Employee;
+using InnovativeLife.DataAccess.Tenant;
 
 namespace InnovativeLife.GcpServices.Identity;
 
 public class IdentityService : IIdentityService
 {
     private readonly ILogger<IdentityService> _logger;
+    private readonly ITenantActions _tenantActions;
     // private readonly IEmployeeService _employeeService;
-    public IdentityService(ILogger<IdentityService> logger)//, IEmployeeService employeeService)
+    public IdentityService(ILogger<IdentityService> logger, ITenantActions tenantActions)//, IEmployeeService employeeService)
     {
         _logger = logger;
+        _tenantActions = tenantActions;
         // _employeeService = employeeService;
     }
 
     // Use google's Auth API to validate the bearer token, and that the user is valid for tenant
     public async Task<AuthenticateResult> AuthenticateUserAndTenant(string authToken, string tenantId, IUserContext userContext, string schemeName)
     {
-        _logger.LogInformation($"IdentityService.AuthenticateUserAndTenant: About to validate token for user {userContext.uId} and tenant {tenantId}", LogLevel.Information);
+        _logger.LogInformation($"IdentityService.AuthenticateUserAndTenant: About to validate token for tenant {tenantId}", LogLevel.Information);
 
         if (FirebaseAuth.DefaultInstance == null)
         {
@@ -36,41 +39,47 @@ public class IdentityService : IIdentityService
             });
         }
 
-        if (userContext.developmentMode)
+        // Translate tenant id into the Identity Platform's internal name
+        var readResult = await _tenantActions.Read(tenantId);
+        if (!readResult.Item1.Success)
         {
-            _logger.LogInformation("IdentityService.AuthenticateUserAndTenant: Skipping token validation - user is in dev mode");
-
-            userContext.SetDevelopmentModeContext();
+            return AuthenticateResult.Fail($"IdentityService.AuthenticateUserAndTenant: TenantId {tenantId} not found");
         }
-        else
+        var identityManagerTenantId = readResult.Item2.identityManagerTenantId;
+        _logger.LogInformation($"Swapped supplied tenant ID {tenantId} for identityManagerTenantId {identityManagerTenantId}");
+
+        // Call Firebase tenant manager to get auth manager 
+        _logger.LogInformation($"About to call AuthForTenant API for {identityManagerTenantId}");
+        var authManager = FirebaseAuth.DefaultInstance!.TenantManager.AuthForTenant(identityManagerTenantId);
+        _logger.LogInformation($"Call to AuthForTenant API succeeded");
+
+        // Validate token using auth manager
+        var validateResult = await ValidateToken(authToken, authManager);
+
+        if (!validateResult.Item1)
         {
-            var authManager = FirebaseAuth.DefaultInstance!.TenantManager.AuthForTenant(tenantId);
-            var validateResult = await ValidateToken(authToken, authManager);
-
-            if (!validateResult.Item1)
-            {
-                return AuthenticateResult.Fail("IdentityService.AuthenticateUserAndTenant: Token validation failed");
-            }
-
-            var decodedToken = validateResult.Item2;
-
-            _logger.LogInformation($"IdentityService.AuthenticateUserAndTenant: Verify passed ok");
-
-            if (!await GetUserAndTenant(tenantId, authManager, decodedToken, userContext))
-            {
-                return AuthenticateResult.Fail("IdentityService.AuthenticateUserAndTenant: Failed to retrieve user or tenant");
-            }
-
-            // // Get Employee Details
-            // var getEmployeeResult = await _employeeService.ReadByEmployeeUID(userContext, userContext.uId);
-            // if (!getEmployeeResult.Success)
-            // {
-            //     _logger.LogError($"Failed to retrieve employee details for uid: {userContext.uId}");
-            //     return AuthenticateResult.Fail("IdentityService.AuthenticateUserAndTenant: failed to retribe employee details for user");
-            // }
-
-            // userContext.adminPrivilege = getEmployeeResult.employee!.adminPrivilege;
+            return AuthenticateResult.Fail("IdentityService.AuthenticateUserAndTenant: Token validation failed");
         }
+
+        var decodedToken = validateResult.Item2;
+
+        _logger.LogInformation($"IdentityService.AuthenticateUserAndTenant: Verify passed ok");
+
+        // Get user details from identity manager
+        if (!await GetUserAndTenant(identityManagerTenantId, authManager, decodedToken, userContext))
+        {
+            return AuthenticateResult.Fail("IdentityService.AuthenticateUserAndTenant: Failed to retrieve user or tenant");
+        }
+
+        // // Get Employee Details
+        // var getEmployeeResult = await _employeeService.ReadByEmployeeUID(userContext, userContext.uId);
+        // if (!getEmployeeResult.Success)
+        // {
+        //     _logger.LogError($"Failed to retrieve employee details for uid: {userContext.uId}");
+        //     return AuthenticateResult.Fail("IdentityService.AuthenticateUserAndTenant: failed to retribe employee details for user");
+        // }
+
+        // userContext.adminPrivilege = getEmployeeResult.employee!.adminPrivilege;
 
         _logger.LogInformation($"IdentityService.AuthenticateUserAndTenant: About to get claims from userContext for uId: {userContext.uId}");
         var claims = AuthorizationPolicies.GetClaims(userContext, _logger);
@@ -132,7 +141,7 @@ public class IdentityService : IIdentityService
             userContext.phoneNumber = userRecord.PhoneNumber;
             userContext.tenantId = userRecord.TenantId;
             userContext.tenantName = tenant.DisplayName;
-            userContext.rootAdmin = tenant.TenantId == GcpConstants.RootTenantId;
+            userContext.rootAdmin = tenant.TenantId == GcpConstants.RootIdentityManagerTenantId;
 
             _logger.LogInformation($"Root Tenant? {userContext.rootAdmin}");
 

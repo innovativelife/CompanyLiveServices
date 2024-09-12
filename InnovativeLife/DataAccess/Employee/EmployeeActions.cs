@@ -12,14 +12,16 @@ public class EmployeeActions : IEmployeeActions
         _logger = logger;
     }
 
-    async Task<Tuple<DalResponse, Employee?>> IEmployeeActions.ReadByEmployeeUID(string employeeUID)
+    async Task<Tuple<DalResponse, Employee?>> IEmployeeActions.ReadByEmployeeUID(string tenantId, string employeeUID)
     {
         try
         {
             _logger.LogInformation($"EmployeeActions.ReadByEmployeeUID: User Read by employeeUID Starting - {employeeUID}");
 
             var db = Utilities.connectToFirestore();
-            Query employeeQuery = db.Collection(EmployeeContants.employeeCollection).WhereEqualTo(EmployeeContants.employeeUID, employeeUID);
+            Query employeeQuery = db.Collection(EmployeeContants.employeeCollection)
+                .WhereEqualTo(EmployeeContants.tenantId, tenantId)
+                .WhereEqualTo(EmployeeContants.employeeUID, employeeUID);
             QuerySnapshot employeeQuerySnapshot = await employeeQuery.GetSnapshotAsync();
 
             if (employeeQuerySnapshot.Count == 0)
@@ -41,14 +43,16 @@ public class EmployeeActions : IEmployeeActions
         }
     }
 
-    async Task<Tuple<DalResponse, Employee?>> IEmployeeActions.ReadByEmployeeNumber(string employeeNumber)
+    async Task<Tuple<DalResponse, Employee?>> IEmployeeActions.ReadByEmployeeNumber(string tenantId, string employeeNumber)
     {
         try
         {
             _logger.LogInformation($"EmployeeActions.ReadByEmpoyeeNumber: Employee Read by employeeNumber Starting = {employeeNumber}");
 
             var db = Utilities.connectToFirestore();
-            Query employeeQuery = db.Collection(EmployeeContants.employeeCollection).WhereEqualTo(EmployeeContants.employeeNumber, employeeNumber);
+            Query employeeQuery = db.Collection(EmployeeContants.employeeCollection)
+                .WhereEqualTo(EmployeeContants.tenantId, tenantId)
+                .WhereEqualTo(EmployeeContants.employeeNumber, employeeNumber);
             QuerySnapshot employeeQuerySnapshot = await employeeQuery.GetSnapshotAsync();
 
             if (employeeQuerySnapshot.Count == 0)
@@ -70,14 +74,16 @@ public class EmployeeActions : IEmployeeActions
         }
     }
 
-    async Task<Tuple<DalResponse, Employee?>> IEmployeeActions.ReadByEmail(string email)
+    async Task<Tuple<DalResponse, Employee?>> IEmployeeActions.ReadByEmail(string tenantId, string email)
     {
         try
         {
             _logger.LogInformation($"EmployeeActions.ReadByEmail: Employee Read by email Starting = {email}");
 
             var db = Utilities.connectToFirestore();
-            Query employeeQuery = db.Collection(EmployeeContants.employeeCollection).WhereEqualTo(EmployeeContants.email, email);
+            Query employeeQuery = db.Collection(EmployeeContants.employeeCollection)
+                .WhereEqualTo(EmployeeContants.tenantId, tenantId)
+                .WhereEqualTo(EmployeeContants.email, email);
             QuerySnapshot employeeQuerySnapshot = await employeeQuery.GetSnapshotAsync();
 
             if (employeeQuerySnapshot.Count == 0)
@@ -107,6 +113,8 @@ public class EmployeeActions : IEmployeeActions
 
             var db = Utilities.connectToFirestore();
             Query employeeQuery = db.Collection(EmployeeContants.employeeCollection);
+
+            employeeQuery.WhereEqualTo(EmployeeContants.tenantId, tenantId);
 
             if (!string.IsNullOrEmpty(employeeNumber))
             {
@@ -158,7 +166,7 @@ public class EmployeeActions : IEmployeeActions
         }
     }
 
-    async Task<DalResponse> IEmployeeActions.Save(string userUID, Employee employeeModel)
+    async Task<DalResponse> IEmployeeActions.Save(string tenantId, string userUID, Employee employeeModel)
     {
         try
         {
@@ -182,7 +190,7 @@ public class EmployeeActions : IEmployeeActions
         }
     }
 
-    async Task<DalResponse> IEmployeeActions.SetAdminPrivilege(string employeeUID, bool adminPrivilege)
+    async Task<DalResponse> IEmployeeActions.SetAdminPrivilege(string tenantId, string employeeUID, bool adminPrivilege)
     {
         try
         {

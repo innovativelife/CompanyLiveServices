@@ -22,7 +22,7 @@ public class EmployeeSetAdminPrivilegeProcessor : IEmployeeSetAdminPrivilegeProc
         _employeeActions = employeeActions;
     }
 
-    public async Task<EmployeeSetAdminPrivilegeResponse> SetAdminPrivilege(IUserContext requestContext, string employeeUID, bool adminPrivilege)
+    public async Task<EmployeeSetAdminPrivilegeResponse> SetAdminPrivilege(IUserContext requestContext, string tenantId, string employeeUID, bool adminPrivilege)
     {
         _logger.LogInformation("EmployeeService.SetAdminPrivilege: Executing SetAdminPrivilege Service");
         try
@@ -42,7 +42,7 @@ public class EmployeeSetAdminPrivilegeProcessor : IEmployeeSetAdminPrivilegeProc
                 }
             }
 
-            var result = await _employeeActions.SetAdminPrivilege(employeeUID, adminPrivilege);
+            var result = await _employeeActions.SetAdminPrivilege(tenantId, employeeUID, adminPrivilege);
             if (!result.Success)
             {
                 _logger.LogError($"EmployeeService.SetAdminPrivilege: Failed to set admin status for User for {employeeUID}");
