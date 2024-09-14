@@ -1,0 +1,42 @@
+meta {
+  name: Update Employee Invalid EmployeeUID
+  type: http
+  seq: 10
+}
+
+put {
+  url: http://{{LOCALDEVURL}}/Employees/tenant1/invalid-uid
+  body: json
+  auth: bearer
+}
+
+headers {
+  uId: tester
+  tenantId: tenant1
+}
+
+auth:bearer {
+  token: {{AuthToken}}
+}
+
+body:json {
+  {
+      "tenantId": "tenant1",
+      "email": "got.you.jim@gmail.com",
+      "firstName": "James",
+      "lastName": "Brown",
+      "PreferredName": "Jim",
+      "phoneNumber": "699879879",
+      "initialPassword": "TEshhde",
+      "employeeNumber": "12345",
+      "positionTitle": "Head of stuff",
+      "personalDescription": "Person in charge of lots of things"
+  }
+}
+
+tests {
+  test("Status code is 404 (Error)", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+  
+}

@@ -117,7 +117,7 @@ public class EmployeeSaveProcessor : IEmployeeSaveProcessor
             }
             else
             {
-                return new EmployeeSaveResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, "Employee could not be added due to unexpected DB error");
+                return new EmployeeSaveResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, "Employee could not be added due to unexpected error");
             }
 
         }

@@ -1,0 +1,32 @@
+meta {
+  name: Read All Tenants- 1 found
+  type: http
+  seq: 5
+}
+
+get {
+  url: http://{{LOCALDEVURL}}/Tenants
+  body: none
+  auth: bearer
+}
+
+headers {
+  tenantId: Root
+  Accept-Language: en-GB
+  uId: Tester
+}
+
+auth:bearer {
+  token: {{AuthToken}}
+}
+
+tests {
+  test("Status code is 200 (Ok)", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const jsonResponse = res.getBody();
+  test("1 tenant returned", function () {
+      expect(jsonResponse.tenants.length).to.equal(1);
+  });
+}

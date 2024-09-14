@@ -1,0 +1,24 @@
+meta {
+  name: Set Admin Privilege for Employee
+  type: http
+  seq: 4
+}
+
+post {
+  url: http://{{PROD_URL}}/Employee/SetAdminPrivilege/W5qKZ5YyxQYe9Gcrf4HhseS2FsA3/true
+  body: json
+  auth: bearer
+}
+
+headers {
+  tenantId: Demo-95os8
+}
+
+auth:bearer {
+  token: {{AuthToken}}
+}
+
+body:json {
+  {
+  }
+}

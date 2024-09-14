@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using InnovativeLife.Services.Common;
+using InnovativeLife.Services.Employee.ServiceMessages;
 
 namespace InnovativeLife.Services.Tenant.ServiceMessages;
 
@@ -14,15 +15,10 @@ public class TenantAddRequest : ServiceRequestObjectBase
     [Required(ErrorMessage = "Customer Name must be provided.")]
     public string customerName { get; set; } = "";
 
-    [Required(ErrorMessage = "Primary Contact Name must be provided.")]
-    public string primaryContactName { get; set; } = "";
+    public EmployeeAddRequest primaryAdministrator { get; set; } = new EmployeeAddRequest();
 
-    [Required(ErrorMessage = "Primary Contact Email must be provided.")]
-    public string primaryContactEmail { get; set; } = "";
-    public string primaryContactPhone { get; set; } = "";
-    public string secondaryContactName { get; set; } = "";
-    public string secondaryContactEmail { get; set; } = "";
-    public string secondaryContactPhone { get; set; } = "";
+    public EmployeeAddRequest secondaryAdministrator { get; set; } = new EmployeeAddRequest();
+
     public DateTime renewalDate { get; set; } = DateTime.SpecifyKind(DateTime.Now.AddYears(1), DateTimeKind.Utc);
     public bool active { get; set; } = true;
 }

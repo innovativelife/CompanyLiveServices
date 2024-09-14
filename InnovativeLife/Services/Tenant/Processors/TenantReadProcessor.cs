@@ -3,6 +3,8 @@ using InnovativeLife.DataAccess.Tenant;
 using InnovativeLife.Security;
 using InnovativeLife.Services.Tenant.ServiceMessages;
 using InnovativeLife.Localization;
+using InnovativeLife.Services.Employee;
+using InnovativeLife.Services.Employee.ServiceMessages;
 using Microsoft.AspNetCore.Http;
 
 namespace InnovativeLife.Services.Tenant.Processors;
@@ -13,13 +15,15 @@ public class TenantReadProcessor : ITenantReadProcessor
     private readonly IMessageService _messageService;
     private readonly ITenantActions _tenantActions;
     private readonly IHttpContextAccessor _httpContext;
+    private readonly IEmployeeService _employeeService;
 
-    public TenantReadProcessor(ILogger<TenantAddProcessor> logger, IMessageService messageService, ITenantActions tenantActions, IHttpContextAccessor httpContext)
+    public TenantReadProcessor(ILogger<TenantAddProcessor> logger, IMessageService messageService, ITenantActions tenantActions, IHttpContextAccessor httpContext, IEmployeeService employeeService)
     {
         _logger = logger;
         _messageService = messageService;
         _tenantActions = tenantActions;
         _httpContext = httpContext;
+        _employeeService = employeeService;
     }
     public async Task<TenantReadResponse> ReadSingleton(IUserContext requestContext, string tenantId)
     {
@@ -36,6 +40,8 @@ public class TenantReadProcessor : ITenantReadProcessor
         {
             var response = new TenantReadResponse(Common.ServiceResponseBase.ResponseStatus.Ok, "Tenant Found");
             response.tenant = getTenantItemFromTenantModel(result.Item2);
+            await readPrimaryAndSecondaryEmployees(requestContext, response.tenant, result.Item2);
+
             return response;
         }
         else
@@ -53,9 +59,12 @@ public class TenantReadProcessor : ITenantReadProcessor
         if (result.Item1.Success && result.Item2.Count > 0)
         {
             var tenantItems = new List<TenantItem>();
-            foreach (var item in result.Item2)
+            foreach (var tenant in result.Item2)
             {
-                tenantItems.Add(getTenantItemFromTenantModel(item));
+                var tenantItem = getTenantItemFromTenantModel(tenant);
+                tenantItems.Add(tenantItem);
+
+                await readPrimaryAndSecondaryEmployees(requestContext, tenantItem, tenant);
             }
             var response = new TenantReadSetResponse(Common.ServiceResponseBase.ResponseStatus.Ok, $"{tenantItems.Count} Tenants Found", tenantItems);
             return response;
@@ -66,6 +75,21 @@ public class TenantReadProcessor : ITenantReadProcessor
         }
     }
 
+    private async Task readPrimaryAndSecondaryEmployees(IUserContext requestContext, TenantItem tenantItem, TenantModel tenant)
+    {
+        var primaryEmployeeReadResponse = await _employeeService.ReadByEmployeeUID(requestContext, tenant.tenantId,tenant.primaryAdministratorEmployeeUID);
+        if (primaryEmployeeReadResponse.Success)
+        {
+            tenantItem.primaryAdministrator = primaryEmployeeReadResponse.employee;
+        }
+
+        var secondaryEmployeeReadResponse = await _employeeService.ReadByEmployeeUID(requestContext, tenant.tenantId, tenant.secondaryAdministratorEmployeeUID);
+        if (secondaryEmployeeReadResponse.Success)
+        {
+            tenantItem.secondaryAdministrator = secondaryEmployeeReadResponse.employee;
+        }
+    }
+
     private TenantItem getTenantItemFromTenantModel(TenantModel tenantModel)
     {
         return new TenantItem(
@@ -73,12 +97,6 @@ public class TenantReadProcessor : ITenantReadProcessor
             tenantModel.tenantName,
             tenantModel.identityManagerTenantId,
             tenantModel.customerName,
-            tenantModel.primaryContactName,
-            tenantModel.primaryContactEmail,
-            tenantModel.primaryContactPhone,
-            tenantModel.secondaryContactName,
-            tenantModel.secondaryContactEmail,
-            tenantModel.secondaryContactPhone,
             tenantModel.renewalDate,
             tenantModel.active
         );

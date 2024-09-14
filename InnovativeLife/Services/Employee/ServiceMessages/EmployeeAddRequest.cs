@@ -12,6 +12,7 @@ public class EmployeeAddRequest : ServiceRequestObjectBase
     [Required(ErrorMessage = "Employee Phone number must be provided.")]
     [Phone]
     public string phoneNumber { get; set; } = "";
+    [Required(ErrorMessage = "initial Password must be provided.")]
     public string initialPassword { get; set; } = "";
 
     [Required(ErrorMessage = "First Name must be provided.")]

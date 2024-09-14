@@ -1,0 +1,46 @@
+meta {
+  name: Add  Employees For Search - 2
+  type: http
+  seq: 12
+}
+
+post {
+  url: http://{{LOCALDEVURL}}/Employees/tenant1/
+  body: json
+  auth: bearer
+}
+
+headers {
+  uId: tester
+  tenantId: tenant1
+}
+
+auth:bearer {
+  token: {{AuthToken}}
+}
+
+body:json {
+  {
+      "tenantId": "tenant1",
+      "email": "got.you.bill@gmail.com",
+      "firstName": "William",
+      "lastName": "Smith",
+      "PreferredName": "Bill",
+      "phoneNumber": "699879879",
+      "initialPassword": "TEshhde",
+      "employeeNumber": "37374",
+      "leaderEmployeeNumber": "12345",
+      "positionTitle": "Team Member 2",
+      "personalDescription": "Team Member 2 of Head"
+  }
+}
+
+tests {
+  test("Status code is 201 (Added)", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+  
+  
+  const jsonResponse = res.getBody();
+  bru.setVar("employeeUID", jsonResponse.employee.employeeUID)
+}

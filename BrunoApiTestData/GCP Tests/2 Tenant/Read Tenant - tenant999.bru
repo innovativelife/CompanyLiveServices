@@ -1,0 +1,19 @@
+meta {
+  name: Read Tenant - tenant999
+  type: http
+  seq: 3
+}
+
+get {
+  url: https://{{URL}}/Tenants/tenant999
+  body: none
+  auth: bearer
+}
+
+headers {
+  Accept-Language: en-GB
+}
+
+auth:bearer {
+  token: {{AuthToken}}
+}

@@ -1,0 +1,55 @@
+meta {
+  name: Add Tenant 999
+  type: http
+  seq: 2
+}
+
+post {
+  url: https://{{URL}}/Tenants
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{AuthToken}}
+}
+
+body:json {
+  {
+      "tenantId": "tenant999",
+      "tenantName": "New-Tenant-999",
+      "customerName": "999 Inc",
+      "renewalDate": "2025-02-01T00:00:00",
+      "active": true,
+      "primaryAdministrator":
+      {
+          "email": "got.you.jim2@gmail.com",
+          "firstName": "James 2",
+          "lastName": "Brown2",
+          "PreferredName": "Jim",
+          "phoneNumber": "+61699879879",
+          "initialPassword": "TEshhde",
+          "employeeNumber": "2212345",
+          "positionTitle": "Head of stuff",
+          "personalDescription": "Person in charge of lots of things"
+      },
+    "secondaryAdministrator":
+      {
+          "email": "got.you.jim3@gmail.com",
+          "firstName": "James",
+          "lastName": "Brown",
+          "PreferredName": "Jim",
+          "phoneNumber": "+61699879822",
+          "initialPassword": "TEshhde",
+          "employeeNumber": "14552345",
+          "positionTitle": "Head of stuff",
+          "personalDescription": "Person in charge of lots of things"
+      }
+  }
+}
+
+tests {
+  const jsonResponse = res.getBody();
+  
+  bru.setVar("Tenant999-IdMgrTenantId", jsonResponse.tenant.identityManagerTenantId)
+}

@@ -63,7 +63,8 @@ public class Startup : FunctionsStartup
                 options => { });
         services.AddAuthorizationBuilder()
             .AddPolicy("SuperUserRequired", policy => AuthorizationPolicies.GetSuperUserPolicy(policy))
-            .AddPolicy("TenantAdmin", policy => AuthorizationPolicies.GetAdminPrivilegePolicy(policy));
+            .AddPolicy("TenantAdmin", policy => AuthorizationPolicies.GetTenantAdminPolicy(policy))
+            .AddPolicy("TenantUser", policy => AuthorizationPolicies.GetTenantUserPolicy(policy));
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
     }
@@ -133,17 +134,7 @@ public class Startup : FunctionsStartup
             Description = "Add a new employee to a tenant."
         });
 
-        endpoints.MapGet("/employees/{tenantId}/{employeeUID}", async (IEmployeeService service, IUserContext requestContext, string tenantId, string employeeUID) =>
-            (await service.ReadByEmployeeUID(requestContext, tenantId, employeeUID)).GetAspNetResult())
-        .RequireAuthorization("TenantAdmin")
-        .WithName("ReadEmployeeByNumber")
-        .WithOpenApi(operation => new(operation)
-        {
-            Summary = "Read employee by employee uid",
-            Description = "Read employee by Employee ID - Guid generated when the employee is created"
-        });
-
-        endpoints.MapPut("/employees/{tenantId}/{employeeUID}/{adminPrivilege}", async (IEmployeeService service, IUserContext requestContext, string tenantId, string employeeUID, bool adminPrivilege) =>
+        endpoints.MapPut("/employees/{tenantId}/{employeeUID}/admin/{adminPrivilege}", async (IEmployeeService service, IUserContext requestContext, string tenantId, string employeeUID, bool adminPrivilege) =>
             (await service.SetAdminPrivilege(requestContext, tenantId, employeeUID, adminPrivilege)).GetAspNetResult())
         .RequireAuthorization("TenantAdmin")
         .WithName("EmployeeSetAdminPrivilege")
@@ -163,9 +154,19 @@ public class Startup : FunctionsStartup
             Description = "Update employee details."
         });
 
+        endpoints.MapGet("/employees/{tenantId}/{employeeUID}", async (IEmployeeService service, IUserContext requestContext, string tenantId, string employeeUID) =>
+            (await service.ReadByEmployeeUID(requestContext, tenantId, employeeUID)).GetAspNetResult())
+        .RequireAuthorization("TenantUser")
+        .WithName("ReadEmployeeByNumber")
+        .WithOpenApi(operation => new(operation)
+        {
+            Summary = "Read employee by employee uid",
+            Description = "Read employee by Employee ID - Guid generated when the employee is created"
+        });
+
         endpoints.MapGet("/employees/{tenantId}", async (IEmployeeService service, IUserContext requestContext, string tenantId, string? employeeNumber, string? email, string? firstName, string? lastName, string? leaderEmployeeNumber) =>
             (await service.SearchEmployee(requestContext, tenantId, employeeNumber, email, firstName, lastName, leaderEmployeeNumber)).GetAspNetResult())
-        .RequireAuthorization("TenantAdmin")
+        .RequireAuthorization("TenantUser")
         .WithName("EmployeeSearch")
         .WithOpenApi(operation => new(operation)
         {

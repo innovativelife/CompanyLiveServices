@@ -1,0 +1,68 @@
+meta {
+  name: Save Config
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://{{DEV_URL}}/UiShellConfig/Save/tenant1
+  body: json
+  auth: bearer
+}
+
+headers {
+  tenantId: tenant1
+}
+
+auth:bearer {
+  token: {{AuthToken}}
+}
+
+body:json {
+  {
+      "googleFont": "Yuji Syuku",
+      "appBannerUrl": "https://storage.googleapis.com/live_assets_2023/TechOneDawn.jpeg",
+      "appTitle": "TechOne Love",
+      "homeTitle": "Home",
+      "peopleTitle": "People",
+      "calendarTitle": "Calendar",
+      "policyTitle": "Policies",
+      "moreTitle": "More",
+      "primaryColor": {
+          "red": 0,
+          "green": 0,
+          "blue": 255,
+          "opacity": 1
+      },
+      "highlightColor": {
+          "red": 199,
+          "green": 0,
+          "blue": 0,
+          "opacity": 1
+      },
+      "backgroundColor": {
+          "red": 100,
+          "green":250,
+          "blue": 100,
+          "opacity": 1
+      },
+      "homePageSafeAreaColor": {
+          "red": 0,
+          "green": 0,
+          "blue": 0,
+          "opacity": 1
+      },
+      "appTitleColor": {
+          "red": 0,
+          "green": 0,
+          "blue": 0,
+          "opacity": 1
+      },
+      "appTitleBackgroundColor": {
+          "red": 0,
+          "green": 0,
+          "blue": 0,
+          "opacity": 0.4
+      }
+  }
+}

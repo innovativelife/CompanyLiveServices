@@ -1,0 +1,25 @@
+meta {
+  name: Save Tenant - ADD ADMINS
+  type: http
+  seq: 4
+}
+
+put {
+  url: https://{{URL}}/Tenants
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{AuthToken}}
+}
+
+body:json {
+  {
+      "tenantName": "Number ONE Tenant with extra Update",
+      "customerName": "numer=o uno",
+  
+      "renewalDate": "2025-02-01T00:00:00",
+      "active": false
+  }
+}

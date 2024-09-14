@@ -12,5 +12,5 @@ public interface IIdentityService
 
     public Task<AddUserToTenantResponse> AddUserToTenant(string tenantId, string displayName, string email, string phoneNumber, string initialPassword, IUserContext requestContext);
 
-    public Task<Tuple<bool, string>> SetAdminAuthorisationForUser(string tenantId, string uid, bool adminUser, IUserContext requestContext);
+    // public Task<Tuple<bool, string>> SetAdminAuthorisationForUser(string tenantId, string uid, bool adminUser, IUserContext requestContext);
 }

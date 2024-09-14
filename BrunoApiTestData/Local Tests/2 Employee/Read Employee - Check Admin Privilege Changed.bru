@@ -1,0 +1,31 @@
+meta {
+  name: Read Employee - Check Admin Privilege Changed
+  type: http
+  seq: 7
+}
+
+get {
+  url: http://{{LOCALDEVURL}}/Employees/tenant1/{{employeeUID}}
+  body: json
+  auth: bearer
+}
+
+headers {
+  uId: tester
+  tenantId: tenant1
+}
+
+auth:bearer {
+  token: {{AuthToken}}
+}
+
+tests {
+  test("Status code is 200 (Ok)", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const jsonResponse = res.getBody();
+  test("employee adminPrivilege is now true", function () {
+      expect(jsonResponse.employee.adminPrivilege).to.equal(true);
+  });
+}

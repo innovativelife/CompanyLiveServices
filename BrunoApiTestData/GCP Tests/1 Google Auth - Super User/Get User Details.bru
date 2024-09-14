@@ -1,0 +1,37 @@
+meta {
+  name: Get User Details
+  type: http
+  seq: 2
+}
+
+post {
+  url: https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=AIzaSyAR8KDfWu9alVLsiBBQEJpmLeg7Rd7Ao9g
+  body: json
+  auth: none
+}
+
+params:query {
+  key: AIzaSyAR8KDfWu9alVLsiBBQEJpmLeg7Rd7Ao9g
+}
+
+body:json {
+  {
+      "idToken": "{{AuthToken}}"
+  }
+}
+
+tests {
+  test("Status code is 200 (Ok)", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const jsonResponse = res.getBody();
+  
+  test("One user retrurned", function () {
+      expect(jsonResponse.users.length).to.equals(1);
+  });
+  
+  test("Email is greg+superuser@innovativelife.studio", function () {
+      expect(jsonResponse.users[0].email).to.equals("greg+superuser@innovativelife.studio");
+  });
+}

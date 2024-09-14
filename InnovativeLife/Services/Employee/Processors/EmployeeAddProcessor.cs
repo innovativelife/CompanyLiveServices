@@ -4,7 +4,8 @@ using InnovativeLife.Security;
 using InnovativeLife.GcpServices.Identity;
 using InnovativeLife.DataAccess.Employee;
 using InnovativeLife.Localization;
-using Google.Apis.CloudFunctions.v1.Data;
+using InnovativeLife.Services.Tenant;
+using InnovativeLife.DataAccess.Tenant;
 
 namespace InnovativeLife.Services.Employee.Processors;
 
@@ -14,13 +15,15 @@ public class EmployeeAddProcessor : IEmployeeAddProcessor
     private readonly IMessageService _messageService;
     private readonly IIdentityService _identityService;
     private readonly IEmployeeActions _employeeActions;
+    private readonly ITenantActions _tenantActions;
 
-    public EmployeeAddProcessor(ILogger<IEmployeeAddProcessor> logger, IMessageService messageService, IIdentityService identityService, IEmployeeActions employeeActions)
+    public EmployeeAddProcessor(ILogger<IEmployeeAddProcessor> logger, IMessageService messageService, IIdentityService identityService, IEmployeeActions employeeActions, ITenantActions tenantActions)
     {
         _logger = logger;
         _messageService = messageService;
         _identityService = identityService;
         _employeeActions = employeeActions;
+        _tenantActions = tenantActions;
     }
 
     public async Task<EmployeeAddResponse> AddEmployee(IUserContext requestContext, string tenantId, EmployeeAddRequest request)
@@ -34,6 +37,14 @@ public class EmployeeAddProcessor : IEmployeeAddProcessor
             if (validationResult.Count > 0)
             {
                 return new EmployeeAddResponse(Common.ServiceResponseBase.ResponseStatus.InvalidData, validationResult);
+            }
+
+            // Check tenant exists
+            // NOTE: Would have preferred to use TenantService rather than DAL, but hit issue with circular ref on dependency injection
+            var readTenantResult = await _tenantActions.Read(tenantId);
+            if (!readTenantResult.Item1.Success)
+            {
+                return new EmployeeAddResponse(Common.ServiceResponseBase.ResponseStatus.InvalidData, $"Invalid Tenant Id {tenantId}");
             }
 
             // Check uniqueness of key employeeNumber
@@ -70,7 +81,7 @@ public class EmployeeAddProcessor : IEmployeeAddProcessor
             else
             {
                 // Add user to the tenancy of the executing user
-                var addUserToTenantResult = await _identityService.AddUserToTenant(tenantId, request.displayName, request.email, request.phoneNumber, request.initialPassword, requestContext);
+                var addUserToTenantResult = await _identityService.AddUserToTenant(readTenantResult.Item2.identityManagerTenantId, request.displayName, request.email, request.phoneNumber, request.initialPassword, requestContext);
                 if (!addUserToTenantResult.Success)
                 {
                     _logger.LogInformation($"EmployeeAddProcessor.AddEmployee: Failed to create user  in GCP Identity Service -  {addUserToTenantResult.Message}");
@@ -125,7 +136,7 @@ public class EmployeeAddProcessor : IEmployeeAddProcessor
             }
             else
             {
-                return new EmployeeAddResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, "Employee could not be added due to unexpected DB error");
+                return new EmployeeAddResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, "Employee could not be added due to unexpected error");
             }
 
         }

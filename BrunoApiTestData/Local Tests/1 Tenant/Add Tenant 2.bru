@@ -1,0 +1,56 @@
+meta {
+  name: Add Tenant 2
+  type: http
+  seq: 7
+}
+
+post {
+  url: http://{{LOCALDEVURL}}/Tenants
+  body: json
+  auth: bearer
+}
+
+headers {
+  tenantId: Root
+  uId: tester
+}
+
+auth:bearer {
+  token: {{AuthToken}}
+}
+
+body:json {
+  {
+      "tenantId": "tenant2",
+      "tenantName": "New Tenant 2",
+      "customerName": "Tenant 2",
+      "renewalDate": "2025-02-01T00:00:00",
+      "active": true,
+        "primaryAdministrator":
+        {
+            "email": "got.you.bob1@gmail.com",
+            "firstName": "James 2",
+            "lastName": "Blue",
+            "PreferredName": "Jim2",
+            "phoneNumber": "6998793879",
+            "initialPassword": "TEshhde",
+            "employeeNumber": "234545"
+        },
+      "secondaryAdministrator":
+        {
+            "email": "got.you.bon2@gmail.com",
+            "firstName": "Bob2",
+            "lastName": "Greem",
+            "PreferredName": "Bob2",
+            "phoneNumber": "2352345",
+            "initialPassword": "TEshhde",
+            "employeeNumber": "4243456"
+        }
+  }
+}
+
+tests {
+  test("Status code is 201 (Added)", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+}

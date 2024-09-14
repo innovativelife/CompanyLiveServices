@@ -21,7 +21,7 @@ public class EmployeeReadProcessor : IEmployeeReadProcessor
 
     public async Task<EmployeeReadResponse> ReadByEmployeeUID(IUserContext requestContext, string tenantId, string employeeUID)
     {
-        _logger.LogInformation("Executing TenantService ReadByEmpoyeeNumber");
+        _logger.LogInformation($"Executing Employee Service ReadByEmployeeUIDfor tenantId {tenantId} and user {employeeUID}");
 
         if (string.IsNullOrWhiteSpace(employeeUID))
         {

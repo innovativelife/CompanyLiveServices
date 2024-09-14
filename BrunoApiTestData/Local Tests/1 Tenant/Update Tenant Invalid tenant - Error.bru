@@ -1,0 +1,37 @@
+meta {
+  name: Update Tenant Invalid tenant - Error
+  type: http
+  seq: 9
+}
+
+put {
+  url: http://{{LOCALDEVURL}}/Tenants/bad-tenant
+  body: json
+  auth: bearer
+}
+
+headers {
+  tenantId: Root
+  uId: tester
+}
+
+auth:bearer {
+  token: {{AuthToken}}
+}
+
+body:json {
+  {
+      "tenantName": "bad-tenant",
+      "customerName": "Updated customer name",
+      "primaryAdministratorEmployeeUID": "{{tenant1-primaryAdminUID}}",
+      "secondaryAdministratorEmployeeUID": "{{tenant1-secondaryAdminUID}}",
+      "renewalDate": "2025-02-01T00:00:00",
+      "active": false
+  }
+}
+
+tests {
+  test("Status code is 404 (Not found)", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+}

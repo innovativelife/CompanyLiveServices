@@ -1,0 +1,79 @@
+meta {
+  name: Read Employee by Email Address
+  type: http
+  seq: 16
+}
+
+get {
+  url: http://{{LOCALDEVURL}}/Employees/tenant1?email=got.you.jim@gmail.com
+  body: json
+  auth: bearer
+}
+
+params:query {
+  email: got.you.jim@gmail.com
+}
+
+headers {
+  uId: tester
+  tenantId: tenant1
+}
+
+auth:bearer {
+  token: {{AuthToken}}
+}
+
+tests {
+  test("Status code is 200 (Ok)", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const jsonResponse = res.getBody();
+  
+  test("one employee returned", function () {
+      expect(jsonResponse.employees.length).to.equal(1);
+  });
+  
+  test("correct employee tenantId returned", function () {
+      expect(jsonResponse.employees[0].tenantId).to.equal("tenant1");
+  });
+  test("correct employee email returned", function () {
+      expect(jsonResponse.employees[0].email).to.equal("got.you.jim@gmail.com");
+  });
+  test("correct employee phoneNumber returned", function () {
+      expect(jsonResponse.employees[0].phoneNumber).to.equal("699879879");
+  });
+  test("correct employee firstName returned", function () {
+      expect(jsonResponse.employees[0].firstName).to.equal("James");
+  });
+  test("correct employee lastName returned", function () {
+      expect(jsonResponse.employees[0].lastName).to.equal("Brown");
+  });
+  test("correct employee preferredName returned", function () {
+      expect(jsonResponse.employees[0].preferredName).to.equal("Jim");
+  });
+  test("correct employee lastName returned", function () {
+      expect(jsonResponse.employees[0].lastName).to.equal("Brown");
+  });
+  test("correct employee displayName returned", function () {
+      expect(jsonResponse.employees[0].displayName).to.equal("Jim Brown");
+  });
+  test("correct employee employeeNumber returned", function () {
+      expect(jsonResponse.employees[0].employeeNumber).to.equal("12345");
+  });
+  test("correct employee leaderEmployeeNumber returned", function () {
+      expect(jsonResponse.employees[0].leaderEmployeeNumber).to.equal("");
+  });
+  test("correct employee positionTitle returned", function () {
+      expect(jsonResponse.employees[0].positionTitle).to.equal("Head of stuff");
+  });
+  test("correct employee personalDescription returned", function () {
+      expect(jsonResponse.employees[0].personalDescription).to.equal("Person in charge of lots of things");
+  });
+  test("correct employee active returned", function () {
+      expect(jsonResponse.employees[0].active).to.equal(true);
+  });
+  test("correct employee adminPrivilege returned", function () {
+      expect(jsonResponse.employees[0].adminPrivilege).to.equal(true);
+  });
+}

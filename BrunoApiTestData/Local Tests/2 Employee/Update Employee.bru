@@ -1,0 +1,45 @@
+meta {
+  name: Update Employee
+  type: http
+  seq: 8
+}
+
+put {
+  url: http://{{LOCALDEVURL}}/Employees/tenant1/{{employeeUID}}
+  body: json
+  auth: bearer
+}
+
+headers {
+  uId: tester
+  tenantId: tenant1
+}
+
+auth:bearer {
+  token: {{AuthToken}}
+}
+
+body:json {
+  {
+      "tenantId": "tenant1",
+      "email": "got.you.jim@gmail.com",
+      "firstName": "James",
+      "lastName": "Brown",
+      "PreferredName": "Jim",
+      "phoneNumber": "699879879",
+      "initialPassword": "TEshhde",
+      "employeeNumber": "12345",
+      "positionTitle": "Head of stuff",
+      "personalDescription": "Person in charge of lots of things"
+  }
+}
+
+tests {
+  test("Status code is 201 (Added)", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+  
+  
+  const jsonResponse = res.getBody();
+  bru.setVar("employeeUID", jsonResponse.employee.employeeUID)
+}

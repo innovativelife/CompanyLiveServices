@@ -1,0 +1,46 @@
+meta {
+  name: Employee with duplicate Email Address cant be added
+  type: http
+  seq: 5
+}
+
+post {
+  url: http://{{LOCALDEVURL}}/Employees/tenant1/
+  body: json
+  auth: bearer
+}
+
+headers {
+  uId: tester
+  tenantId: tenant1
+}
+
+auth:bearer {
+  token: {{AuthToken}}
+}
+
+body:json {
+  {
+      "tenantId": "tenant1",
+      "email": "got.you.jim@gmail.com",
+      "firstName": "James",
+      "lastName": "Brown",
+      "PreferredName": "Jim",
+      "phoneNumber": "699879879",
+      "initialPassword": "TEshhde",
+      "employeeNumber": "987654",
+      "positionTitle": "Head of stuff",
+      "personalDescription": "Person in charge of lots of things"
+  }
+}
+
+tests {
+  test("Status code is 422 (Invalid Data)", function () {
+      expect(res.getStatus()).to.equal(422);
+  });
+  
+  const jsonResponse = res.getBody();
+  test("Duplicate employee number error returned", function () {
+      expect(jsonResponse.message).to.equal("Employee already exists with this Email Address - must be unique");
+  });
+}

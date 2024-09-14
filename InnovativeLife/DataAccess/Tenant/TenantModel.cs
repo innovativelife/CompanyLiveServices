@@ -14,17 +14,9 @@ public class TenantModel
     [FirestoreProperty]
     public string customerName {get; set; } = "";
     [FirestoreProperty]
-    public string primaryContactName {get; set;} = "";
+    public string primaryAdministratorEmployeeUID  {get; set; } = "";
     [FirestoreProperty]
-    public string primaryContactEmail {get; set;} = "";
-    [FirestoreProperty]
-    public string primaryContactPhone {get; set;} = "";
-    [FirestoreProperty]
-    public string secondaryContactName {get; set;} = "";
-    [FirestoreProperty]
-    public string secondaryContactEmail {get; set;} = "";
-    [FirestoreProperty]
-    public string secondaryContactPhone {get; set;} = "";
+    public string secondaryAdministratorEmployeeUID  {get; set; } = "";    
     [FirestoreProperty]
     public DateTime renewalDate {get; set;} = DateTime.Today.AddYears(1);
     [FirestoreProperty]

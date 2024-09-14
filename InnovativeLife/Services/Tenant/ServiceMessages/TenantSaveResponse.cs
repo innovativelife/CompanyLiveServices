@@ -1,5 +1,6 @@
 using InnovativeLife.DataAccess.Common;
 using InnovativeLife.Services.Common;
+using InnovativeLife.Services.Employee.ServiceMessages;
 
 namespace InnovativeLife.Services.Tenant.ServiceMessages;
 

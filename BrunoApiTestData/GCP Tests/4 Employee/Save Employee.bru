@@ -1,0 +1,35 @@
+meta {
+  name: Save Employee
+  type: http
+  seq: 5
+}
+
+post {
+  url: http://{{DEV_URL}}/Employee/Save/ccm8iz8UF5Y8Dup8T7GCp5gHaTv1
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{AuthToken}}
+}
+
+body:json {
+  {
+      "userUID": "ccm8iz8UF5Y8Dup8T7GCp5gHaTv1",
+      "identifier": "got.you.greg@gmail.com",
+      "firstName": "Gregory",
+      "lastName": "Smith",
+      "preferredName": "Geeg",
+      "active": true,
+      "tenantAccessList":
+      [
+          {
+              "tenantId": "tenant1",
+              "employeeId": "29392",
+              "employeeGroupMembershipType": "TBA",
+              "active": true
+          }
+      ]
+  }
+}
