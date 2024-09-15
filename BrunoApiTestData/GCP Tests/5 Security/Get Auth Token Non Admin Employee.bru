@@ -26,7 +26,7 @@ body:json {
 script:post-response {
   const jsonResponse = res.getBody();
   
-  bru.setVar("Admin1-AuthToken", jsonResponse.idToken)
+  bru.setVar("NonAdmin-AuthToken", jsonResponse.idToken)
 }
 
 tests {

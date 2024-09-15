@@ -95,7 +95,7 @@ public class EmployeeSaveProcessor : IEmployeeSaveProcessor
             if (saveUserResult.Success)
             {
 
-                var response = new EmployeeSaveResponse(Common.ServiceResponseBase.ResponseStatus.Added, "Employee updated successfully");
+                var response = new EmployeeSaveResponse(Common.ServiceResponseBase.ResponseStatus.Ok, "Employee updated successfully");
                 response.employee = new EmployeeItem
                 (
                     tenantId,

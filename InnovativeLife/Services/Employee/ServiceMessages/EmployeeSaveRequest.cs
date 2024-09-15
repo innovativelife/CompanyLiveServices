@@ -12,7 +12,6 @@ public class EmployeeSaveRequest : ServiceRequestObjectBase
     [Required(ErrorMessage = "Employee Phone number must be provided.")]
     [Phone]
     public string phoneNumber { get; set; } = "";
-    public string initialPassword { get; set; } = "";
 
     [Required(ErrorMessage = "First Name must be provided.")]
     public string firstName { get; set; } = "";

@@ -64,6 +64,7 @@ public class TenantSaveProcessor : ITenantSaveProcessor
         var tenantModel = new TenantModel
         {
             tenantId = tenantId,
+            identityManagerTenantId = request.identityManagerTenantId,
             tenantName = request.tenantName,
             customerName = request.customerName,
             primaryAdministratorEmployeeUID = request.primaryAdministratorEmployeeUID,

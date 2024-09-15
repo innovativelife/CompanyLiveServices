@@ -5,6 +5,9 @@ namespace InnovativeLife.Services.Tenant.ServiceMessages;
 
 public class TenantSaveRequest : ServiceRequestObjectBase
 {
+    [Required(ErrorMessage = "Identity Tenant Manager must be provided.")]
+    public string identityManagerTenantId { get; set; } = "";
+
     [Required(ErrorMessage = "Tenant Name must be provided.")]
     public string tenantName { get; set; } = "";
 

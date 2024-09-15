@@ -1,12 +1,12 @@
 meta {
-  name: Add  Employee
+  name: Read New Employee
   type: http
-  seq: 3
+  seq: 5
 }
 
-post {
-  url: https://{{URL}}/Employees/tenant999
-  body: json
+get {
+  url: http://{{URL}}/Employees/tenant999/{{Tenant999-AddedEmployeeUID}}
+  body: none
   auth: bearer
 }
 
@@ -14,24 +14,9 @@ auth:bearer {
   token: {{Admin1-AuthToken}}
 }
 
-body:json {
-  {
-      "email": "got.you.jumpier@gmail.com",
-      "firstName": "Jumpier",
-      "lastName": "Brown",
-      "PreferredName": "Jim",
-      "phoneNumber": "+39924344355",
-      "initialPassword": "TEshhde",
-      "employeeNumber": "59120358",
-      "leaderEmployeeNumber": "",
-      "positionTitle": "CEO",
-      "personalDescription": "Chief Executive Office"
-  }
-}
-
 tests {
-  test("Status code is 201 (Created) for " + "{{Admin1-AuthToken}}", function () {
-      expect(res.getStatus()).to.equal(201);
+  test("Status code is 200 (Ok) for " + "{{Admin1-AuthToken}}", function () {
+      expect(res.getStatus()).to.equal(200);
   });
   
   const jsonResponse = res.getBody();
