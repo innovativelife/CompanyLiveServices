@@ -1,0 +1,26 @@
+meta {
+  name: Set Admin Privilege for Employee
+  type: http
+  seq: 8
+}
+
+put {
+  url: http://{{URL}}/Employees/tenant999/{{Tenant999-AddedEmployeeUID}}/admin/true
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{Admin1-AuthToken}}
+}
+
+body:json {
+  {
+  }
+}
+
+tests {
+  test("Status code is 200 (Ok) for " + "{{Admin1-AuthToken}}", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}

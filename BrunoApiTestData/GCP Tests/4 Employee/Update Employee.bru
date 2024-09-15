@@ -1,0 +1,86 @@
+meta {
+  name: Update Employee
+  type: http
+  seq: 6
+}
+
+put {
+  url: https://{{URL}}/Employees/tenant999/{{Tenant999-AddedEmployeeUID}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{Admin1-AuthToken}}
+}
+
+body:json {
+  {
+      "email": "got.you.jumpier@gmail.com",
+      "firstName": "Jumpiest",
+      "lastName": "Brown",
+      "PreferredName": "Jim",
+      "phoneNumber": "+39924344666",
+      "employeeNumber": "59126668",
+      "leaderEmployeeNumber": "",
+      "positionTitle": "BOSS",
+      "personalDescription": "Boss of all things"
+  }
+}
+
+tests {
+  test("Status code is 200 (Ok) for " + "{{Admin1-AuthToken}}", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const jsonResponse = res.getBody();
+  
+  test("Correct tenant ID saved", function () {
+      expect(jsonResponse.employee.tenantId).to.equal("tenant999");
+  });
+  
+  test("email saved", function () {
+      expect(jsonResponse.employee.email).to.equal("got.you.jumpier@gmail.com");
+  });
+  
+  test("phoneNumber saved", function () {
+      expect(jsonResponse.employee.phoneNumber).to.equal("+39924344666");
+  });
+  
+  test("firstName saved", function () {
+      expect(jsonResponse.employee.firstName).to.equal("Jumpiest");
+  });
+  
+  test("lastName saved", function () {
+      expect(jsonResponse.employee.lastName).to.equal("Brown");
+  });
+  
+  test("preferredName saved", function () {
+      expect(jsonResponse.employee.preferredName).to.equal("Jim");
+  });
+  
+  test("displayName correct", function () {
+      expect(jsonResponse.employee.displayName).to.equal("Jim Brown");
+  });
+  
+  test("employeeNumber saved", function () {
+      expect(jsonResponse.employee.employeeNumber).to.equal("59126668");
+  });
+  
+  test("positionTitle saved", function () {
+      expect(jsonResponse.employee.positionTitle).to.equal("BOSS");
+  });
+  
+  test("Chief Executive Office saved", function () {
+      expect(jsonResponse.employee.personalDescription).to.equal("Boss of all things");
+  });
+  
+  test("active saved", function () {
+      expect(jsonResponse.employee.active).to.equal(true);
+  });
+  
+  test("adminPrivilege saved", function () {
+      expect(jsonResponse.employee.adminPrivilege).to.equal(false);
+  });
+  
+}

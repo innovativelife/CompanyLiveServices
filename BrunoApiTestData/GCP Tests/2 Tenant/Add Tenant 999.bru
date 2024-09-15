@@ -1,0 +1,84 @@
+meta {
+  name: Add Tenant 999
+  type: http
+  seq: 2
+}
+
+post {
+  url: https://{{URL}}/Tenants
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{AuthToken}}
+}
+
+body:json {
+  {
+      "tenantId": "tenant999",
+      "tenantName": "New-Tenant-999",
+      "customerName": "999 Inc",
+      "renewalDate": "2025-02-01T00:00:00",
+      "active": true,
+      "primaryAdministrator":
+      {
+          "email": "got.you.jim2@gmail.com",
+          "firstName": "James 2",
+          "lastName": "Brown2",
+          "PreferredName": "Jim",
+          "phoneNumber": "+61699879879",
+          "initialPassword": "TEshhde",
+          "employeeNumber": "2212345",
+          "positionTitle": "Head of stuff",
+          "personalDescription": "Person in charge of lots of things"
+      },
+    "secondaryAdministrator":
+      {
+          "email": "got.you.jim3@gmail.com",
+          "firstName": "James",
+          "lastName": "Brown",
+          "PreferredName": "Jim",
+          "phoneNumber": "+61699879822",
+          "initialPassword": "TEshhde",
+          "employeeNumber": "14552345",
+          "positionTitle": "Head of stuff",
+          "personalDescription": "Person in charge of lots of things"
+      }
+  }
+}
+
+tests {
+  test("Status code is 201 (created)", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+  
+  jsonResponse = res.getBody();
+  
+  test("tenantId tenant999 returned)", function () {
+      expect(jsonResponse.tenant.tenantId).to.equal("tenant999");
+  });
+  
+  test("customerName correct)", function () {
+      expect(jsonResponse.tenant.customerName).to.equal("999 Inc");
+  });
+  
+  test("identityManagerTenantId rerurned)", function () {
+      expect(jsonResponse.tenant.identityManagerTenantId.length>0);
+  });
+  
+  test("primary admin employee uid returned)", function () {
+      expect(jsonResponse.tenant.primaryAdministrator.employeeUID.length>0);
+  });
+  
+  test("secondary admin employee uid returned)", function () {
+      expect(jsonResponse.tenant.secondaryAdministrator.employeeUID.length>0);
+  });
+  
+  bru.setVar("Tenant999-IdMgrTenantId", jsonResponse.tenant.identityManagerTenantId)
+  
+  bru.setVar("Tenant999-PrimayAdminUID", jsonResponse.tenant.primaryAdministrator.employeeUID)
+  
+  bru.setVar("Tenant999-SecondaryAdminUID", jsonResponse.tenant.secondaryAdministrator.employeeUID)
+  
+}

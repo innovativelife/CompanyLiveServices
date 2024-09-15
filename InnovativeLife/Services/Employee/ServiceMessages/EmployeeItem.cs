@@ -31,7 +31,7 @@ public class EmployeeItem
         this.preferredName = preferredName;
         this.employeeNumber = employeeNumber;
         this.leaderEmployeeNumber = leaderEmployeeNumber;
-        this.positonTitle = positonTitle;
+        this.positionTitle = positonTitle;
         this.personalDescription = personalDescription;
         this.active = active;
         this.adminPrivilege = adminPrivilege;
@@ -61,7 +61,7 @@ public class EmployeeItem
     }
     public string employeeNumber { get; set; } = "";
     public string leaderEmployeeNumber { get; set; } = "";
-    public string positonTitle { get; set; } = "";
+    public string positionTitle { get; set; } = "";
     public string personalDescription { get; set; } = "";
     public bool active { get; set; } = true;
     public bool adminPrivilege { get; set; } = true;

@@ -27,20 +27,20 @@ public class EmployeeSetAdminPrivilegeProcessor : IEmployeeSetAdminPrivilegeProc
         _logger.LogInformation("EmployeeService.SetAdminPrivilege: Executing SetAdminPrivilege Service");
         try
         {
-            if (requestContext.developmentMode)
-            {
-                    _logger.LogError("In Development mode - Skipping setting Admin Claims");
-            }
-            else
-            {
-                var setClaimsResult = await _identityService.SetAdminAuthorisationForUser(requestContext.tenantId, requestContext.uId, adminPrivilege, requestContext);
+            // if (requestContext.developmentMode)
+            // {
+            //         _logger.LogError("In Development mode - Skipping setting Admin Claims");
+            // }
+            // else
+            // {
+            //     var setClaimsResult = await _identityService.SetAdminAuthorisationForUser(requestContext.tenantId, requestContext.uId, adminPrivilege, requestContext);
 
-                if (!setClaimsResult.Item1)
-                {
-                    _logger.LogError($"Error using identity service to set admin priviledge for {employeeUID}");
-                    return new EmployeeSetAdminPrivilegeResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, $"Failed to set admin status for employeeUID for {employeeUID}");
-                }
-            }
+            //     if (!setClaimsResult.Item1)
+            //     {
+            //         _logger.LogError($"Error using identity service to set admin priviledge for {employeeUID}");
+            //         return new EmployeeSetAdminPrivilegeResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, $"Failed to set admin status for employeeUID for {employeeUID}");
+            //     }
+            // }
 
             var result = await _employeeActions.SetAdminPrivilege(tenantId, employeeUID, adminPrivilege);
             if (!result.Success)

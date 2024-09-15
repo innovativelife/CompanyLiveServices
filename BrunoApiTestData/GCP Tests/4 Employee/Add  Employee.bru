@@ -1,0 +1,89 @@
+meta {
+  name: Add  Employee
+  type: http
+  seq: 3
+}
+
+post {
+  url: https://{{URL}}/Employees/tenant999
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{Admin1-AuthToken}}
+}
+
+body:json {
+  {
+      "email": "got.you.jumpier@gmail.com",
+      "firstName": "Jumpier",
+      "lastName": "Brown",
+      "PreferredName": "Jim",
+      "phoneNumber": "+39924344355",
+      "initialPassword": "TEshhde",
+      "employeeNumber": "59120358",
+      "leaderEmployeeNumber": "",
+      "positionTitle": "CEO",
+      "personalDescription": "Chief Executive Office"
+  }
+}
+
+tests {
+  test("Status code is 201 (Created) for " + "{{Admin1-AuthToken}}", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+  
+  const jsonResponse = res.getBody();
+  
+  test("Correct tenant ID saved", function () {
+      expect(jsonResponse.employee.tenantId).to.equal("tenant999");
+  });
+  
+  test("email saved", function () {
+      expect(jsonResponse.employee.email).to.equal("got.you.jumpier@gmail.com");
+  });
+  
+  test("phoneNumber saved", function () {
+      expect(jsonResponse.employee.phoneNumber).to.equal("+39924344355");
+  });
+  
+  test("firstName saved", function () {
+      expect(jsonResponse.employee.firstName).to.equal("Jumpier");
+  });
+  
+  test("lastName saved", function () {
+      expect(jsonResponse.employee.lastName).to.equal("Brown");
+  });
+  
+  test("preferredName saved", function () {
+      expect(jsonResponse.employee.preferredName).to.equal("Jim");
+  });
+  
+  test("displayName correct", function () {
+      expect(jsonResponse.employee.displayName).to.equal("Jim Brown");
+  });
+  
+  test("employeeNumber saved", function () {
+      expect(jsonResponse.employee.employeeNumber).to.equal("59120358");
+  });
+  
+  test("positionTitle saved", function () {
+      expect(jsonResponse.employee.positionTitle).to.equal("CEO");
+  });
+  
+  test("Chief Executive Office saved", function () {
+      expect(jsonResponse.employee.personalDescription).to.equal("Chief Executive Office");
+  });
+  
+  test("active saved", function () {
+      expect(jsonResponse.employee.active).to.equal(true);
+  });
+  
+  test("adminPrivilege saved", function () {
+      expect(jsonResponse.employee.adminPrivilege).to.equal(false);
+  });
+  
+  bru.setVar("Tenant999-AddedEmployeeUID", jsonResponse.employee.employeeUID)
+  
+}

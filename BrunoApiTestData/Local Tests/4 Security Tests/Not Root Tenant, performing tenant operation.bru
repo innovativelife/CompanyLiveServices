@@ -1,0 +1,26 @@
+meta {
+  name: Not Root Tenant, performing tenant operation
+  type: http
+  seq: 3
+}
+
+get {
+  url: http://{{LOCALDEVURL}}/Tenants/Root
+  body: none
+  auth: bearer
+}
+
+headers {
+  tenantId: NotRoot
+  uId: tester
+}
+
+auth:bearer {
+  token: {{AuthToken}}
+}
+
+tests {
+  test("Status code is 403", function () {
+      expect(res.getStatus()).to.equal(403);
+  });
+}

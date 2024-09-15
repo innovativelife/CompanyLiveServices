@@ -1,0 +1,37 @@
+meta {
+  name: Read Employees by LeaderEmployeNumber
+  type: http
+  seq: 19
+}
+
+get {
+  url: http://{{LOCALDEVURL}}/Employees/tenant1?leaderEmployeeNumber=12345
+  body: json
+  auth: bearer
+}
+
+params:query {
+  leaderEmployeeNumber: 12345
+}
+
+headers {
+  uId: tester
+  tenantId: tenant1
+}
+
+auth:bearer {
+  token: {{AuthToken}}
+}
+
+tests {
+  test("Status code is 200 (Ok)", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const jsonResponse = res.getBody();
+  
+  test("three employees returned", function () {
+      expect(jsonResponse.employees.length).to.equal(2);
+  });
+  
+}

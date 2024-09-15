@@ -1,0 +1,57 @@
+meta {
+  name: Update Tenant
+  type: http
+  seq: 5
+}
+
+put {
+  url: https://{{URL}}/Tenants/tenant999
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{AuthToken}}
+}
+
+body:json {
+  {
+      "identityManagerTenantId": "{{Tenant999-IdMgrTenantId}}",
+      "tenantName": "New-Tenant-999",
+      "customerName": "999 Inc Pty Ltd",
+      "renewalDate": "2025-02-01T00:00:00",
+      "active": true,
+      "primaryAdministratorEmployeeUID": "{{Tenant999-PrimayAdminUID}}",
+      "secondaryAdministratorEmployeeUID": "{{Tenant999-SecondaryAdminUID}}"
+  }
+    
+}
+
+tests {
+  test("Status code is 200 (Ok)", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  jsonResponse = res.getBody();
+  
+  test("tenantId tenant999 returned)", function () {
+      expect(jsonResponse.tenant.tenantId).to.equal("tenant999");
+  });
+  
+  test("updated customerName correct)", function () {
+      expect(jsonResponse.tenant.customerName).to.equal("999 Inc Pty Ltd");
+  });
+  
+  test("identityManagerTenantId rerurned)", function () {
+      expect(jsonResponse.tenant.identityManagerTenantId.length>0);
+  });
+  
+  test("primary admin employee uid returned)", function () {
+      expect(jsonResponse.tenant.primaryAdministrator.employeeUID.length>0);
+  });
+  
+  test("secondary admin employee uid returned)", function () {
+      expect(jsonResponse.tenant.secondaryAdministrator.employeeUID.length>0);
+  });
+  
+}

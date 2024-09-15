@@ -1,0 +1,32 @@
+meta {
+  name: Read All Tenants - None Found
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://{{LOCALDEVURL}}/Tenants
+  body: none
+  auth: bearer
+}
+
+headers {
+  tenantId: Root
+  Accept-Language: en-GB
+  uId: testing
+}
+
+auth:bearer {
+  token: {{AuthToken}}
+}
+
+tests {
+  test("Status code is 404 (Ok)", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+  
+  const jsonResponse = res.getBody();
+  test("0 tenants returned", function () {
+      expect(jsonResponse.tenants.length).to.equal(0);
+  });
+}

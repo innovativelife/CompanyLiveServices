@@ -1,0 +1,39 @@
+meta {
+  name: Read Tenant 1
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://{{LOCALDEVURL}}/Tenants/tenant1
+  body: none
+  auth: bearer
+}
+
+headers {
+  tenantId: Root
+  Accept-Language: en-GB
+  uId: Tester
+}
+
+auth:bearer {
+  token: {{AuthToken}}
+}
+
+tests {
+  test("Status code is 200 (Ok)", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const jsonResponse = res.getBody();
+  test("correct tenant name", function () {
+      expect(jsonResponse.tenant.tenantName).to.equal("New Tenant 1");
+  });
+  test("correct primary admin", function () {
+      expect(jsonResponse.tenant.primaryAdministrator.employeeNumber).to.equal("2212345");
+    
+  test("correct secondary admin", function () {
+      expect(jsonResponse.tenant.secondaryAdministrator.employeeNumber).to.equal("14552345");
+  });
+  });
+}

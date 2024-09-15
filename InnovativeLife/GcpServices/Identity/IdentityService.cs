@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authentication;
 using System.Security.Claims;
 using InnovativeLife.Services.Employee;
 using InnovativeLife.DataAccess.Tenant;
+using InnovativeLife.DataAccess.Employee;
 
 namespace InnovativeLife.GcpServices.Identity;
 
@@ -17,18 +18,18 @@ public class IdentityService : IIdentityService
 {
     private readonly ILogger<IdentityService> _logger;
     private readonly ITenantActions _tenantActions;
-    // private readonly IEmployeeService _employeeService;
-    public IdentityService(ILogger<IdentityService> logger, ITenantActions tenantActions)//, IEmployeeService employeeService)
+    private readonly IEmployeeActions _employeeActions;
+    public IdentityService(ILogger<IdentityService> logger, ITenantActions tenantActions, IEmployeeActions employeeActions)
     {
         _logger = logger;
         _tenantActions = tenantActions;
-        // _employeeService = employeeService;
+        _employeeActions = employeeActions;
     }
 
     // Use google's Auth API to validate the bearer token, and that the user is valid for tenant
     public async Task<AuthenticateResult> AuthenticateUserAndTenant(string authToken, string tenantId, IUserContext userContext, string schemeName)
     {
-        _logger.LogInformation($"IdentityService.AuthenticateUserAndTenant: About to validate token for tenant {tenantId}", LogLevel.Information);
+        _logger.LogInformation($"IdentityService.AuthenticateUserAndTenant: About to validate token for tenant {tenantId} with scheme {schemeName}", LogLevel.Information);
 
         if (FirebaseAuth.DefaultInstance == null)
         {
@@ -39,54 +40,94 @@ public class IdentityService : IIdentityService
             });
         }
 
-        // Translate tenant id into the Identity Platform's internal name
-        var readResult = await _tenantActions.Read(tenantId);
-        if (!readResult.Item1.Success)
+        string identityManagerTenantId;
+        if (tenantId == GcpConstants.RootTenantId)
         {
-            return AuthenticateResult.Fail($"IdentityService.AuthenticateUserAndTenant: TenantId {tenantId} not found");
+            // Request is for Root tenant
+            identityManagerTenantId = GcpConstants.RootIdentityManagerTenantId;
         }
-        var identityManagerTenantId = readResult.Item2.identityManagerTenantId;
-        _logger.LogInformation($"Swapped supplied tenant ID {tenantId} for identityManagerTenantId {identityManagerTenantId}");
+        else
+        {
+            // Translate tenant id into the Identity Platform's internal name
+            _logger.LogInformation($"IdentityService.AuthenticateUserAndTenant: About to read tenant details for {tenantId} to get identityManagerTenantId");
+            var readResult = await _tenantActions.Read(tenantId);
+            if (!readResult.Item1.Success)
+            {
+                return AuthenticateResult.Fail($"IdentityService.AuthenticateUserAndTenant: TenantId {tenantId} not found");
+            }
+
+            identityManagerTenantId = readResult.Item2.identityManagerTenantId;
+            userContext.customerName = readResult.Item2.customerName;
+
+            _logger.LogInformation($"IdentityService.AuthenticateUserAndTenant: Swapped supplied tenant ID {tenantId} for identityManagerTenantId {identityManagerTenantId}");
+        }
 
         // Call Firebase tenant manager to get auth manager 
-        _logger.LogInformation($"About to call AuthForTenant API for {identityManagerTenantId}");
+        _logger.LogInformation($"IdentityService.AuthenticateUserAndTenant: About to call AuthForTenant API for {identityManagerTenantId}");
         var authManager = FirebaseAuth.DefaultInstance!.TenantManager.AuthForTenant(identityManagerTenantId);
-        _logger.LogInformation($"Call to AuthForTenant API succeeded");
+        _logger.LogInformation($"IdentityService.AuthenticateUserAndTenant: Call to AuthForTenant API succeeded");
 
         // Validate token using auth manager
         var validateResult = await ValidateToken(authToken, authManager);
-
         if (!validateResult.Item1)
         {
             return AuthenticateResult.Fail("IdentityService.AuthenticateUserAndTenant: Token validation failed");
         }
-
-        var decodedToken = validateResult.Item2;
-
         _logger.LogInformation($"IdentityService.AuthenticateUserAndTenant: Verify passed ok");
 
-        // Get user details from identity manager
-        if (!await GetUserAndTenant(identityManagerTenantId, authManager, decodedToken, userContext))
+        // Get user from Identity Manager
+        var decodedToken = validateResult.Item2;
+        _logger.LogInformation($"IdentityService.GetUserAndTenant: Executing GetUserAndTenant for tenantID: {tenantId}");
+        UserRecord userRecord = await authManager.GetUserAsync(decodedToken);
+
+        if (userRecord == null)
         {
-            return AuthenticateResult.Fail("IdentityService.AuthenticateUserAndTenant: Failed to retrieve user or tenant");
+            _logger.LogInformation($"IdentityService.AuthenticateUserAndTenant: Could not get user record from GCP");
+            return AuthenticateResult.Fail("IdentityService.AuthenticateUserAndTenant: Failed to retrieve user from GCP Identity Platform"); ;
         }
 
-        // // Get Employee Details
-        // var getEmployeeResult = await _employeeService.ReadByEmployeeUID(userContext, userContext.uId);
-        // if (!getEmployeeResult.Success)
-        // {
-        //     _logger.LogError($"Failed to retrieve employee details for uid: {userContext.uId}");
-        //     return AuthenticateResult.Fail("IdentityService.AuthenticateUserAndTenant: failed to retribe employee details for user");
-        // }
+        _logger.LogInformation($"IdentityService.AuthenticateUserAndTenant: Retrieved user details - UiD:         {userRecord.Uid}");
+        _logger.LogInformation($"IdentityService.AuthenticateUserAndTenant: Retrieved user details - TenantId:    {userRecord.TenantId}");
 
-        // userContext.adminPrivilege = getEmployeeResult.employee!.adminPrivilege;
+        userContext.uId = userRecord.Uid;
 
-        _logger.LogInformation($"IdentityService.AuthenticateUserAndTenant: About to get claims from userContext for uId: {userContext.uId}");
+        // Populate user context
+        if (tenantId == GcpConstants.RootTenantId)
+        {
+            // Super users are in Root Admin, but do not have tenant or employee records in the DB.
+            if (!await GetSuperUserDetailsFromIdentityPlatform(identityManagerTenantId, userRecord, userContext))
+            {
+                return AuthenticateResult.Fail("IdentityService.AuthenticateUserAndTenant: Failed to retrieve user or tenant");
+            }
+        }
+        else
+        {
+            if (!await GetEmployeeDetails(tenantId, userContext))
+            {
+                return AuthenticateResult.Fail("IdentityService.AuthenticateUserAndTenant: Failed to retrieve user or tenant");
+            }
+        }
+
+        _logger.LogInformation($"Root Tenant?  {userContext.rootAdmin}");
+        _logger.LogInformation($"Tenant Admin? {userContext.adminPrivilege}");
+
+        _logger.LogInformation($"IdentityService.AuthenticateUserAndTenant: About to get claims from userContext for uId: {userContext.uId} for scheme {schemeName}");
         var claims = AuthorizationPolicies.GetClaims(userContext, _logger);
+
+        int claimCount = 0;
+        foreach (var claim in claims)
+        {
+            _logger.LogInformation($"IdentityService.AuthenticateUserAndTenant: Claim #${++claimCount}: ${claim}");
+        }
+
         var claimsIdentity = new ClaimsIdentity(claims, schemeName);
         var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
 
-        return AuthenticateResult.Success(new AuthenticationTicket(claimsPrincipal, schemeName));
+        _logger.LogInformation($"IdentityService.AuthenticateUserAndTenant: Getting ticket");
+        var ticket = new AuthenticationTicket(claimsPrincipal, schemeName);
+
+        _logger.LogInformation("Returning success");
+        return AuthenticateResult.Success(ticket);
     }
 
     // Validate the bearer token
@@ -114,36 +155,22 @@ public class IdentityService : IIdentityService
     }
 
     // Get User and Tenant Details
-    private async Task<bool> GetUserAndTenant(string tenantId, TenantAwareFirebaseAuth authManager, string uId, IUserContext userContext)
+    private async Task<bool> GetSuperUserDetailsFromIdentityPlatform(string tenantId, UserRecord userRecord, IUserContext userContext)
     {
         try
         {
-            _logger.LogInformation($"IdentityService.GetUserAndTenant: Executing GetUserAndTenant for tenantID: {tenantId} Uid: {uId}");
-            UserRecord userRecord = await authManager.GetUserAsync(uId);
-
-            if (userRecord == null)
-            {
-                _logger.LogInformation($"IdentityService.GetUserAndTenant: Could not get user record from GCP");
-                return false;
-            }
-
-            _logger.LogInformation($"IdentityService.GetUserAndTenant: Retrieved user details - UiD:         {userRecord.Uid}");
-            _logger.LogInformation($"IdentityService.GetUserAndTenant: Retrieved user details - TenantId:    {userRecord.TenantId}");
-
             var tenant = await FirebaseAuth.DefaultInstance!.TenantManager.GetTenantAsync(tenantId);
-
             _logger.LogInformation($"IdentityService.GetUserAndTenant: Retrieved tenant details - DisplayName: {tenant.DisplayName}");
 
             userContext.uId = userRecord.Uid;
-            userContext.displayName = userRecord.DisplayName;
+            userContext.preferredName = userRecord.DisplayName;
             userContext.active = !userRecord.Disabled;
             userContext.email = userRecord.Email;
             userContext.phoneNumber = userRecord.PhoneNumber;
             userContext.tenantId = userRecord.TenantId;
-            userContext.tenantName = tenant.DisplayName;
-            userContext.rootAdmin = tenant.TenantId == GcpConstants.RootIdentityManagerTenantId;
-
-            _logger.LogInformation($"Root Tenant? {userContext.rootAdmin}");
+            userContext.customerName = tenant.DisplayName;
+            userContext.adminPrivilege = false;
+            userContext.rootAdmin = true;
 
             return true;
         }
@@ -152,6 +179,27 @@ public class IdentityService : IIdentityService
             _logger.LogError($"IdentityService.GetUserAndTenant: Error attempting to read user or tenant record: {ex.Message}");
             return false;
         }
+    }
+
+    async Task<bool> GetEmployeeDetails(string tenantId, IUserContext userContext)
+    {
+        // Get Employee Details from DB
+        _logger.LogInformation($"IdentityService.AuthenticateUserAndTenant: About to read employee details for {userContext.uId}");
+
+        var getEmployeeResult = await _employeeActions.ReadByEmployeeUID(tenantId, userContext.uId);
+        if (!getEmployeeResult.Item1.Success)
+        {
+            _logger.LogError($"Failed to retrieve employee details for uid: {userContext.uId}");
+            return false;
+        }
+        userContext.preferredName = getEmployeeResult.Item2!.preferredName;
+        userContext.active = getEmployeeResult.Item2.active;
+        userContext.email = getEmployeeResult.Item2.email;
+        userContext.phoneNumber = getEmployeeResult.Item2.phoneNumber;
+        userContext.tenantId = getEmployeeResult.Item2.tenantId;
+        userContext.adminPrivilege = getEmployeeResult.Item2.adminPrivilege;
+        userContext.rootAdmin = false;
+        return true;
     }
 
     public async Task<AddTenantResponse> AddTenant(string displayName)
@@ -227,31 +275,31 @@ public class IdentityService : IIdentityService
         }
     }
 
-    public async Task<Tuple<bool, string>> SetAdminAuthorisationForUser(string tenantId, string uid, bool adminUser, IUserContext requestContext)
-    {
-        try
-        {
-            _logger.LogInformation($"IdentityService.SetAdminAuthorisationForUser: Starting for {uid} to {adminUser}");
+    // public async Task<Tuple<bool, string>> SetAdminAuthorisationForUser(string tenantId, string uid, bool adminUser, IUserContext requestContext)
+    // {
+    //     try
+    //     {
+    //         _logger.LogInformation($"IdentityService.SetAdminAuthorisationForUser: Starting for {uid} to {adminUser}");
 
-            var authManager = FirebaseAuth.DefaultInstance!.TenantManager.AuthForTenant(tenantId);
+    //         var authManager = FirebaseAuth.DefaultInstance!.TenantManager.AuthForTenant(tenantId);
 
-            // Set admin privileges on the user corresponding to uid.
-            var claims = new Dictionary<string, object>()
-            {
-                { "admin", adminUser },
-            };
+    //         // Set admin privileges on the user corresponding to uid.
+    //         var claims = new Dictionary<string, object>()
+    //         {
+    //             { "admin", adminUser },
+    //         };
 
-            _logger.LogInformation($"IdentityService.SetAdminAuthorisationForUser: Setting admin custom claim for {uid} to {adminUser}");
-            await FirebaseAuth.DefaultInstance.SetCustomUserClaimsAsync(uid, claims);
+    //         _logger.LogInformation($"IdentityService.SetAdminAuthorisationForUser: Setting admin custom claim for {uid} to {adminUser}");
+    //         await FirebaseAuth.DefaultInstance.SetCustomUserClaimsAsync(uid, claims);
 
-            return new Tuple<bool, string>(true, "");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError($"IdentityService.SetAdminAuthorisationForUser: Error attempting to add customer claims");
-            return new Tuple<bool, string>(false, GetErrorMessageFromGcpAuthError(ex));
-        }
-    }
+    //         return new Tuple<bool, string>(true, "");
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         _logger.LogError($"IdentityService.SetAdminAuthorisationForUser: Error attempting to add custom claims");
+    //         return new Tuple<bool, string>(false, GetErrorMessageFromGcpAuthError(ex));
+    //     }
+    // }
 
     // GCP has very unhelpful error handling for Auth errors, throwing an exception with a message that contains a code inside an embedded JSON object
     // See here: https://firebase.google.com/docs/auth/admin/errors

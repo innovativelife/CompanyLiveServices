@@ -1,0 +1,65 @@
+meta {
+  name: Add Duplicate ID -Error-
+  type: http
+  seq: 6
+}
+
+post {
+  url: http://{{LOCALDEVURL}}/Tenants
+  body: json
+  auth: bearer
+}
+
+headers {
+  tenantId: Root
+  uId: tester
+}
+
+auth:bearer {
+  token: {{AuthToken}}
+}
+
+body:json {
+  {
+      "tenantId": "tenant1",
+      "tenantName": "New Tenant Name",
+      "customerName": "Tenant 1",
+      "renewalDate": "2025-02-01T00:00:00",
+      "active": true,
+        "primaryAdministrator":
+        {
+            "email": "got.you.jim2@gmail.com",
+            "firstName": "James 2",
+            "lastName": "Brown2",
+            "PreferredName": "Jim",
+            "phoneNumber": "699879879",
+            "initialPassword": "TEshhde",
+            "employeeNumber": "2212345",
+            "positionTitle": "Head of stuff",
+            "personalDescription": "Person in charge of lots of things"
+        },
+      "secondaryAdministrator":
+        {
+            "email": "got.you.jim@gmail.com",
+            "firstName": "James",
+            "lastName": "Brown",
+            "PreferredName": "Jim",
+            "phoneNumber": "699879879",
+            "initialPassword": "TEshhde",
+            "employeeNumber": "14552345",
+            "positionTitle": "Head of stuff",
+            "personalDescription": "Person in charge of lots of things"
+        }
+  }
+}
+
+tests {
+  test("Status code is 409 (Conflict)", function () {
+      expect(res.getStatus()).to.equal(409);
+  });
+  
+  const jsonResponse = res.getBody();
+  test("Error returned", function () {
+      expect(jsonResponse.success).to.equal(false);
+  });
+}

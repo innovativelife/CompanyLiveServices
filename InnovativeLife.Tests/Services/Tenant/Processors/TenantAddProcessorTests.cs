@@ -6,6 +6,7 @@ using InnovativeLife.Services.Tenant.Processors;
 using InnovativeLife.DataAccess.Tenant;
 using InnovativeLife.DataAccess.Common;
 using InnovativeLife.GcpServices.Identity;
+using InnovativeLife.Services.Employee;
 
 namespace InnovativeLife.Tests.Services.Tenant.Processors;
 
@@ -17,7 +18,8 @@ public class TenantAddProcessorTests
         var logger = Mock.Of<ILogger<TenantAddProcessor>>();
         var tenantActions = Mock.Of<ITenantActions>();
         var identityService = Mock.Of<IIdentityService>();
-        var tenantAddProcessor = new TenantAddProcessor(logger, tenantActions, identityService);
+        var employeeService = Mock.Of<IEmployeeService>();
+        var tenantAddProcessor = new TenantAddProcessor(logger, tenantActions, identityService, employeeService);
 
         var requestContext = new UserContext();
         requestContext.rootAdmin = false;
@@ -37,7 +39,9 @@ public class TenantAddProcessorTests
         var readResponse = new Tuple<DalResponse, TenantModel>(dalResponse, tenantModel);
         var tenantActions = Mock.Of<ITenantActions>();
         var identityService = Mock.Of<IIdentityService>();
-        var tenantAddProcessor = new TenantAddProcessor(logger, tenantActions, identityService);
+        var employeeService = Mock.Of<IEmployeeService>();
+
+        var tenantAddProcessor = new TenantAddProcessor(logger, tenantActions, identityService, employeeService);
 
         var requestContext = new UserContext();
         requestContext.rootAdmin = true;
@@ -57,7 +61,9 @@ public class TenantAddProcessorTests
         var readResponse = new Tuple<DalResponse, TenantModel>(dalResponse, tenantModel);
         var tenantActions = Mock.Of<ITenantActions>();
         var identityService = Mock.Of<IIdentityService>();
-        var tenantAddProcessor = new TenantAddProcessor(logger, tenantActions, identityService);
+        var employeeService = Mock.Of<IEmployeeService>();
+
+        var tenantAddProcessor = new TenantAddProcessor(logger, tenantActions, identityService, employeeService);
 
         var requestContext = new UserContext();
         requestContext.rootAdmin = true;
@@ -83,7 +89,9 @@ public class TenantAddProcessorTests
         tenantActions.Setup(x => x.Read("yyy")).Returns(Task.FromResult(readByIdResponse));
 
         var identityService = Mock.Of<InnovativeLife.GcpServices.Identity.IIdentityService>();
-        var tenantAddProcessor = new InnovativeLife.Services.Tenant.Processors.TenantAddProcessor(logger, tenantActions.Object, identityService);
+        var employeeService = Mock.Of<IEmployeeService>();
+
+        var tenantAddProcessor = new InnovativeLife.Services.Tenant.Processors.TenantAddProcessor(logger, tenantActions.Object, identityService, employeeService);
 
         var requestContext = new UserContext();
         requestContext.rootAdmin = true;
@@ -119,7 +127,9 @@ public class TenantAddProcessorTests
         tenantActions.Setup(x => x.ReadByName("xxx")).Returns(Task.FromResult(readByNameResponse));
 
         var identityService = Mock.Of<InnovativeLife.GcpServices.Identity.IIdentityService>();
-        var tenantAddProcessor = new InnovativeLife.Services.Tenant.Processors.TenantAddProcessor(logger, tenantActions.Object, identityService);
+        var employeeService = Mock.Of<IEmployeeService>();
+
+        var tenantAddProcessor = new InnovativeLife.Services.Tenant.Processors.TenantAddProcessor(logger, tenantActions.Object, identityService, employeeService);
 
         var requestContext = new UserContext();
         requestContext.rootAdmin = true;

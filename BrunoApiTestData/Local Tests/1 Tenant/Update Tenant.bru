@@ -1,0 +1,52 @@
+meta {
+  name: Update Tenant
+  type: http
+  seq: 11
+}
+
+put {
+  url: http://{{LOCALDEVURL}}/Tenants/tenant1
+  body: json
+  auth: bearer
+}
+
+headers {
+  tenantId: Root
+  uId: tester
+}
+
+auth:bearer {
+  token: {{AuthToken}}
+}
+
+body:json {
+  {
+      "tenantName": "tenant1",
+      "customerName": "Updated customer name",
+      "primaryAdministratorEmployeeUID": "{{tenant1-primaryAdminUID}}",
+      "secondaryAdministratorEmployeeUID": "{{tenant1-secondaryAdminUID}}",
+      "renewalDate": "2025-02-01T00:00:00",
+      "active": false
+  }
+}
+
+tests {
+  test("Status code is 200 (Success)", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const jsonResponse = res.getBody();
+  
+  test("updated customer name", function () {
+      expect(jsonResponse.tenant.customerName).to.equal("Updated customer name");
+  });
+  
+  test("correct primary admin", function () {
+      expect(jsonResponse.tenant.primaryAdministrator.employeeNumber).to.equal("2212345");
+  }); 
+  
+  test("correct secondary admin", function () {
+      expect(jsonResponse.tenant.secondaryAdministrator.employeeNumber).to.equal("14552345");
+  });
+  
+}

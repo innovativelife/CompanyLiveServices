@@ -5,13 +5,13 @@ namespace InnovativeLife.Security;
 public interface IUserContext
 {
     public string uId { get; set; }
-    public string displayName { get; set; }
+    public string preferredName { get; set; }
     public bool active { get; set; }
     public bool disabled { get; }
     public string email { get; set; }
     public string phoneNumber { get; set; }
     public string tenantId { get; set; }
-    public string tenantName { get; set; }
+    public string customerName { get; set; }
     public bool adminPrivilege { get; set; }
     public bool rootAdmin { get; set; }
     public bool developmentMode { get; set; }
@@ -21,13 +21,13 @@ public interface IUserContext
 public class UserContext : IUserContext
 {
     public string uId { get; set; } = "";
-    public string displayName { get; set; } = "";
+    public string preferredName { get; set; } = "";
     public bool active { get; set; } = false;
     public bool disabled { get { return !active; } }
     public string email { get; set; } = "";
     public string phoneNumber { get; set; } = "";
     public string tenantId { get; set; } = "";
-    public string tenantName { get; set; } = "";
+    public string customerName { get; set; } = "";
     public bool adminPrivilege { get; set; } = false;
     public bool rootAdmin { get; set; } = false;
     public bool developmentMode { get; set; } = false;
@@ -38,9 +38,9 @@ public class UserContext : IUserContext
 
         this.rootAdmin = requestTenantId == "Root";
         this.uId = requestUid;
-        this.tenantName = requestTenantId;
+        this.customerName = requestTenantId;
 
-        this.displayName = "Local Dev User";
+        this.preferredName = "Local Dev User";
         this.email = "localdev@testing123.com";
         this.phoneNumber = "0428283192";
         this.active = true;

@@ -70,7 +70,7 @@ public class ServiceResponseBase
         get
         {
             var error = Messages.Count > 2 ? "errors" : "error";
-            return Messages.Count == 0 ? "" : Messages[0] + (Messages.Count > 1 ? $" (plus {Messages.Count - 1} other {error})" : "");
+            return Messages.Count == 0 ? "" : Messages[0] + (Messages.Count > 1 ? $" (and {Messages.Count - 1} other {error})" : "");
         }
         set
         {
@@ -82,7 +82,7 @@ public class ServiceResponseBase
 
     public ResponseStatus Status { get; set; } = ResponseStatus.Ok;
 
-    public bool Success { get { return (Status == ResponseStatus.Ok); } }
+    public bool Success { get { return (Status == ResponseStatus.Ok || Status == ResponseStatus.Added); } }
 
     public IResult GetAspNetResult()
     {

@@ -1,0 +1,50 @@
+meta {
+  name: Read Tenant - tenant999
+  type: http
+  seq: 3
+}
+
+get {
+  url: https://{{URL}}/Tenants/tenant999
+  body: none
+  auth: bearer
+}
+
+headers {
+  Accept-Language: en-GB
+}
+
+auth:bearer {
+  token: {{AuthToken}}
+}
+
+tests {
+  test("Status code is 200 (OK)", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  jsonResponse = res.getBody();
+  
+  test("tenantId tenant999 returned)", function () {
+      expect(jsonResponse.tenant.tenantId).to.equal("tenant999");
+  });
+  
+  test("customerName correct)", function () {
+      expect(jsonResponse.tenant.customerName).to.equal("999 Inc");
+  });
+  
+  var identityManagerTenantId = bru.getVar("Tenant999-IdMgrTenantId");
+  test("identityManagerTenantId correct)", function() {
+      expect(jsonResponse.tenant.identityManagerTenantId).to.equal(identityManagerTenantId);
+  });
+  
+  var primaryAdministrator = bru.getVar("Tenant999-PrimayAdminUID");
+  test("secondary admin employee uid correct)", function () {
+      expect(jsonResponse.tenant.primaryAdministrator.employeeUID).to.equal(primaryAdministrator);
+  });
+  
+  var secondaryAdministrator = bru.getVar("Tenant999-SecondaryAdminUID");
+  test("secondary admin employee uid correct)", function () {
+      expect(jsonResponse.tenant.secondaryAdministrator.employeeUID).to.equal(secondaryAdministrator);
+  });
+}

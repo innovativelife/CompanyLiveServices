@@ -1,0 +1,43 @@
+meta {
+  name: Get Auth Token greg-superuser
+  type: http
+  seq: 1
+}
+
+post {
+  url: https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=AIzaSyAR8KDfWu9alVLsiBBQEJpmLeg7Rd7Ao9g
+  body: json
+  auth: none
+}
+
+params:query {
+  key: AIzaSyAR8KDfWu9alVLsiBBQEJpmLeg7Rd7Ao9g
+}
+
+body:json {
+  {
+      "email": "greg+superuser@innovativelife.studio",
+      "password": "tra1nst0p!",
+      "tenantId": "Root-0ewfy",
+      "returnSecureToken": true
+  }
+}
+
+script:post-response {
+  const jsonResponse = res.getBody();
+  
+  bru.setVar("AuthToken", jsonResponse.idToken)
+}
+
+tests {
+  test("Status code is 200 (Ok)", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const jsonResponse = res.getBody();
+  
+  test("ID Token returned", function () {
+      expect(jsonResponse.idToken.length).to.greaterThan(0);
+  });
+  
+}

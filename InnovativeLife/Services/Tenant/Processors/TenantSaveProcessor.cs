@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using InnovativeLife.DataAccess.Tenant;
 using InnovativeLife.Security;
 using InnovativeLife.Services.Tenant.ServiceMessages;
+using InnovativeLife.Services.Employee;
 
 namespace InnovativeLife.Services.Tenant.Processors;
 
@@ -9,11 +10,13 @@ public class TenantSaveProcessor : ITenantSaveProcessor
 {
     private readonly ILogger<TenantSaveProcessor> _logger;
     private readonly ITenantActions _tenantActions;
+    private readonly IEmployeeService _employeeService;
 
-    public TenantSaveProcessor(ILogger<TenantSaveProcessor> logger, ITenantActions tenantActions)
+    public TenantSaveProcessor(ILogger<TenantSaveProcessor> logger, ITenantActions tenantActions, IEmployeeService employeeService)
     {
         _logger = logger;
         _tenantActions = tenantActions;
+        _employeeService = employeeService;
     }
     public async Task<TenantSaveResponse> Save(IUserContext requestContext, string tenantId, TenantSaveRequest request)
     {
@@ -43,19 +46,29 @@ public class TenantSaveProcessor : ITenantSaveProcessor
         {
             return new TenantSaveResponse(Common.ServiceResponseBase.ResponseStatus.NotFound, "Tenant does not exist.  Use Add action to create a new tenant.");
         }
+        
+        // Check Primary and Secondary Employees exist
+        var primaryEmployeeReadResponse = await _employeeService.ReadByEmployeeUID(requestContext, tenantId, request.primaryAdministratorEmployeeUID);
+        if (!primaryEmployeeReadResponse.Success)
+        {
+            return new TenantSaveResponse(Common.ServiceResponseBase.ResponseStatus.NotFound, $"Primary Employee with UID { request.primaryAdministratorEmployeeUID} does not exist.");
+        }
+
+        var secondaryEmployeeReadResponse = await _employeeService.ReadByEmployeeUID(requestContext, tenantId, request.secondaryAdministratorEmployeeUID);
+        if (!secondaryEmployeeReadResponse.Success)
+        {
+            return new TenantSaveResponse(Common.ServiceResponseBase.ResponseStatus.NotFound, $"Secondary Employee with UID { request.secondaryAdministratorEmployeeUID} does not exist.");
+        }
 
         // Update tenant
         var tenantModel = new TenantModel
         {
             tenantId = tenantId,
+            identityManagerTenantId = request.identityManagerTenantId,
             tenantName = request.tenantName,
             customerName = request.customerName,
-            primaryContactName = request.primaryContactName,
-            primaryContactEmail = request.primaryContactEmail,
-            primaryContactPhone = request.primaryContactPhone,
-            secondaryContactName = request.secondaryContactName,
-            secondaryContactEmail = request.secondaryContactEmail,
-            secondaryContactPhone = request.secondaryContactPhone,
+            primaryAdministratorEmployeeUID = request.primaryAdministratorEmployeeUID,
+            secondaryAdministratorEmployeeUID = request.secondaryAdministratorEmployeeUID,
             renewalDate = DateTime.SpecifyKind(request.renewalDate, DateTimeKind.Utc),
             active = request.active
         };
@@ -74,10 +87,8 @@ public class TenantSaveProcessor : ITenantSaveProcessor
                     identityManagerTenantId = tenantModel.identityManagerTenantId,
                     tenantName = tenantModel.tenantName,
                     customerName = tenantModel.customerName,
-                    primaryContactName = tenantModel.primaryContactName,
-                    primaryContactPhone = tenantModel.primaryContactPhone,
-                    secondaryContactName = tenantModel.secondaryContactName,
-                    secondaryContactEmail = tenantModel.secondaryContactEmail,
+                    primaryAdministrator = primaryEmployeeReadResponse.employee,
+                    secondaryAdministrator = secondaryEmployeeReadResponse.employee,
                     renewalDate = tenantModel.renewalDate,
                     active = tenantModel.active
                 }
@@ -86,7 +97,7 @@ public class TenantSaveProcessor : ITenantSaveProcessor
         }
         else
         {
-            return new TenantSaveResponse(Common.ServiceResponseBase.ResponseStatus.Exception, "Tenant could not be added due to unexpected DB error");
+            return new TenantSaveResponse(Common.ServiceResponseBase.ResponseStatus.Exception, "Tenant could not be added due to unexpected error");
         }
     }
 }
