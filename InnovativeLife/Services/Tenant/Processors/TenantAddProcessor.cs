@@ -58,22 +58,12 @@ public class TenantAddProcessor : ITenantAddProcessor
             return new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.Duplicate, "Tenant with this name already exists");
         }
 
-        // Add tenant to identity manager
-        string identityManagerTenantId;
-        if (requestContext.developmentMode)
+        var addResult = await _identityService.AddTenant(request.tenantName);
+        if (!addResult.Success)
         {
-            _logger.LogInformation("Skipped Identity Service Add action in development mode");
-            identityManagerTenantId = "DevMode";
+            return new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, addResult.Message);
         }
-        else
-        {
-            var addResult = await _identityService.AddTenant(request.tenantName);
-            if (!addResult.Success)
-            {
-                return new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, addResult.Message);
-            }
-            identityManagerTenantId = addResult.tenantId;
-        }
+        string identityManagerTenantId = addResult.tenantId;
 
         // Add tenant to DB
         var tenantModel = new TenantModel
