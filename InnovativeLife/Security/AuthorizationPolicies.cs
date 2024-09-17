@@ -18,15 +18,20 @@ public static class AuthorizationPolicies
     private const string RootAdminClaim = "RootAdmin";
     private const string DevelopmentModeClaim = "DevelopmentMode";
 
+    public const string SuperUserRequired = "SuperUserRequired";
     public static void GetSuperUserPolicy(AuthorizationPolicyBuilder policy)
     {
         policy.RequireClaim(RootAdminClaim, ["True"]);
     }
 
+    public const string TenantAdmin = "TenantAdmin";
+
     public static void GetTenantAdminPolicy(AuthorizationPolicyBuilder policy)
     {
         policy.RequireClaim(TenantAdminClaim, "True");
     }
+
+    public const string TenantUser = "TenantUser";
 
     public static void GetTenantUserPolicy(AuthorizationPolicyBuilder policy)
     {

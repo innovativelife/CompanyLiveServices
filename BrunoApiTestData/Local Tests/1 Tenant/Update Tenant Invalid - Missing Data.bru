@@ -30,8 +30,8 @@ tests {
   });
   
   const jsonResponse = res.getBody();
-  test("4 errors detected", function () {
+  test("5 errors detected", function () {
       expect(jsonResponse.success).to.equal(false);
-      expect(jsonResponse.messages.length).to.equal(4);
+      expect(jsonResponse.messages.length).to.equal(5);
   });
 }

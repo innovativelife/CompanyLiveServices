@@ -53,7 +53,7 @@ public class EmployeeAddProcessor : IEmployeeAddProcessor
             {
                 return new EmployeeAddResponse(Common.ServiceResponseBase.ResponseStatus.InvalidData, "Employee already exists with this Employee Number - must be unique");
             }
-            
+
             // Check uniqueness of key email
             var readByEmailResult = await _employeeActions.ReadByEmail(tenantId, request.email);
             if (readByEmailResult.Item1.Success)
@@ -71,25 +71,15 @@ public class EmployeeAddProcessor : IEmployeeAddProcessor
                 }
             }
 
-            string employeeUID = "";
-
-            if (requestContext.developmentMode)
+            // Add user to the tenancy of the executing user
+            var addUserToTenantResult = await _identityService.AddUserToTenant(readTenantResult.Item2.identityManagerTenantId, request.displayName, request.email, request.phoneNumber, request.initialPassword, requestContext);
+            if (!addUserToTenantResult.Success)
             {
-                _logger.LogInformation("EmployeeAddProcessor.AddEmployee: Development mode - User creation skipped");
-                employeeUID = Guid.NewGuid().ToString();
-            }
-            else
-            {
-                // Add user to the tenancy of the executing user
-                var addUserToTenantResult = await _identityService.AddUserToTenant(readTenantResult.Item2.identityManagerTenantId, request.displayName, request.email, request.phoneNumber, request.initialPassword, requestContext);
-                if (!addUserToTenantResult.Success)
-                {
-                    _logger.LogInformation($"EmployeeAddProcessor.AddEmployee: Failed to create user  in GCP Identity Service -  {addUserToTenantResult.Message}");
+                _logger.LogInformation($"EmployeeAddProcessor.AddEmployee: Failed to create user  in GCP Identity Service -  {addUserToTenantResult.Message}");
 
-                    return new EmployeeAddResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, $"Failed to create user in GCP Identity Service");
-                }
-                employeeUID = addUserToTenantResult.uId;
+                return new EmployeeAddResponse(Common.ServiceResponseBase.ResponseStatus.BusinessError, $"Failed to create user in GCP Identity Service");
             }
+            string employeeUID = addUserToTenantResult.uId;
 
             // Create the employee for user in the DB
             var employeeModel = new DataAccess.Employee.Employee

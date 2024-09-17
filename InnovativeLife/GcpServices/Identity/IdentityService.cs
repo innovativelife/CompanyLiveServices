@@ -8,7 +8,6 @@ using FirebaseAdmin.Auth.Multitenancy;
 using InnovativeLife.GcpServices.Identity.ServiceMessages;
 using Microsoft.AspNetCore.Authentication;
 using System.Security.Claims;
-using InnovativeLife.Services.Employee;
 using InnovativeLife.DataAccess.Tenant;
 using InnovativeLife.DataAccess.Employee;
 
@@ -40,11 +39,13 @@ public class IdentityService : IIdentityService
             });
         }
 
+        // Determime Identity Manager Tenant Id
         string identityManagerTenantId;
         if (tenantId == GcpConstants.RootTenantId)
         {
             // Request is for Root tenant
             identityManagerTenantId = GcpConstants.RootIdentityManagerTenantId;
+            userContext.customerName = GcpConstants.RootTenantId;
         }
         else
         {
@@ -274,32 +275,6 @@ public class IdentityService : IIdentityService
             return new AddUserToTenantResponse(Services.Common.ServiceResponseBase.ResponseStatus.BusinessError, GetErrorMessageFromGcpAuthError(ex));
         }
     }
-
-    // public async Task<Tuple<bool, string>> SetAdminAuthorisationForUser(string tenantId, string uid, bool adminUser, IUserContext requestContext)
-    // {
-    //     try
-    //     {
-    //         _logger.LogInformation($"IdentityService.SetAdminAuthorisationForUser: Starting for {uid} to {adminUser}");
-
-    //         var authManager = FirebaseAuth.DefaultInstance!.TenantManager.AuthForTenant(tenantId);
-
-    //         // Set admin privileges on the user corresponding to uid.
-    //         var claims = new Dictionary<string, object>()
-    //         {
-    //             { "admin", adminUser },
-    //         };
-
-    //         _logger.LogInformation($"IdentityService.SetAdminAuthorisationForUser: Setting admin custom claim for {uid} to {adminUser}");
-    //         await FirebaseAuth.DefaultInstance.SetCustomUserClaimsAsync(uid, claims);
-
-    //         return new Tuple<bool, string>(true, "");
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         _logger.LogError($"IdentityService.SetAdminAuthorisationForUser: Error attempting to add custom claims");
-    //         return new Tuple<bool, string>(false, GetErrorMessageFromGcpAuthError(ex));
-    //     }
-    // }
 
     // GCP has very unhelpful error handling for Auth errors, throwing an exception with a message that contains a code inside an embedded JSON object
     // See here: https://firebase.google.com/docs/auth/admin/errors
