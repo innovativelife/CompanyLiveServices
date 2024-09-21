@@ -11,6 +11,7 @@ public interface IUserContext
     public string email { get; set; }
     public string phoneNumber { get; set; }
     public string tenantId { get; set; }
+    public string identityManagerTenantId { get; set; }
     public string customerName { get; set; }
     public bool adminPrivilege { get; set; }
     public bool rootAdmin { get; set; }
@@ -27,6 +28,7 @@ public class UserContext : IUserContext
     public string email { get; set; } = "";
     public string phoneNumber { get; set; } = "";
     public string tenantId { get; set; } = "";
+    public string identityManagerTenantId { get; set; } = "";
     public string customerName { get; set; } = "";
     public bool adminPrivilege { get; set; } = false;
     public bool rootAdmin { get; set; } = false;

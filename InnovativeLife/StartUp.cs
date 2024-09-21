@@ -48,6 +48,7 @@ public class Startup : FunctionsStartup
             .AddSingleton<IEmployeeReadProcessor, EmployeeReadProcessor>()
             .AddSingleton<IEmployeeSetAdminPrivilegeProcessor, EmployeeSetAdminPrivilegeProcessor>()
             .AddSingleton<IEmployeeSaveProcessor, EmployeeSaveProcessor>()
+            .AddSingleton<IEmployeeResetPasswordProcessor, EmployeeResetPasswordProcessor>()
             .AddSingleton<ITenantActions, TenantActions>()
             .AddSingleton<ITenantService, TenantService>()
             .AddSingleton<ITenantAddProcessor, TenantAddProcessor>()
@@ -82,7 +83,7 @@ public class Startup : FunctionsStartup
                 (GoogleIdentityAuthenticationOptions.DefaultScheme,
                 options => { });
        
-        services.AddAuthentication();
+        AddAuthorisations(services);
     }
 
     private void SetUpLocalDevAuth(IServiceCollection services)
@@ -178,6 +179,16 @@ public class Startup : FunctionsStartup
         {
             Summary = "Set admin privilege for an employee",
             Description = "Set admin privilege for an employee. This allows them to perform admin functions within their organisation's tenant."
+        });
+
+        endpoints.MapPut("/employees/{tenantId}/{employeeUID}/resetPassword/{newPassword}", async (IEmployeeService service, IUserContext requestContext, string tenantId, string employeeUID, string newPassword) =>
+            (await service.ResetPassword(requestContext, tenantId, employeeUID, newPassword)).GetAspNetResult())
+        .RequireAuthorization(AuthorizationPolicies.TenantAdmin)
+        .WithName("EmployeeResetPassword")
+        .WithOpenApi(operation => new(operation)
+        {
+            Summary = "Reset Password for an employee",
+            Description = "Reser password for an employee."
         });
 
         endpoints.MapPut("/employees/{tenantId}/{employeeUID}", async (IEmployeeService service, IUserContext requestContext, string tenantId, string employeeUID, EmployeeSaveRequest saveRequest) =>
