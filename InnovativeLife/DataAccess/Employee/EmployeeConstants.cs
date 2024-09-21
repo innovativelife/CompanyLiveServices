@@ -11,4 +11,5 @@ public static class EmployeeContants
     public static string firstName = "firstName";
     public static string lastName = "lastName";
     public static string leaderEmployeeNumber = "leaderEmployeeNumber";
+    public static string adminPrivilege = "adminPrivilege";
 }

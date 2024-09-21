@@ -59,6 +59,7 @@ public class IdentityService : IIdentityService
 
             identityManagerTenantId = readResult.Item2.identityManagerTenantId;
             userContext.customerName = readResult.Item2.customerName;
+            userContext.identityManagerTenantId   = readResult.Item2.identityManagerTenantId;
 
             _logger.LogInformation($"IdentityService.AuthenticateUserAndTenant: Swapped supplied tenant ID {tenantId} for identityManagerTenantId {identityManagerTenantId}");
         }
@@ -114,12 +115,6 @@ public class IdentityService : IIdentityService
 
         _logger.LogInformation($"IdentityService.AuthenticateUserAndTenant: About to get claims from userContext for uId: {userContext.uId} for scheme {schemeName}");
         var claims = AuthorizationPolicies.GetClaims(userContext, _logger);
-
-        int claimCount = 0;
-        foreach (var claim in claims)
-        {
-            _logger.LogInformation($"IdentityService.AuthenticateUserAndTenant: Claim #${++claimCount}: ${claim}");
-        }
 
         var claimsIdentity = new ClaimsIdentity(claims, schemeName);
         var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
@@ -273,6 +268,36 @@ public class IdentityService : IIdentityService
         {
             _logger.LogInformation($"IdentityService.AddUserToTenant: Error creating user for tenant");
             return new AddUserToTenantResponse(Services.Common.ServiceResponseBase.ResponseStatus.BusinessError, GetErrorMessageFromGcpAuthError(ex));
+        }
+    }
+
+    public async Task<ResetUserPasswordResponse> ResetUserPassword(string tenantId, string uId, string newPassword, IUserContext requestContext)
+    {
+        _logger.LogInformation($"IdentityService.ResetUserPassword: resetting password for {requestContext.uId}");
+
+        var authManager = FirebaseAuth.DefaultInstance!.TenantManager.AuthForTenant(requestContext.identityManagerTenantId);
+
+        try
+        {
+            UserRecordArgs args = new UserRecordArgs()
+            {
+                Uid = uId,
+                Password = newPassword,
+            };
+
+            UserRecord userRecord = await authManager.UpdateUserAsync(args);
+
+            // See the UserRecord reference doc for the contents of userRecord.
+            Console.WriteLine($"Successfully updated user: {userRecord.Uid}");
+
+            var result = new ResetUserPasswordResponse(Services.Common.ServiceResponseBase.ResponseStatus.Ok, "");
+            result.uId = requestContext.uId;
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogInformation($"IdentityService.ResetUserPassword: Error updating password");
+            return new ResetUserPasswordResponse(Services.Common.ServiceResponseBase.ResponseStatus.BusinessError, GetErrorMessageFromGcpAuthError(ex));
         }
     }
 

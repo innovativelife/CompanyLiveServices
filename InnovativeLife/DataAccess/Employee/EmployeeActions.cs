@@ -198,13 +198,12 @@ public class EmployeeActions : IEmployeeActions
 
             var db = Utilities.connectToFirestore();
 
-
             CollectionReference collection = db.Collection(EmployeeContants.employeeCollection);
             DocumentReference employeeRef = db.Collection(EmployeeContants.employeeCollection).Document(employeeUID);
 
             Dictionary<string, object> adminPrivilegeUpdate = new Dictionary<string, object>
             {
-                { "adminPrivilege", adminPrivilege }
+                { EmployeeContants.adminPrivilege, adminPrivilege }
             };
             var result =  await employeeRef.UpdateAsync(adminPrivilegeUpdate);
 
@@ -219,6 +218,4 @@ public class EmployeeActions : IEmployeeActions
             return new DalResponse(DalResponse.ResponseStatus.Exception);
         }
     }
-
-   
 }

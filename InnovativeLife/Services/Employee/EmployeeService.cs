@@ -17,8 +17,9 @@ public class EmployeeService : IEmployeeService
     private IEmployeeReadProcessor _employeeReadProcessor;
     private IEmployeeSaveProcessor _employeeSaveProcessor;
     private IIdentityService _identityService;
+    private IEmployeeResetPasswordProcessor _employeeResetPasswordProcessor;
 
-    public EmployeeService(ILogger<EmployeeService> logger, IIdentityService identityService, IEmployeeAddProcessor employeeCreateProcessor, IEmployeeSetAdminPrivilegeProcessor employeeSetAdminPrivilegeProcessor, IEmployeeReadProcessor employeeReadProcessor, IEmployeeSaveProcessor employeeSaveProcessor)
+    public EmployeeService(ILogger<EmployeeService> logger, IIdentityService identityService, IEmployeeAddProcessor employeeCreateProcessor, IEmployeeSetAdminPrivilegeProcessor employeeSetAdminPrivilegeProcessor, IEmployeeReadProcessor employeeReadProcessor, IEmployeeSaveProcessor employeeSaveProcessor, IEmployeeResetPasswordProcessor employeeResetPasswordProcessor)
     {
         _logger = logger;
         _identityService = identityService;
@@ -26,6 +27,8 @@ public class EmployeeService : IEmployeeService
         _employeeSetAdminPrivilegeProcessor = employeeSetAdminPrivilegeProcessor;
         _employeeSaveProcessor = employeeSaveProcessor;
         _employeeReadProcessor = employeeReadProcessor;
+        _employeeSaveProcessor = employeeSaveProcessor;
+        _employeeResetPasswordProcessor = employeeResetPasswordProcessor;
     }
 
     public async Task<EmployeeAddResponse> Add(IUserContext requestContext, string tenantId, EmployeeAddRequest request)
@@ -51,5 +54,10 @@ public class EmployeeService : IEmployeeService
     public async Task<EmployeeSearchResponse> SearchEmployee(IUserContext requestContext, string tenantId, string? employeeNumber, string? email, string? firstName, string? lastName, string? leaderEmployeeNumber)
     {
         return await _employeeReadProcessor.SearchEmployee(requestContext, tenantId, employeeNumber, email, firstName, lastName, leaderEmployeeNumber);
+    }
+
+    public async Task<EmployeeResetPasswordResponse> ResetPassword(IUserContext requestContext, string tenantId, string employeeUID, string newPassword)
+    {
+        return await _employeeResetPasswordProcessor.ResetPassword(requestContext, tenantId, employeeUID, newPassword);
     }
 }
