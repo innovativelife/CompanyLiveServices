@@ -1,0 +1,64 @@
+meta {
+  name: Add Tenant 666
+  type: http
+  seq: 1
+}
+
+post {
+  url: https://{{URL}}/Tenants
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{AuthToken}}
+}
+
+body:json {
+  {
+      "tenantId": "tenant666",
+      "tenantName": "New-Tenant-666",
+      "customerName": "666 Inc",
+      "renewalDate": "2025-02-01T00:00:00",
+      "active": true,
+      "primaryAdministrator":
+      {
+          "email": "got.you.6661@gmail.com",
+          "firstName": "666",
+          "lastName": "Admin 1",
+          "PreferredName": "Jim",
+          "phoneNumber": "+399243446661",
+          "initialPassword": "newTenant",
+          "employeeNumber": "22234345",
+          "positionTitle": "1st Head of stuff",
+          "personalDescription": "1st Person in charge of lots of things"
+      },
+    "secondaryAdministrator":
+      {
+          "email": "got.you.6662@gmail.com",
+          "firstName": "666",
+          "lastName": "Admin 2",
+          "PreferredName": "Jim",
+          "phoneNumber": "+399243446662",
+          "initialPassword": "TEshhde",
+          "employeeNumber": "2341234",
+          "positionTitle": "2nd Head of stuff",
+          "personalDescription": "2nd Person in charge of lots of things"
+      }
+  }
+}
+
+tests {
+  test("Status code is 201 (created)", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+  
+  jsonResponse = res.getBody();
+  
+  bru.setVar("Tenant666-IdMgrTenantId", jsonResponse.tenant.identityManagerTenantId)
+  
+  bru.setVar("Tenant666-PrimayAdminUID", jsonResponse.tenant.primaryAdministrator.employeeUID)
+  
+  bru.setVar("Tenant666-SecondaryAdminUID", jsonResponse.tenant.secondaryAdministrator.employeeUID)
+  
+}

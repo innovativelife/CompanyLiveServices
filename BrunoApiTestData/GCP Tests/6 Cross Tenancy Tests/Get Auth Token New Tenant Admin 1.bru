@@ -1,0 +1,44 @@
+meta {
+  name: Get Auth Token New Tenant Admin 1
+  type: http
+  seq: 2
+}
+
+post {
+  url: https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=AIzaSyAR8KDfWu9alVLsiBBQEJpmLeg7Rd7Ao9g
+  body: json
+  auth: none
+}
+
+params:query {
+  key: AIzaSyAR8KDfWu9alVLsiBBQEJpmLeg7Rd7Ao9g
+}
+
+body:json {
+  {
+      "email": "got.you.6661@gmail.com",
+      "password": "newTenant",
+      "tenantId": "{{Tenant666-IdMgrTenantId}}",
+      "returnSecureToken": true
+  }
+}
+
+script:post-response {
+  const jsonResponse = res.getBody();
+  
+  bru.setVar("NonAdmin-AuthToken", jsonResponse.idToken)
+}
+
+tests {
+  test("Status code is 200 (Ok)", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const jsonResponse = res.getBody();
+  
+  test("ID Token returned", function () {
+      expect(jsonResponse.idToken.length).to.greaterThan(0);
+  });
+  
+  bru.setVar("NewTenant-Admin1-AuthToken", jsonResponse.idToken)
+}

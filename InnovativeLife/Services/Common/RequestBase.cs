@@ -1,9 +1,8 @@
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 
 namespace InnovativeLife.Services.Common;
 
-public class ServiceRequestObjectBase
+public class RequestBase
 {
 
     public List<string> Validate()

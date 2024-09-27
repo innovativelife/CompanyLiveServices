@@ -4,7 +4,7 @@ using InnovativeLife.Services.Employee.ServiceMessages;
 
 namespace InnovativeLife.Services.Tenant.ServiceMessages;
 
-public class TenantAddRequest : ServiceRequestObjectBase
+public class TenantAddRequest : RequestBase
 {
     [Required(ErrorMessage = "Tenant Id must be provided.")]
     public string tenantId { get; set; } = "";

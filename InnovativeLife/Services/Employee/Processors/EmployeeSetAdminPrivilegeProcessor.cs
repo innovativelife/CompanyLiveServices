@@ -27,6 +27,19 @@ public class EmployeeSetAdminPrivilegeProcessor : IEmployeeSetAdminPrivilegeProc
         _logger.LogInformation("EmployeeService.SetAdminPrivilege: Executing SetAdminPrivilege Service");
         try
         {
+            // Retrieve existing details
+            var existingEmployee = await _employeeActions.ReadByEmployeeUID(tenantId, employeeUID);
+            if (!existingEmployee.Item1.Success)
+            {
+                return new EmployeeSetAdminPrivilegeResponse(Common.ServiceResponseBase.ResponseStatus.NotFound, $"Employee with Employee UID {employeeUID} does not exist");
+            }
+
+            // Check employee is in correct tenant
+            if (!existingEmployee.Item2.tenantId.Equals(tenantId))
+            {
+                _logger.LogCritical("EmployeeService.SetAdminPrivilege: Security violation - Attempt made to update employee to admin in another tenant");
+                return new EmployeeSetAdminPrivilegeResponse(Common.ServiceResponseBase.ResponseStatus.BadRequest, "Invalid operation");
+            }
 
             var result = await _employeeActions.SetAdminPrivilege(tenantId, employeeUID, adminPrivilege);
             if (!result.Success)

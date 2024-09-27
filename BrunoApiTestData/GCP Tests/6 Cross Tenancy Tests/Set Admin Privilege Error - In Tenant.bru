@@ -1,0 +1,27 @@
+meta {
+  name: Set Admin Privilege Error - In Tenant
+  type: http
+  seq: 8
+}
+
+put {
+  url: http://{{URL}}/Employees/tenant666/{{Tenant999-AddedEmployeeUID}}/admin/true
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{NewTenant-Admin1-AuthToken}}
+}
+
+body:json {
+  {
+  }
+}
+
+tests {
+  test("Status code is 404 (Not Found)", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+  
+}

@@ -109,7 +109,7 @@ public class EmployeeActions : IEmployeeActions
     {
         try
         {
-            _logger.LogInformation("EmployeeActions.Search starting");
+            _logger.LogInformation($"EmployeeActions.Search starting with parameters: tenantId: {tenantId} | employeeNumber: {employeeNumber} | email: {email} | firstName: {firstName} | lastName: {lastName} | leaderEmployeeNumber: {leaderEmployeeNumber}");
 
             var db = Utilities.connectToFirestore();
             Query employeeQuery = db.Collection(EmployeeContants.employeeCollection);
@@ -118,28 +118,30 @@ public class EmployeeActions : IEmployeeActions
 
             if (!string.IsNullOrEmpty(employeeNumber))
             {
-                employeeQuery = employeeQuery.WhereEqualTo(EmployeeContants.employeeNumber, employeeNumber);
+                employeeQuery.WhereEqualTo(EmployeeContants.employeeNumber, employeeNumber);
             }
 
             if (!string.IsNullOrEmpty(email))
             {
-                employeeQuery = employeeQuery.WhereEqualTo(EmployeeContants.email, email);
+                employeeQuery.WhereEqualTo(EmployeeContants.email, email);
             }
 
             if (!string.IsNullOrEmpty(firstName))
             {
-                employeeQuery = employeeQuery.WhereEqualTo(EmployeeContants.firstName, firstName);
+                employeeQuery.WhereEqualTo(EmployeeContants.firstName, firstName);
             }
 
             if (!string.IsNullOrEmpty(lastName))
             {
-                employeeQuery = employeeQuery.WhereEqualTo(EmployeeContants.lastName, lastName);
+                employeeQuery.WhereEqualTo(EmployeeContants.lastName, lastName);
             }
 
             if (!string.IsNullOrEmpty(leaderEmployeeNumber))
             {
-                employeeQuery = employeeQuery.WhereEqualTo(EmployeeContants.leaderEmployeeNumber, leaderEmployeeNumber);
+                employeeQuery.WhereEqualTo(EmployeeContants.leaderEmployeeNumber, leaderEmployeeNumber);
             }
+
+            employeeQuery.ToString();
 
             QuerySnapshot employeeQuerySnapshot = await employeeQuery.GetSnapshotAsync();
 
@@ -149,9 +151,9 @@ public class EmployeeActions : IEmployeeActions
             }
 
             var employees = new List<Employee>();
-           foreach (DocumentSnapshot documentSnapshot in employeeQuerySnapshot.Documents)
+            foreach (DocumentSnapshot documentSnapshot in employeeQuerySnapshot.Documents)
             {
-                employees.Add( documentSnapshot.ConvertTo<Employee>());
+                employees.Add(documentSnapshot.ConvertTo<Employee>());
             }
 
             _logger.LogInformation($"EmployeeActions.Search: Complete with {employees.Count} employees returned");
@@ -173,7 +175,6 @@ public class EmployeeActions : IEmployeeActions
             _logger.LogInformation($"EmployeeActions.Save: Starting read for employee UID - {employeeModel.employeeUID}");
 
             var db = Utilities.connectToFirestore();
-            CollectionReference collection = db.Collection(EmployeeContants.employeeCollection);
             DocumentReference employeeRef = db.Collection(EmployeeContants.employeeCollection).Document(userUID);
 
             var result = await employeeRef.SetAsync(employeeModel);
@@ -198,14 +199,13 @@ public class EmployeeActions : IEmployeeActions
 
             var db = Utilities.connectToFirestore();
 
-            CollectionReference collection = db.Collection(EmployeeContants.employeeCollection);
             DocumentReference employeeRef = db.Collection(EmployeeContants.employeeCollection).Document(employeeUID);
 
             Dictionary<string, object> adminPrivilegeUpdate = new Dictionary<string, object>
             {
                 { EmployeeContants.adminPrivilege, adminPrivilege }
             };
-            var result =  await employeeRef.UpdateAsync(adminPrivilegeUpdate);
+            var result = await employeeRef.UpdateAsync(adminPrivilegeUpdate);
 
             _logger.LogInformation($"EmployeeActions.SetAdminPrivilege: Finished updating admin privilege for {employeeUID} to {adminPrivilege}");
 

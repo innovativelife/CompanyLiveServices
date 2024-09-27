@@ -1,0 +1,32 @@
+meta {
+  name: Add  Employee - Error for non admin user
+  type: http
+  seq: 3
+}
+
+post {
+  url: https://{{URL}}/Employees/tenant999
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{NonAdmin-AuthToken}}
+}
+
+body:json {
+  {
+      "email": "got.you.dontwork@gmail.com",
+      "firstName": "Error",
+      "lastName": "Error",
+      "PreferredName": "Error",
+      "phoneNumber": "+3992423452355",
+      "initialPassword": "DontMatter"
+  }
+}
+
+tests {
+  test("Status code is 403 (Forbidden)", function () {
+      expect(res.getStatus()).to.equal(403);
+  });
+}

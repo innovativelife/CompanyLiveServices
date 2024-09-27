@@ -3,7 +3,7 @@ using InnovativeLife.Services.Common;
 
 namespace InnovativeLife.Services.Employee.ServiceMessages;
 
-public class EmployeeAddRequest : ServiceRequestObjectBase
+public class EmployeeAddRequest : RequestBase
 {
     [Required(ErrorMessage = "Employee Email ID must be provided.")]
     [EmailAddress]

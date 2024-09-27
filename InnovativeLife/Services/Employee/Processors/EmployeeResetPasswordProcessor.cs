@@ -24,6 +24,7 @@ public class EmployeeResetPasswordProcessor : IEmployeeResetPasswordProcessor
         _logger.LogInformation("EmployeeResetPasswordProcessor.ResetPassword: Executing ResetPassword Service");
         try
         {
+            
             var result = await _identityService.ResetUserPassword(tenantId, employeeUID, newPassword, requestContext);
             if (!result.Success)
             {

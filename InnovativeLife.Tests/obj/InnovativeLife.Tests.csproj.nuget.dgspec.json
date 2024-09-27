@@ -49,7 +49,7 @@
           "dependencies": {
             "Google.Cloud.Firestore": {
               "target": "Package",
-              "version": "[3.3.0, )"
+              "version": "[3.8.0, )"
             },
             "Microsoft.Extensions.Logging.Abstractions": {
               "target": "Package",
@@ -141,27 +141,27 @@
           "dependencies": {
             "FirebaseAdmin": {
               "target": "Package",
-              "version": "[2.3.0, )"
+              "version": "[3.0.1, )"
             },
             "FirebaseAuthentication.net": {
               "target": "Package",
-              "version": "[4.0.2, )"
-            },
-            "Google.Apis.CloudFunctions.v1": {
-              "target": "Package",
-              "version": "[1.60.0.3045, )"
+              "version": "[4.1.0, )"
             },
             "Google.Apis.Firebaseappcheck.v1": {
               "target": "Package",
-              "version": "[1.60.0.3036, )"
+              "version": "[1.68.0.3476, )"
             },
             "Google.Cloud.Firestore": {
               "target": "Package",
-              "version": "[3.3.0, )"
+              "version": "[3.8.0, )"
             },
             "Google.Cloud.Functions.Hosting": {
               "target": "Package",
-              "version": "[2.0.0, )"
+              "version": "[2.2.1, )"
+            },
+            "Google.Cloud.Functions.V2": {
+              "target": "Package",
+              "version": "[1.7.0, )"
             },
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
