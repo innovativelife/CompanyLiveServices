@@ -39,6 +39,13 @@ public class EmployeeSaveProcessor : IEmployeeSaveProcessor
                 return new EmployeeSaveResponse(Common.ServiceResponseBase.ResponseStatus.NotFound, $"Employee with Employee UID {employeeUID} does not exist");
             }
 
+            // Check employee is in correct tenant
+            if (!existingEmployee.Item2.tenantId.Equals(tenantId))
+            {
+                _logger.LogCritical("EmployeeSaveProcessor.SaveEmployee: Security violation - Attempt made to update employee in another tenant");
+                return new EmployeeSaveResponse(Common.ServiceResponseBase.ResponseStatus.BadRequest, "Invalid operation");
+            }
+
             // Check uniqueness of key employeeNumber (if it is being updated)
             if (existingEmployee.Item2.employeeNumber != request.employeeNumber)
             {

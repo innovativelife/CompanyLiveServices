@@ -3,7 +3,7 @@ using InnovativeLife.Services.Common;
 
 namespace InnovativeLife.Services.Tenant.ServiceMessages;
 
-public class TenantSaveRequest : ServiceRequestObjectBase
+public class TenantSaveRequest : RequestBase
 {
     [Required(ErrorMessage = "Identity Tenant Manager must be provided.")]
     public string identityManagerTenantId { get; set; } = "";

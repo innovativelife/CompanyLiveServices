@@ -1,0 +1,41 @@
+meta {
+  name: Add Non Admin Employee
+  type: http
+  seq: 1
+}
+
+post {
+  url: https://{{URL}}/Employees/tenant999
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{Admin1-AuthToken}}
+}
+
+body:json {
+  {
+      "email": "got.you.securityTester@gmail.com",
+      "firstName": "Security",
+      "lastName": "Tester",
+      "PreferredName": "Sec",
+      "phoneNumber": "+399223452355",
+      "initialPassword": "NewEmp2",
+      "employeeNumber": "29435235",
+      "leaderEmployeeNumber": "",
+      "positionTitle": "Testing security",
+      "personalDescription": "Testing security"
+  }
+}
+
+tests {
+  test("Status code is 201 (Created) for " + "{{Admin1-AuthToken}}", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+  
+  const jsonResponse = res.getBody();
+  
+  bru.setVar("Tenant999-SecurityTesterUID", jsonResponse.employee.employeeUID)
+  
+}

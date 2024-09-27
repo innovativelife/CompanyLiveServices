@@ -1,0 +1,27 @@
+meta {
+  name: Read All Employees - In Tenant - 2
+  type: http
+  seq: 10
+}
+
+get {
+  url: http://{{URL}}/Employees/tenant666
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{NewTenant-Admin1-AuthToken}}
+}
+
+tests {
+  test("Status code is 200 (Ok) for " + "{{Admin1-AuthToken}}", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const jsonResponse = res.getBody();
+  
+  test("Expect two employees returned)", function () {
+      expect(jsonResponse.employees.length).to.equal(2);
+  });
+}

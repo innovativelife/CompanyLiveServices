@@ -1,0 +1,23 @@
+meta {
+  name: Read All Employees - Cross Tenant
+  type: http
+  seq: 9
+}
+
+get {
+  url: http://{{URL}}/Employees/tenant999
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{NewTenant-Admin1-AuthToken}}
+}
+
+tests {
+  test("Status code is 401 (Unauthorized) for " + "{{Admin1-AuthToken}}", function () {
+      expect(res.getStatus()).to.equal(401);
+  });
+  
+  
+}

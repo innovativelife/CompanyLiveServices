@@ -93,7 +93,6 @@ public class IdentityService : IIdentityService
 
         userContext.uId = userRecord.Uid;
 
-        // Populate user context
         if (tenantId == GcpConstants.RootTenantId)
         {
             // Super users are in Root Admin, but do not have tenant or employee records in the DB.

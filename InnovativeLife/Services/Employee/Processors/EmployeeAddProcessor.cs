@@ -61,7 +61,7 @@ public class EmployeeAddProcessor : IEmployeeAddProcessor
                 return new EmployeeAddResponse(Common.ServiceResponseBase.ResponseStatus.InvalidData, "Employee already exists with this Email Address - must be unique");
             }
 
-            // Check leader exists
+            // Check leader exists (if leader supplied)
             if (request.leaderEmployeeNumber.Trim().Length > 0)
             {
                 var readByLeaderEmployeeNumberResult = await _employeeActions.ReadByEmployeeNumber(tenantId, request.leaderEmployeeNumber);
@@ -71,7 +71,7 @@ public class EmployeeAddProcessor : IEmployeeAddProcessor
                 }
             }
 
-            // Add user to the tenancy of the executing user
+            // Add user to the Google Idemntity Platform's tenancy of the executing user
             var addUserToTenantResult = await _identityService.AddUserToTenant(readTenantResult.Item2.identityManagerTenantId, request.displayName, request.email, request.phoneNumber, request.initialPassword, requestContext);
             if (!addUserToTenantResult.Success)
             {

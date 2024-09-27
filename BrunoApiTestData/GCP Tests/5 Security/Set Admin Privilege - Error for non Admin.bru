@@ -1,0 +1,27 @@
+meta {
+  name: Set Admin Privilege - Error for non Admin
+  type: http
+  seq: 6
+}
+
+put {
+  url: http://{{URL}}/Employees/tenant999/{{Tenant999-AddedEmployeeUID}}/admin/true
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{NonAdmin-AuthToken}}
+}
+
+body:json {
+  {
+  }
+}
+
+tests {
+  test("Status code is 403 (Forbidden)", function () {
+      expect(res.getStatus()).to.equal(403);
+  });
+  
+}
