@@ -114,34 +114,32 @@ public class EmployeeActions : IEmployeeActions
             var db = Utilities.connectToFirestore();
             Query employeeQuery = db.Collection(EmployeeContants.employeeCollection);
 
-            employeeQuery.WhereEqualTo(EmployeeContants.tenantId, tenantId);
+            employeeQuery = employeeQuery.WhereEqualTo(EmployeeContants.tenantId, tenantId);
 
             if (!string.IsNullOrEmpty(employeeNumber))
             {
-                employeeQuery.WhereEqualTo(EmployeeContants.employeeNumber, employeeNumber);
+                employeeQuery = employeeQuery.WhereEqualTo(EmployeeContants.employeeNumber, employeeNumber);
             }
 
             if (!string.IsNullOrEmpty(email))
             {
-                employeeQuery.WhereEqualTo(EmployeeContants.email, email);
+                employeeQuery = employeeQuery.WhereEqualTo(EmployeeContants.email, email);
             }
 
             if (!string.IsNullOrEmpty(firstName))
             {
-                employeeQuery.WhereEqualTo(EmployeeContants.firstName, firstName);
+                employeeQuery = employeeQuery.WhereEqualTo(EmployeeContants.firstName, firstName);
             }
 
             if (!string.IsNullOrEmpty(lastName))
             {
-                employeeQuery.WhereEqualTo(EmployeeContants.lastName, lastName);
+                employeeQuery = employeeQuery.WhereEqualTo(EmployeeContants.lastName, lastName);
             }
 
             if (!string.IsNullOrEmpty(leaderEmployeeNumber))
             {
-                employeeQuery.WhereEqualTo(EmployeeContants.leaderEmployeeNumber, leaderEmployeeNumber);
+                employeeQuery = employeeQuery.WhereEqualTo(EmployeeContants.leaderEmployeeNumber, leaderEmployeeNumber);
             }
-
-            employeeQuery.ToString();
 
             QuerySnapshot employeeQuerySnapshot = await employeeQuery.GetSnapshotAsync();
 

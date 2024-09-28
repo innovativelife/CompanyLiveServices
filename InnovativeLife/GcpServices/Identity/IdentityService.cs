@@ -46,6 +46,7 @@ public class IdentityService : IIdentityService
             // Request is for Root tenant
             identityManagerTenantId = GcpConstants.RootIdentityManagerTenantId;
             userContext.customerName = GcpConstants.RootTenantId;
+            userContext.tenantId = GcpConstants.RootTenantId;
         }
         else
         {
@@ -60,6 +61,7 @@ public class IdentityService : IIdentityService
             identityManagerTenantId = readResult.Item2.identityManagerTenantId;
             userContext.customerName = readResult.Item2.customerName;
             userContext.identityManagerTenantId   = readResult.Item2.identityManagerTenantId;
+            userContext.tenantId   = tenantId;
 
             _logger.LogInformation($"IdentityService.AuthenticateUserAndTenant: Swapped supplied tenant ID {tenantId} for identityManagerTenantId {identityManagerTenantId}");
         }
@@ -96,7 +98,7 @@ public class IdentityService : IIdentityService
         if (tenantId == GcpConstants.RootTenantId)
         {
             // Super users are in Root Admin, but do not have tenant or employee records in the DB.
-            if (!await GetSuperUserDetailsFromIdentityPlatform(identityManagerTenantId, userRecord, userContext))
+            if (!await GetSuperUserDetailsFromIdentityPlatform(tenantId, userRecord, userContext))
             {
                 return AuthenticateResult.Fail("IdentityService.AuthenticateUserAndTenant: Failed to retrieve user or tenant");
             }
@@ -109,6 +111,8 @@ public class IdentityService : IIdentityService
             }
         }
 
+        _logger.LogInformation($"User Id:      {userContext.uId}");
+        _logger.LogInformation($"Tenant Id:    {userContext.tenantId}");
         _logger.LogInformation($"Root Tenant?  {userContext.rootAdmin}");
         _logger.LogInformation($"Tenant Admin? {userContext.adminPrivilege}");
 
@@ -154,7 +158,7 @@ public class IdentityService : IIdentityService
     {
         try
         {
-            var tenant = await FirebaseAuth.DefaultInstance!.TenantManager.GetTenantAsync(tenantId);
+            var tenant = await FirebaseAuth.DefaultInstance!.TenantManager.GetTenantAsync(GcpConstants.RootIdentityManagerTenantId);
             _logger.LogInformation($"IdentityService.GetUserAndTenant: Retrieved tenant details - DisplayName: {tenant.DisplayName}");
 
             userContext.uId = userRecord.Uid;
@@ -162,7 +166,8 @@ public class IdentityService : IIdentityService
             userContext.active = !userRecord.Disabled;
             userContext.email = userRecord.Email;
             userContext.phoneNumber = userRecord.PhoneNumber;
-            userContext.tenantId = userRecord.TenantId;
+            userContext.tenantId = tenantId;
+            userContext.identityManagerTenantId = userRecord.TenantId;
             userContext.customerName = tenant.DisplayName;
             userContext.adminPrivilege = false;
             userContext.rootAdmin = true;

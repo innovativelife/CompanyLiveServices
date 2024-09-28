@@ -48,16 +48,16 @@ public class TenantSaveProcessor : ITenantSaveProcessor
         }
         
         // Check Primary and Secondary Employees exist
-        var primaryEmployeeReadResponse = await _employeeService.ReadByEmployeeUID(requestContext, tenantId, request.primaryAdministratorEmployeeUID);
+        var primaryEmployeeReadResponse = await _employeeService.ReadByEmployeeUID(requestContext, tenantId, request.primaryAdministratorEmployeeUID, true);
         if (!primaryEmployeeReadResponse.Success)
         {
-            return new TenantSaveResponse(Common.ServiceResponseBase.ResponseStatus.NotFound, $"Primary Employee with UID { request.primaryAdministratorEmployeeUID} does not exist.");
+            return new TenantSaveResponse(primaryEmployeeReadResponse.Status, $"Error updating Primary Employee {request.primaryAdministratorEmployeeUID}: {primaryEmployeeReadResponse.Message}");
         }
 
-        var secondaryEmployeeReadResponse = await _employeeService.ReadByEmployeeUID(requestContext, tenantId, request.secondaryAdministratorEmployeeUID);
+        var secondaryEmployeeReadResponse = await _employeeService.ReadByEmployeeUID(requestContext, tenantId, request.secondaryAdministratorEmployeeUID, true);
         if (!secondaryEmployeeReadResponse.Success)
         {
-            return new TenantSaveResponse(Common.ServiceResponseBase.ResponseStatus.NotFound, $"Secondary Employee with UID { request.secondaryAdministratorEmployeeUID} does not exist.");
+            return new TenantSaveResponse(primaryEmployeeReadResponse.Status, $"Error updating Secondary Employee  { request.secondaryAdministratorEmployeeUID}: {secondaryEmployeeReadResponse.Message}");
         }
 
         // Update tenant

@@ -40,7 +40,8 @@ public class UserContext : IUserContext
 
         this.rootAdmin = requestTenantId == "Root";
         this.uId = requestUid;
-        this.customerName = requestTenantId;
+        this.tenantId = requestTenantId;
+        this.identityManagerTenantId = Guid.NewGuid().ToString();
 
         this.preferredName = "Local Dev User";
         this.email = "localdev@testing123.com";

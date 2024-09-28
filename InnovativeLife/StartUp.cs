@@ -162,7 +162,7 @@ public class Startup : FunctionsStartup
     private void addEmployeeEndpoints(IEndpointRouteBuilder endpoints)
     {
         endpoints.MapPost("/employees/{tenantId}", async (IEmployeeService service, IUserContext requestContext, string tenantId, EmployeeAddRequest addRequest) =>
-            (await service.Add(requestContext, tenantId, addRequest)).GetAspNetResult())
+            (await service.Add(requestContext, tenantId, addRequest, false)).GetAspNetResult())
         .RequireAuthorization(AuthorizationPolicies.TenantAdmin)
         .WithName("EmployeeAdd")
         .WithOpenApi(operation => new(operation)
@@ -172,7 +172,7 @@ public class Startup : FunctionsStartup
         });
 
         endpoints.MapPut("/employees/{tenantId}/{employeeUID}/admin/{adminPrivilege}", async (IEmployeeService service, IUserContext requestContext, string tenantId, string employeeUID, bool adminPrivilege) =>
-            (await service.SetAdminPrivilege(requestContext, tenantId, employeeUID, adminPrivilege)).GetAspNetResult())
+            (await service.SetAdminPrivilege(requestContext, tenantId, employeeUID, adminPrivilege, false)).GetAspNetResult())
         .RequireAuthorization(AuthorizationPolicies.TenantAdmin)
         .WithName("EmployeeSetAdminPrivilege")
         .WithOpenApi(operation => new(operation)
@@ -202,7 +202,7 @@ public class Startup : FunctionsStartup
         });
 
         endpoints.MapGet("/employees/{tenantId}/{employeeUID}", async (IEmployeeService service, IUserContext requestContext, string tenantId, string employeeUID) =>
-            (await service.ReadByEmployeeUID(requestContext, tenantId, employeeUID)).GetAspNetResult())
+            (await service.ReadByEmployeeUID(requestContext, tenantId, employeeUID, false)).GetAspNetResult())
         .RequireAuthorization(AuthorizationPolicies.GetTenantUserPolicy)
         .WithName("ReadEmployeeByNumber")
         .WithOpenApi(operation => new(operation)
