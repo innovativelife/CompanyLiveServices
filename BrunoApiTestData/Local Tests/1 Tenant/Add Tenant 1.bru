@@ -68,6 +68,7 @@ tests {
   test("correct tenant name", function () {
       expect(jsonResponse.tenant.tenantName).to.equal("New Tenant 1");
   });
+  
   test("correct primary admin", function () {
       expect(jsonResponse.tenant.primaryAdministrator.employeeNumber).to.equal("2212345");
     

@@ -7,10 +7,10 @@ using System.Security.Claims;
 
 namespace InnovativeLife.Security;
 
-public class LocalDevAuthenticationHandler : AuthenticationHandler<GoogleIdentityAuthenticationOptions>
+public class LocalDevAuthenticationHandler : BaseAuthenticationHandler
 {
-    private readonly ILogger<GoogleIdentityAuthenticationHandler> _logger;
-    private readonly IUserContext _userContext;
+    internal readonly ILogger<GoogleIdentityAuthenticationHandler> _logger;
+    internal readonly IUserContext _userContext;
     public LocalDevAuthenticationHandler(IOptionsMonitor<GoogleIdentityAuthenticationOptions> options, ILoggerFactory logger, IUserContext userContext, UrlEncoder encoder) : base(options, logger, encoder)
     {
         _logger = logger.CreateLogger<GoogleIdentityAuthenticationHandler>();
@@ -43,6 +43,9 @@ public class LocalDevAuthenticationHandler : AuthenticationHandler<GoogleIdentit
         var claims = AuthorizationPolicies.GetClaims(_userContext, _logger);
         var claimsIdentity = new ClaimsIdentity(claims, this.Scheme.Name);
         var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+
+        // Final check to ensure everything is set up as expected
+        finalCheck(Guid.NewGuid().ToString(), tenantId, _logger, _userContext);
 
         return AuthenticateResult.Success(new AuthenticationTicket(claimsPrincipal, this.Scheme.Name));
     }

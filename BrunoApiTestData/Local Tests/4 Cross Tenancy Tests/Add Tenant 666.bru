@@ -1,0 +1,78 @@
+meta {
+  name: Add Tenant 666
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://{{LOCALDEVURL}}/Tenants
+  body: json
+  auth: bearer
+}
+
+headers {
+  tenantId: Root
+  uId: tester
+}
+
+auth:bearer {
+  token: {{AuthToken}}
+}
+
+body:json {
+  {
+      "tenantId": "tenant666",
+      "tenantName": "New Tenant 666",
+      "customerName": "Tenant 6666",
+      "renewalDate": "2025-02-01T00:00:00",
+      "active": true,
+      "primaryAdministrator":
+        {
+            "email": "got.you.666James@gmail.com",
+            "firstName": "James 666",
+            "lastName": "Brown 666",
+            "PreferredName": "Jim 666",
+            "phoneNumber": "699879666",
+            "initialPassword": "TEshhde",
+            "employeeNumber": "22126661",
+            "positionTitle": "666 1",
+            "personalDescription": "666 1 description"
+        },
+      "secondaryAdministrator":
+        {
+            "email": "got.you.666Bill@gmail.com",
+            "firstName": "Bill 666",
+            "lastName": "Smith 666",
+            "PreferredName": "Will 666",
+            "phoneNumber": "699879666",
+            "initialPassword": "TEshhde",
+            "employeeNumber": "14566625",
+            "positionTitle": "6662",
+            "personalDescription": "666 2 description"
+        }
+  }
+}
+
+script:post-response {
+  const jsonResponse = res.getBody();
+  bru.setVar("tenant666-primaryAdminUID", jsonResponse.tenant.primaryAdministrator.employeeUID);
+  bru.setVar("tenant666-secondaryAdminUID", jsonResponse.tenant.secondaryAdministrator.employeeUID);
+}
+
+tests {
+  test("Status code is 201 (Added)", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+  
+  const jsonResponse = res.getBody();
+  test("correct tenant name", function () {
+      expect(jsonResponse.tenant.tenantName).to.equal("New Tenant 666");
+  });
+  test("correct primary admin", function () {
+      expect(jsonResponse.tenant.primaryAdministrator.employeeNumber).to.equal("22126661");
+    
+  test("correct secondary admin", function () {
+      expect(jsonResponse.tenant.secondaryAdministrator.employeeNumber).to.equal("14566625");
+  });
+  });
+}

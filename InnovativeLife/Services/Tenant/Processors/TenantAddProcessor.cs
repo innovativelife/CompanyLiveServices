@@ -83,7 +83,7 @@ public class TenantAddProcessor : ITenantAddProcessor
         }
 
         // Add Primary Administrator
-        var primaryAdminSaveResponse = await _employeeService.Add(requestContext, request.tenantId, request.primaryAdministrator);
+        var primaryAdminSaveResponse = await _employeeService.Add(requestContext, request.tenantId, request.primaryAdministrator, true);
 
         if (!primaryAdminSaveResponse.Success)
         {
@@ -92,14 +92,14 @@ public class TenantAddProcessor : ITenantAddProcessor
         tenantModel.primaryAdministratorEmployeeUID = primaryAdminSaveResponse.employee.employeeUID;
 
         // Give Admin Privilege for Primary Adminstrator
-        var primaryAdminSetAdminPrivilege = await _employeeService.SetAdminPrivilege(requestContext, request.tenantId, primaryAdminSaveResponse.employee.employeeUID, true);
+        var primaryAdminSetAdminPrivilege = await _employeeService.SetAdminPrivilege(requestContext, request.tenantId, primaryAdminSaveResponse.employee.employeeUID, true, true);
         if (!primaryAdminSetAdminPrivilege.Success)
         {
             return new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.Exception, $"Error setting Admin Privilege for Primary Administrator- {primaryAdminSetAdminPrivilege.Message}");
         }
 
         // Add Secondary Administrator
-        var secondaryAdminServiceResponse = await _employeeService.Add(requestContext, request.tenantId, request.secondaryAdministrator);
+        var secondaryAdminServiceResponse = await _employeeService.Add(requestContext, request.tenantId, request.secondaryAdministrator, true);
 
         if (!secondaryAdminServiceResponse.Success)
         {
@@ -108,7 +108,7 @@ public class TenantAddProcessor : ITenantAddProcessor
         tenantModel.secondaryAdministratorEmployeeUID = secondaryAdminServiceResponse.employee.employeeUID;
 
         // Give Admin Privilege for Secondary Adminstrator
-        var secondaryAdminSetAdminPrivilege = await _employeeService.SetAdminPrivilege(requestContext, request.tenantId, secondaryAdminServiceResponse.employee.employeeUID, true);
+        var secondaryAdminSetAdminPrivilege = await _employeeService.SetAdminPrivilege(requestContext, request.tenantId, secondaryAdminServiceResponse.employee.employeeUID, true, true);
         if (!secondaryAdminSetAdminPrivilege.Success)
         {
             return new TenantAddResponse(Common.ServiceResponseBase.ResponseStatus.Exception, $"Error setting Admin Privilege for Secondary Administrator- {secondaryAdminSetAdminPrivilege.Message}");

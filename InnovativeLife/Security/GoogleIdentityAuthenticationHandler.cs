@@ -9,7 +9,7 @@ using InnovativeLife.Common;
 
 namespace InnovativeLife.Security;
 
-public class GoogleIdentityAuthenticationHandler : AuthenticationHandler<GoogleIdentityAuthenticationOptions>
+public class GoogleIdentityAuthenticationHandler : BaseAuthenticationHandler
 {
     private readonly ILogger<GoogleIdentityAuthenticationHandler> _logger;
     private readonly IIdentityService _identityService;
@@ -49,7 +49,16 @@ public class GoogleIdentityAuthenticationHandler : AuthenticationHandler<GoogleI
         _logger.LogInformation($"GoogleIdentityAuthenticationHandler.HandleAuthenticateAsync: Tenant ID from URL is: {tenant}");
 
         _logger.LogInformation("GoogleIdentityAuthenticationHandler.HandleAuthenticateAsync: About to validate token and tenant");
-        return await _identityService.AuthenticateUserAndTenant(authToken.Item2!, tenant.Item2!, _userContext, this.Scheme.Name);
+
+        var AuthResult = await _identityService.AuthenticateUserAndTenant(authToken.Item2!, tenant.Item2!, _userContext, this.Scheme.Name);
+
+        // Final check to ensure everything is set up as expected
+        if (AuthResult.Succeeded)
+        {
+            finalCheck(authToken.Item2!, tenant.Item2!, _logger, _userContext);
+        }
+
+        return AuthResult;
     }
 
     // Extract the bearer token from the HTTP header

@@ -1,0 +1,37 @@
+meta {
+  name: Two Employees in Tenant 6
+  type: http
+  seq: 3
+}
+
+get {
+  url: http://{{LOCALDEVURL}}/Employees/tenant6
+  body: json
+  auth: bearer
+}
+
+headers {
+  uId: localDev
+  tenantId: tenant666
+}
+
+auth:bearer {
+  token: {{AuthToken}}
+}
+
+tests {
+  test("Status code is 404 (Ok)", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+  
+  const jsonResponse = res.getBody();
+  
+  test("No employees returned", function () {
+      expect(jsonResponse.employees.length=0);
+  });
+  
+  test("Tenant mismatch", function () {
+      expect(jsonResponse.message).to.equal("Tenant mismatch");
+  });
+  
+}

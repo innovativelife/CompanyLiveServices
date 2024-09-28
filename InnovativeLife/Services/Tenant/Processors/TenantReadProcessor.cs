@@ -77,13 +77,13 @@ public class TenantReadProcessor : ITenantReadProcessor
 
     private async Task readPrimaryAndSecondaryEmployees(IUserContext requestContext, TenantItem tenantItem, TenantModel tenant)
     {
-        var primaryEmployeeReadResponse = await _employeeService.ReadByEmployeeUID(requestContext, tenant.tenantId,tenant.primaryAdministratorEmployeeUID);
+        var primaryEmployeeReadResponse = await _employeeService.ReadByEmployeeUID(requestContext, tenant.tenantId,tenant.primaryAdministratorEmployeeUID, true);
         if (primaryEmployeeReadResponse.Success)
         {
             tenantItem.primaryAdministrator = primaryEmployeeReadResponse.employee;
         }
 
-        var secondaryEmployeeReadResponse = await _employeeService.ReadByEmployeeUID(requestContext, tenant.tenantId, tenant.secondaryAdministratorEmployeeUID);
+        var secondaryEmployeeReadResponse = await _employeeService.ReadByEmployeeUID(requestContext, tenant.tenantId, tenant.secondaryAdministratorEmployeeUID, true);
         if (secondaryEmployeeReadResponse.Success)
         {
             tenantItem.secondaryAdministrator = secondaryEmployeeReadResponse.employee;
