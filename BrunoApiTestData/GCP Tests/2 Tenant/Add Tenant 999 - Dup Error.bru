@@ -1,7 +1,7 @@
 meta {
-  name: Add Tenant 999
+  name: Add Tenant 999 - Dup Error
   type: http
-  seq: 2
+  seq: 4
 }
 
 post {
@@ -49,36 +49,8 @@ body:json {
 }
 
 tests {
-  test("Status code is 201 (created)", function () {
-    expect(res.getStatus()).to.equal(201);
+  test("Status code is 409 (duplicate)", function () {
+      expect(res.getStatus()).to.equal(409);
   });
-  
-  jsonResponse = res.getBody();
-  
-  test("tenantId tenant999 returned)", function () {
-    expect(jsonResponse.tenant.tenantId).to.equal("tenant999");
-  });
-  
-  test("customerName correct)", function () {
-    expect(jsonResponse.tenant.customerName).to.equal("999 Inc");
-  });
-  
-  test("identityManagerTenantId rerurned)", function () {
-    expect(jsonResponse.tenant.identityManagerTenantId.length>0);
-  });
-  
-  test("primary admin employee uid returned)", function () {
-    expect(jsonResponse.tenant.primaryAdministrator.employeeUID.length>0);
-  });
-  
-  test("secondary admin employee uid returned)", function () {
-    expect(jsonResponse.tenant.secondaryAdministrator.employeeUID.length>0);
-  });
-  
-  bru.setVar("Tenant999-IdMgrTenantId", jsonResponse.tenant.identityManagerTenantId)
-  
-  bru.setVar("Tenant999-PrimayAdminUID", jsonResponse.tenant.primaryAdministrator.employeeUID)
-  
-  bru.setVar("Tenant999-SecondaryAdminUID", jsonResponse.tenant.secondaryAdministrator.employeeUID)
   
 }
