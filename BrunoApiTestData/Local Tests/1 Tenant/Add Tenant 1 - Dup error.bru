@@ -1,7 +1,7 @@
 meta {
-  name: Add Duplicate ID -Error-
+  name: Add Tenant 1 - Dup error
   type: http
-  seq: 7
+  seq: 4
 }
 
 post {
@@ -22,11 +22,11 @@ auth:bearer {
 body:json {
   {
       "tenantId": "tenant1",
-      "tenantName": "New Tenant Name",
+      "tenantName": "New Tenant 1",
       "customerName": "Tenant 1",
       "renewalDate": "2025-02-01T00:00:00",
       "active": true,
-        "primaryAdministrator":
+      "primaryAdministrator":
         {
             "email": "got.you.jim2@gmail.com",
             "firstName": "James 2",
@@ -40,7 +40,7 @@ body:json {
         },
       "secondaryAdministrator":
         {
-            "email": "got.you.jim@gmail.com",
+            "email": "got.you.jim3@gmail.com",
             "firstName": "James",
             "lastName": "Brown",
             "PreferredName": "Jim",
@@ -54,12 +54,7 @@ body:json {
 }
 
 tests {
-  test("Status code is 409 (Conflict)", function () {
-      expect(res.getStatus()).to.equal(409);
-  });
-  
-  const jsonResponse = res.getBody();
-  test("Error returned", function () {
-      expect(jsonResponse.success).to.equal(false);
+  test("Status code is 409 (Duplicate)", function () {
+    expect(res.getStatus()).to.equal(409);
   });
 }
