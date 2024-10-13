@@ -63,7 +63,8 @@ jobs:
         name: 'Authenticate to Google Cloud'
         uses: 'google-github-actions/auth@f112390a2df9932162083945e46d439060d66ec2' # google-github-actions/auth@v2
         with:
-          workload_identity_provider: 'projects/123456789/locations/global/workloadIdentityPools/my-pool/providers/my-provider' # TODO: replace with your workload identity provider
+          credentials_json: '${{ secrets.CREDENTIALS }}'
+        #  workload_identity_provider: 'projects/123456789/locations/global/workloadIdentityPools/my-pool/providers/my-provider' # TODO: replace with your workload identity provider
 
       - name: 'Deploy to Cloud Function'
         uses: 'google-github-actions/deploy-cloud-functions@v3.0.5' # 
@@ -73,7 +74,7 @@ jobs:
           name: '${{ env.NAME }}'
           runtime: '${{ env.RUNTIME }}'
           entry_point: '${{ env.ENTRY_POINT }}'
-          credentials_json: '${{ env.CREDENTIALS }}'
+          # credentials_json: '${{ env.CREDENTIALS }}'
           # NOTE: If using a different source folder, update the image name below:
           source: './'
 
