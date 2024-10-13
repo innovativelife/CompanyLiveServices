@@ -30,7 +30,6 @@
 name: 'Deploy to Cloud Run from Source'
 
 on: workflow_dispatch
-# on:
 #  push:
 #    branches:
 #      - '"main"'
