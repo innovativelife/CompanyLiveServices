@@ -75,7 +75,7 @@ jobs:
           entry_point: '${{ env.ENTRY_POINT }}'
           # credentials_json: '${{ env.CREDENTIALS }}'
           # NOTE: If using a different source folder, update the image name below:
-          source_dir: './'
+          source_dir: './InnovativeLife'
 
       # If required, use the Cloud Run URL output in later steps
       - name: 'Show output'
