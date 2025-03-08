@@ -49,6 +49,7 @@ public class Startup : FunctionsStartup
             .AddSingleton<IEmployeeSetAdminPrivilegeProcessor, EmployeeSetAdminPrivilegeProcessor>()
             .AddSingleton<IEmployeeSaveProcessor, EmployeeSaveProcessor>()
             .AddSingleton<IEmployeeResetPasswordProcessor, EmployeeResetPasswordProcessor>()
+            .AddSingleton<IEmployeeAddFavoriteProcessor, EmployeeAddFavoriteProcessor>()
             .AddSingleton<ITenantActions, TenantActions>()
             .AddSingleton<ITenantService, TenantService>()
             .AddSingleton<ITenantAddProcessor, TenantAddProcessor>()
@@ -188,18 +189,28 @@ public class Startup : FunctionsStartup
         .WithOpenApi(operation => new(operation)
         {
             Summary = "Reset Password for an employee",
-            Description = "Reser password for an employee."
+            Description = "Reset password for an employee."
         });
 
-        endpoints.MapPut("/employees/{tenantId}/{employeeUID}", async (IEmployeeService service, IUserContext requestContext, string tenantId, string employeeUID, EmployeeSaveRequest saveRequest) =>
-            (await service.Save(requestContext, tenantId, employeeUID, saveRequest)).GetAspNetResult())
-        .RequireAuthorization(AuthorizationPolicies.TenantAdmin)
-        .WithName("EmployeeSave")
-        .WithOpenApi(operation => new(operation)
-        {
-            Summary = "Update employee",
-            Description = "Update employee details."
-        });
+        // endpoints.MapPut("/employees/{tenantId}/AddFavorite/{favoriteEmployeeUID}", async (IEmployeeService service, IUserContext requestContext, string tenantId, string favoriteEmployeeUID) =>
+        //     (await service.AddFavorite(requestContext, tenantId, favoriteEmployeeUID)).GetAspNetResult())
+        // .RequireAuthorization(AuthorizationPolicies.TenantAdmin)
+        // .WithName("EmployeeAddFavorite")
+        // .WithOpenApi(operation => new(operation)
+        // {
+        //     Summary = "Add employee favorite",
+        //     Description = "Add favorite for the current user"
+        // });
+
+        // endpoints.MapPost("/employees/{tenantId}/{employeeUID}", async (IEmployeeService service, IUserContext requestContext, string tenantId, EmployeeAddRequest addRequest) =>
+        //     (await service.Add(requestContext, tenantId, addRequest, false)).GetAspNetResult())
+        // .RequireAuthorization(AuthorizationPolicies.TenantAdmin)
+        // .WithName("EmployeeAdd")
+        // .WithOpenApi(operation => new(operation)
+        // {
+        //     Summary = "Add employee",
+        //     Description = "Add a new employee to a tenant."
+        // });
 
         endpoints.MapGet("/employees/{tenantId}/{employeeUID}", async (IEmployeeService service, IUserContext requestContext, string tenantId, string employeeUID) =>
             (await service.ReadByEmployeeUID(requestContext, tenantId, employeeUID, false)).GetAspNetResult())

@@ -1,0 +1,15 @@
+meta {
+  name: Clear firestore DB
+  type: http
+  seq: 1
+}
+
+delete {
+  url: http://localhost:5003/emulator/v1/projects/companylive-c3879/databases/(default)/documents
+  body: json
+  auth: none
+}
+
+body:json {
+  {}
+}

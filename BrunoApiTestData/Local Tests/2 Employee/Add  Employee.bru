@@ -43,7 +43,7 @@ tests {
       expect(res.getStatus()).to.equal(201);
   });
   
-  
   const jsonResponse = res.getBody();
+  
   bru.setVar("employeeUID", jsonResponse.employee.employeeUID)
 }

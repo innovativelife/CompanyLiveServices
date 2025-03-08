@@ -18,4 +18,6 @@ public interface IEmployeeService
 
     public Task<EmployeeResetPasswordResponse> ResetPassword(IUserContext requestContext, string tenantId, string employeeUID, string newPassword);
 
+    public Task<EmployeeAddFavoriteResponse> AddFavorite(IUserContext requestContext, string tenantId, string favoriteEmployeeUID);
+
 }

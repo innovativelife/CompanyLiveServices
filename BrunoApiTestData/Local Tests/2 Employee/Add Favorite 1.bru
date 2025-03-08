@@ -1,0 +1,37 @@
+meta {
+  name: Add Favorite 1
+  type: http
+  seq: 14
+}
+
+put {
+  url: http://{{LOCALDEVURL}}/Employees/tenant1/AddFavorite/{{employeeUID2}}
+  body: json
+  auth: bearer
+}
+
+headers {
+  uId: tester
+  tenantId: tenant1
+}
+
+auth:bearer {
+  token: {{AuthToken}}
+}
+
+body:json {
+  {
+  }
+}
+
+tests {
+  test("Status code is 422 (Error)", function () {
+      expect(res.getStatus()).to.equal(422);
+  });
+  
+  const jsonResponse = res.getBody();
+  test("4 errors detected", function () {
+      expect(jsonResponse.success).to.equal(false);
+      expect(jsonResponse.messages.length).to.equal(4);
+  });
+}

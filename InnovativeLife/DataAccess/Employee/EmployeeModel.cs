@@ -45,12 +45,12 @@ public class Employee
 //     public string employeeGroupMembershipType { get; set; }
 // }
 
-// [FirestoreData]
-// public class FavoritedEmployeeModel
-// {
-//     [FirestoreProperty]
-//     public string employeeNumber { get; set; }
-// }
+[FirestoreData]
+public class FavoritedEmployeeModel
+{
+    [FirestoreProperty]
+    public string employeeNumber { get; set; }
+}
 
 // [FirestoreData]
 // public class TenantAccessModel
