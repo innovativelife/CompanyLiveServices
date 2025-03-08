@@ -216,4 +216,33 @@ public class EmployeeActions : IEmployeeActions
             return new DalResponse(DalResponse.ResponseStatus.Exception);
         }
     }
+
+    async Task<DalResponse> IEmployeeActions.AddFavorite(string tenantId, string employeeUID, string favoriteEmployeeUID)
+    {
+        try
+        {
+            _logger.LogInformation($"EmployeeActions.SetAdminPrivilege: Starting read for employee UID - {employeeUID}");
+
+            var db = Utilities.connectToFirestore();
+
+            DocumentReference employeeRef = db.Collection(EmployeeContants.employeeCollection).Document(employeeUID);
+
+            var favoritesCollection = employeeRef.Collection("Favorites");
+
+            var favorite= new FavoritedEmployeeModel();
+            favorite.employeeNumber = favoriteEmployeeUID;
+
+            var result = await favoritesCollection.AddAsync(favorite);
+
+            _logger.LogInformation($"EmployeeActions.AddFavorite: Added {favoriteEmployeeUID} as favorite for {employeeUID}");
+
+            return new DalResponse(DalResponse.ResponseStatus.Ok);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogInformation($"EmployeeActions.AddFavorite: Exception {ex.Message}");
+
+            return new DalResponse(DalResponse.ResponseStatus.Exception);
+        }
+    }
 }

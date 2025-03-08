@@ -17,7 +17,9 @@ public class EmployeeService : IEmployeeService
     private IIdentityService _identityService;
     private IEmployeeResetPasswordProcessor _employeeResetPasswordProcessor;
 
-    public EmployeeService(ILogger<EmployeeService> logger, IIdentityService identityService, IEmployeeAddProcessor employeeCreateProcessor, IEmployeeSetAdminPrivilegeProcessor employeeSetAdminPrivilegeProcessor, IEmployeeReadProcessor employeeReadProcessor, IEmployeeSaveProcessor employeeSaveProcessor, IEmployeeResetPasswordProcessor employeeResetPasswordProcessor)
+    private IEmployeeAddFavoriteProcessor _employeeAddFavoriteProcessor;
+
+    public EmployeeService(ILogger<EmployeeService> logger, IIdentityService identityService, IEmployeeAddProcessor employeeCreateProcessor, IEmployeeSetAdminPrivilegeProcessor employeeSetAdminPrivilegeProcessor, IEmployeeReadProcessor employeeReadProcessor, IEmployeeSaveProcessor employeeSaveProcessor, IEmployeeResetPasswordProcessor employeeResetPasswordProcessor, IEmployeeAddFavoriteProcessor employeeAddFavoriteProcessor)
     {
         _logger = logger;
         _identityService = identityService;
@@ -27,6 +29,7 @@ public class EmployeeService : IEmployeeService
         _employeeReadProcessor = employeeReadProcessor;
         _employeeSaveProcessor = employeeSaveProcessor;
         _employeeResetPasswordProcessor = employeeResetPasswordProcessor;
+        _employeeAddFavoriteProcessor = employeeAddFavoriteProcessor;
     }
 
     public async Task<EmployeeAddResponse> Add(IUserContext requestContext, string tenantId, EmployeeAddRequest request, bool allowRoot)
@@ -95,6 +98,17 @@ public class EmployeeService : IEmployeeService
         return await _employeeResetPasswordProcessor.ResetPassword(requestContext, tenantId, employeeUID, newPassword);
     }
 
+    public async Task<EmployeeAddFavoriteResponse> AddFavorite(IUserContext requestContext, string tenantId, string favoriteEmployeeUID)
+    {
+        var validation = validateTenantId(requestContext, tenantId, false);
+        if (validation.Item1 != ServiceResponseBase.ResponseStatus.Ok)
+        {
+            return new EmployeeAddFavoriteResponse(validation.Item1, validation.Item2);
+        }
+
+        return await _employeeAddFavoriteProcessor.EmployeeAddFavoriteEmployee(requestContext, tenantId, requestContext.uId, favoriteEmployeeUID);
+    }
+
     private Tuple<ServiceResponseBase.ResponseStatus, string> validateTenantId(IUserContext requestContext, string tenantId, bool allowRoot)
     {
         if (allowRoot && requestContext.rootAdmin)
@@ -108,4 +122,6 @@ public class EmployeeService : IEmployeeService
 
         return new Tuple<ServiceResponseBase.ResponseStatus, string>(ServiceResponseBase.ResponseStatus.Ok, "");
     }
+
+
 }

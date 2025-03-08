@@ -55,30 +55,41 @@ tests {
   
   jsonResponse = res.getBody();
   
-  test("tenantId tenant999 returned)", function () {
-    expect(jsonResponse.tenant.tenantId).to.equal("tenant999");
+  test("tenant returned)", function () {
+    expect(jsonResponse).to.have.property('tenant');
+    expect(jsonResponse.tenant).not.equal(null);
   });
   
-  test("customerName correct)", function () {
+  if (jsonResponse.tenant != null)
+    {
+    test("tenantId tenant999 returned)", function () {
+      expect(jsonResponse.tenant).to.have.property('tenantId');
+      expect(jsonResponse.tenant.tenantId).to.equal("tenant999");
+    });
+  
+    test("customerName correct)", function () {
     expect(jsonResponse.tenant.customerName).to.equal("999 Inc");
-  });
+    });
   
-  test("identityManagerTenantId rerurned)", function () {
-    expect(jsonResponse.tenant.identityManagerTenantId.length>0);
-  });
+    test("identityManagerTenantId returned)", function () {
+      expect(jsonResponse.tenant).to.have.property('identityManagerTenantId');
+      expect(jsonResponse.tenant.identityManagerTenantId.length>0);
+    });
   
-  test("primary admin employee uid returned)", function () {
-    expect(jsonResponse.tenant.primaryAdministrator.employeeUID.length>0);
-  });
+    test("primary admin employee uid returned)", function () {
+      expect(jsonResponse.tenant.primaryAdministrator.employeeUID.length>0);
+    });
   
-  test("secondary admin employee uid returned)", function () {
-    expect(jsonResponse.tenant.secondaryAdministrator.employeeUID.length>0);
-  });
+    test("secondary admin employee uid returned)", function () {
+      expect(jsonResponse.tenant.secondaryAdministrator.employeeUID.length>0);
+    });
   
-  bru.setVar("Tenant999-IdMgrTenantId", jsonResponse.tenant.identityManagerTenantId)
+    bru.setVar("Tenant999-IdMgrTenantId", jsonResponse.tenant.identityManagerTenantId);
   
-  bru.setVar("Tenant999-PrimayAdminUID", jsonResponse.tenant.primaryAdministrator.employeeUID)
+    bru.setVar("Tenant999-PrimayAdminUID", jsonResponse.tenant.primaryAdministrator.employeeUID);
   
-  bru.setVar("Tenant999-SecondaryAdminUID", jsonResponse.tenant.secondaryAdministrator.employeeUID)
+    bru.setVar("Tenant999-SecondaryAdminUID", jsonResponse.tenant.secondaryAdministrator.employeeUID);
+  }
+  
   
 }
