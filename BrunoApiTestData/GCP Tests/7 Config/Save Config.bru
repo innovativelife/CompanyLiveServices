@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: http://{{DEV_URL}}/UiShellConfig/Save/tenant1
+  url: http://{{URL}}/UiConfig/tenant999
   body: json
   auth: bearer
 }
@@ -15,54 +15,29 @@ headers {
 }
 
 auth:bearer {
-  token: {{AuthToken}}
+  token: {{Admin1-AuthToken}}
 }
 
 body:json {
   {
-      "googleFont": "Yuji Syuku",
-      "appBannerUrl": "https://storage.googleapis.com/live_assets_2023/TechOneDawn.jpeg",
-      "appTitle": "TechOne Love",
-      "homeTitle": "Home",
-      "peopleTitle": "People",
-      "calendarTitle": "Calendar",
-      "policyTitle": "Policies",
-      "moreTitle": "More",
-      "primaryColor": {
-          "red": 0,
-          "green": 0,
-          "blue": 255,
-          "opacity": 1
-      },
-      "highlightColor": {
-          "red": 199,
-          "green": 0,
-          "blue": 0,
-          "opacity": 1
-      },
-      "backgroundColor": {
-          "red": 100,
-          "green":250,
-          "blue": 100,
-          "opacity": 1
-      },
-      "homePageSafeAreaColor": {
-          "red": 0,
-          "green": 0,
-          "blue": 0,
-          "opacity": 1
-      },
-      "appTitleColor": {
-          "red": 0,
-          "green": 0,
-          "blue": 0,
-          "opacity": 1
-      },
-      "appTitleBackgroundColor": {
-          "red": 0,
-          "green": 0,
-          "blue": 0,
-          "opacity": 0.4
-      }
+    "tenantId": "tenant999",
+    "backgroundColorHex": "#FFFFFF",
+    "primaryColorHex": "#000000",
+    "configId": "Id",
+    "configName": "TEST",
+    "googleFont": "AFont",
+    "appBannerUrl": "http://HelloWorld/Image.jpeg",
+    "appTitle": "Technology Two",
+    "homeTitle": "Home",
+    "peopleTitle": "People",
+    "calendarTitle": "Calendar",
+    "policyTitle": "Policy",
+    "moreTitle": "Other",
+    "primaryColorHex": "#000000",
+    "highlightColorHex": "#000000",
+    "backgroundColorHex": "#FFFFFF",
+    "homePageSafeAreaColorHex": "#000000",
+    "appTitleColorHex": "#000000",
+    "appTitleBackgroundColorHex": "#000000"
   }
 }

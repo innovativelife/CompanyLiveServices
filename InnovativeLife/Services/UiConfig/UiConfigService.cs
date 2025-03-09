@@ -33,7 +33,7 @@ public class UiConfigService : IUiConfigService
 
     public async Task<UiConfigSaveResponse> Save(IUserContext requestContext, string tenantId, UiConfigSaveRequest configModel)
     {
-        _logger.LogInformation("UiConfigService.Read: Executing UiConfigService.Read Read");
+        _logger.LogInformation("UiConfigService.Save: Executing UiConfigService.Save Save");
 
         return await _saveUiConfigProcessor.Save(requestContext, tenantId, configModel);
     }
