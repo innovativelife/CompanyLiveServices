@@ -46,7 +46,7 @@ public class TenantSaveProcessor : ITenantSaveProcessor
         {
             return new TenantSaveResponse(Common.ServiceResponseBase.ResponseStatus.NotFound, "Tenant does not exist.  Use Add action to create a new tenant.");
         }
-        
+
         // Check Primary and Secondary Employees exist
         var primaryEmployeeReadResponse = await _employeeService.ReadByEmployeeUID(requestContext, tenantId, request.primaryAdministratorEmployeeUID, true);
         if (!primaryEmployeeReadResponse.Success)
@@ -57,7 +57,7 @@ public class TenantSaveProcessor : ITenantSaveProcessor
         var secondaryEmployeeReadResponse = await _employeeService.ReadByEmployeeUID(requestContext, tenantId, request.secondaryAdministratorEmployeeUID, true);
         if (!secondaryEmployeeReadResponse.Success)
         {
-            return new TenantSaveResponse(primaryEmployeeReadResponse.Status, $"Error updating Secondary Employee  { request.secondaryAdministratorEmployeeUID}: {secondaryEmployeeReadResponse.Message}");
+            return new TenantSaveResponse(primaryEmployeeReadResponse.Status, $"Error updating Secondary Employee  {request.secondaryAdministratorEmployeeUID}: {secondaryEmployeeReadResponse.Message}");
         }
 
         // Update tenant
@@ -97,6 +97,7 @@ public class TenantSaveProcessor : ITenantSaveProcessor
         }
         else
         {
+            _logger.LogError($"Error saving tenant");
             return new TenantSaveResponse(Common.ServiceResponseBase.ResponseStatus.Exception, "Tenant could not be added due to unexpected error");
         }
     }

@@ -5,8 +5,10 @@ using InnovativeLife.Services.Tenant;
 using InnovativeLife.Services.Tenant.ServiceMessages;
 using InnovativeLife.Services.Tenant.Processors;
 using InnovativeLife.DataAccess.Tenant;
-using InnovativeLife.Services.UiShellConfig;
-using InnovativeLife.DataAccess.UiShellConfig;
+using InnovativeLife.Services.UiConfig;
+using InnovativeLife.Services.UiConfig.Processors;
+using InnovativeLife.Services.UiConfig.ServiceMessages;
+using InnovativeLife.DataAccess.UiConfig;
 using InnovativeLife.Services.Employee;
 using InnovativeLife.DataAccess.Employee;
 using InnovativeLife.GcpServices.Identity;
@@ -40,8 +42,10 @@ public class Startup : FunctionsStartup
 
         services
             .AddScoped<IUserContext, UserContext>()
-            .AddSingleton<IUiShellConfigService, UiShellConfigService>()
-            .AddSingleton<IUiShellConfigActions, UiShellConfigActions>()
+            .AddSingleton<IUiConfigService, UiConfigService>()
+            .AddSingleton<IUiConfigReadProcessor, UiConfigReadProcessor>()
+            .AddSingleton<IUiConfigSaveProcessor, UiConfigSaveProcessor>()
+            .AddSingleton<IUiConfigActions, UiConfigActions>()
             .AddSingleton<IEmployeeService, EmployeeService>()
             .AddSingleton<IEmployeeActions, EmployeeActions>()
             .AddSingleton<IEmployeeAddProcessor, EmployeeAddProcessor>()
@@ -83,7 +87,7 @@ public class Startup : FunctionsStartup
             .AddScheme<GoogleIdentityAuthenticationOptions, GoogleIdentityAuthenticationHandler>
                 (GoogleIdentityAuthenticationOptions.DefaultScheme,
                 options => { });
-       
+
         AddAuthorisations(services);
     }
 
@@ -101,10 +105,10 @@ public class Startup : FunctionsStartup
 
     private void AddAuthorisations(IServiceCollection services)
     {
-          services.AddAuthorizationBuilder()
-            .AddPolicy(AuthorizationPolicies.SuperUserRequired, policy => AuthorizationPolicies.GetSuperUserPolicy(policy))
-            .AddPolicy(AuthorizationPolicies.TenantAdmin, policy => AuthorizationPolicies.GetTenantAdminPolicy(policy))
-            .AddPolicy(AuthorizationPolicies.TenantUser, policy => AuthorizationPolicies.GetTenantUserPolicy(policy));
+        services.AddAuthorizationBuilder()
+          .AddPolicy(AuthorizationPolicies.SuperUserRequired, policy => AuthorizationPolicies.GetSuperUserPolicy(policy))
+          .AddPolicy(AuthorizationPolicies.TenantAdmin, policy => AuthorizationPolicies.GetTenantAdminPolicy(policy))
+          .AddPolicy(AuthorizationPolicies.TenantUser, policy => AuthorizationPolicies.GetTenantUserPolicy(policy));
     }
 
     private void DefineEndpoints(IApplicationBuilder app)
@@ -113,6 +117,7 @@ public class Startup : FunctionsStartup
             {
                 addTenantEndpoints(endpoints);
                 addEmployeeEndpoints(endpoints);
+                addUiShellConfigEndpoints(endpoints);
             });
     }
 
@@ -233,6 +238,30 @@ public class Startup : FunctionsStartup
         });
     }
 
+    private void addUiShellConfigEndpoints(IEndpointRouteBuilder endpoints)
+    {
+        endpoints.MapGet("/uiconfig/{tenantId}",
+          async (IUiConfigService service, IUserContext requestContext, string tenantId) =>
+             (await service.Read(requestContext, tenantId)).GetAspNetResult())
+       .RequireAuthorization(AuthorizationPolicies.GetTenantUserPolicy)
+       .WithName("ReadUiConfig")
+       .WithOpenApi(operation => new(operation)
+       {
+           Summary = "Read UI config for tennant",
+           Description = "Read UI Config by tenant ID"
+       });
+
+        endpoints.MapPost("/uiconfig/{tenantId}",
+          async (IUiConfigService service, IUserContext requestContext, UiConfigSaveRequest saveRequest, string tenantId) =>
+             (await service.Save(requestContext, tenantId, saveRequest)).GetAspNetResult())
+        .RequireAuthorization(AuthorizationPolicies.TenantAdmin)
+        .WithName("Save UiConfig")
+        .WithOpenApi(operation => new(operation)
+        {
+            Summary = "Save UI config for tennant",
+            Description = "Save UI Config by tenant ID"
+        });
+    }
 
     private bool InDevMode()
     {
