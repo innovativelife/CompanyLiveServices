@@ -1,15 +1,15 @@
 using Google.Cloud.Firestore;
 
-namespace InnovativeLife.DataAccess.UiShellConfig;
+namespace InnovativeLife.DataAccess.UiConfig;
 
 [FirestoreData]
-public class UiShellConfigModel
+public class UiConfigModel
 {
     [FirestoreProperty]
     public string tenantId { get; set; }
     [FirestoreProperty]
     public string configId { get; set; }
-     [FirestoreProperty]
+    [FirestoreProperty]
     public string configName { get; set; }
     [FirestoreProperty]
     public string googleFont { get; set; }
@@ -28,28 +28,28 @@ public class UiShellConfigModel
     [FirestoreProperty]
     public string moreTitle { get; set; }
     [FirestoreProperty]
-    public RgboColorModel primaryColor { get; set; }
+    public string primaryColorHex { get; set; }
     [FirestoreProperty]
-    public RgboColorModel highlightColor { get; set; }
+    public string highlightColorHex { get; set; }
     [FirestoreProperty]
-    public RgboColorModel backgroundColor { get; set; }
+    public string backgroundColorHex { get; set; }
     [FirestoreProperty]
-    public RgboColorModel homePageSafeAreaColor { get; set; }
+    public string homePageSafeAreaColorHex { get; set; }
     [FirestoreProperty]
-    public RgboColorModel appTitleColor { get; set; }
+    public string appTitleColorHex { get; set; }
     [FirestoreProperty]
-    public RgboColorModel appTitleBackgroundColor { get; set; }
+    public string appTitleBackgroundColorHex { get; set; }
 }
 
-[FirestoreData]
-public class RgboColorModel
-{
-    [FirestoreProperty]
-    public int red { get; set; }
-    [FirestoreProperty]
-    public int green { get; set; }
-    [FirestoreProperty]
-    public int blue { get; set; }
-    [FirestoreProperty]
-    public float opacity { get; set; }
-}
+// [FirestoreData]
+// public class RgboColorModel
+// {
+//     [FirestoreProperty]
+//     public int red { get; set; }
+//     [FirestoreProperty]
+//     public int green { get; set; }
+//     [FirestoreProperty]
+//     public int blue { get; set; }
+//     [FirestoreProperty]
+//     public float opacity { get; set; }
+// }
