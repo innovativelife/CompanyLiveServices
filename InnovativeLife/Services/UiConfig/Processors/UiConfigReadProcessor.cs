@@ -31,15 +31,8 @@ public class UiConfigReadProcessor : IUiConfigReadProcessor
         }
         else
         {
-            return new UiConfigReadResponse(Common.ServiceResponseBase.ResponseStatus.NotFound, $"Tenant not found.  TenantId: {tenantId}");
+            return new UiConfigReadResponse(Common.ServiceResponseBase.ResponseStatus.NotFound, $"Ui Config for Tenant.  TenantId: {tenantId}");
         }
-
-
-        // Console.WriteLine("Do stuff here Levi");
-
-        // var result = new UiConfigReadResponse(Common.ServiceResponseBase.ResponseStatus.Ok, "Did it");
-        // result.BackgroundColourHex = "#FFFFFF";
-        // return result;
     }
 
     private UiConfigItem getUiConfigItemFromUiConfigModel(UiConfigModel uiConfigModel)
