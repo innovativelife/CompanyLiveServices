@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: http://{{URL}}/UiConfig/tenant999
+  url: https://{{URL}}/UiConfig/tenant999
   body: json
   auth: bearer
 }
@@ -15,12 +15,12 @@ headers {
 }
 
 auth:bearer {
-  token: {{Admin1-AuthToken}}
+  token: {{AuthToken}}
 }
 
 body:json {
   {
-    "tenantId": "tenant999",
+    "tenantId": "tenant666",
     "backgroundColorHex": "#FFFFFF",
     "primaryColorHex": "#000000",
     "configId": "Id",
