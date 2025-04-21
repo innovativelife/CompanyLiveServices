@@ -30,6 +30,7 @@ public class Startup : FunctionsStartup
         app.UseSwagger();
         app.UseSwaggerUI();
         app.UseRouting();
+        app.UseCors("_myAllowSpecificOrigins");
         app.UseAuthentication();
         app.UseAuthorization();
         DefineEndpoints(app);
@@ -59,6 +60,19 @@ public class Startup : FunctionsStartup
 
 
 
+        var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+        services.AddCors(options =>
+        {
+            options.AddPolicy(name: MyAllowSpecificOrigins,
+                              policy =>
+                              {
+                                  policy
+                                    .WithOrigins("http://localhost", "http://127.0.0.1",
+                                    "http://localhost:5173", "http://127.0.0.1:5173")
+                                    .AllowAnyHeader()
+                                    .AllowAnyMethod();
+                              });
+        });
         services.AddHttpContextAccessor();
         services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
@@ -83,7 +97,7 @@ public class Startup : FunctionsStartup
             .AddScheme<GoogleIdentityAuthenticationOptions, GoogleIdentityAuthenticationHandler>
                 (GoogleIdentityAuthenticationOptions.DefaultScheme,
                 options => { });
-       
+
         AddAuthorisations(services);
     }
 
@@ -101,10 +115,10 @@ public class Startup : FunctionsStartup
 
     private void AddAuthorisations(IServiceCollection services)
     {
-          services.AddAuthorizationBuilder()
-            .AddPolicy(AuthorizationPolicies.SuperUserRequired, policy => AuthorizationPolicies.GetSuperUserPolicy(policy))
-            .AddPolicy(AuthorizationPolicies.TenantAdmin, policy => AuthorizationPolicies.GetTenantAdminPolicy(policy))
-            .AddPolicy(AuthorizationPolicies.TenantUser, policy => AuthorizationPolicies.GetTenantUserPolicy(policy));
+        services.AddAuthorizationBuilder()
+          .AddPolicy(AuthorizationPolicies.SuperUserRequired, policy => AuthorizationPolicies.GetSuperUserPolicy(policy))
+          .AddPolicy(AuthorizationPolicies.TenantAdmin, policy => AuthorizationPolicies.GetTenantAdminPolicy(policy))
+          .AddPolicy(AuthorizationPolicies.TenantUser, policy => AuthorizationPolicies.GetTenantUserPolicy(policy));
     }
 
     private void DefineEndpoints(IApplicationBuilder app)
