@@ -21,6 +21,15 @@ public class LocalDevAuthenticationHandler : BaseAuthenticationHandler
     {
         _logger.LogInformation("Executing LocalDevelopmentAuthenticationHandler.HandleAuthenticateAsync");
 
+        var claims = AuthorizationPolicies.GetClaims(_userContext, _logger);
+        var claimsIdentity = new ClaimsIdentity(claims, this.Scheme.Name);
+        var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+
+        if (Request.Headers.ContainsKey("Access-Control-Request-Headers"))
+        {
+            return AuthenticateResult.Success(new AuthenticationTicket(claimsPrincipal, "MyCorsPolicy"));
+        }
+
         if (Request == null || !Request.Headers.ContainsKey(Options.TentantIdHeader))
         {
             _logger.LogInformation($"LocalDevelopmentAuthenticationHandler.GetTenantFromHeader: {Options.TentantIdHeader} must be included in header in dev mode");
@@ -40,9 +49,7 @@ public class LocalDevAuthenticationHandler : BaseAuthenticationHandler
 
         _userContext.SetDevelopmentModeContext(tenantId, uId);
 
-        var claims = AuthorizationPolicies.GetClaims(_userContext, _logger);
-        var claimsIdentity = new ClaimsIdentity(claims, this.Scheme.Name);
-        var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+
 
         // Final check to ensure everything is set up as expected
         finalCheck(Guid.NewGuid().ToString(), tenantId, _logger, _userContext);
