@@ -35,6 +35,11 @@ body:json {
   }
 }
 
+script:post-response {
+  const jsonResponse = res.getBody();
+  bru.setVar("tenant1employeeUID", jsonResponse.employee.employeeUID);
+}
+
 tests {
   test("Status code is 201 (Added)", function () {
       expect(res.getStatus()).to.equal(201);
