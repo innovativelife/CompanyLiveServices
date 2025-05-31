@@ -9,6 +9,10 @@ using InnovativeLife.Services.UiConfig;
 using InnovativeLife.Services.UiConfig.Processors;
 using InnovativeLife.Services.UiConfig.ServiceMessages;
 using InnovativeLife.DataAccess.UiConfig;
+using InnovativeLife.Services.Post;
+using InnovativeLife.Services.Post.Processors;
+using InnovativeLife.Services.Post.ServiceMessages;
+using InnovativeLife.DataAccess.Post;
 using InnovativeLife.Services.Employee;
 using InnovativeLife.DataAccess.Employee;
 using InnovativeLife.GcpServices.Identity;
@@ -32,6 +36,7 @@ public class Startup : FunctionsStartup
         app.UseSwagger();
         app.UseSwaggerUI();
         app.UseRouting();
+        app.UseCors("_myAllowSpecificOrigins");
         app.UseAuthentication();
         app.UseAuthorization();
         DefineEndpoints(app);
@@ -46,6 +51,10 @@ public class Startup : FunctionsStartup
             .AddSingleton<IUiConfigReadProcessor, UiConfigReadProcessor>()
             .AddSingleton<IUiConfigSaveProcessor, UiConfigSaveProcessor>()
             .AddSingleton<IUiConfigActions, UiConfigActions>()
+            .AddSingleton<IPostService, PostService>()
+            .AddSingleton<IPostReadProcessor, PostReadProcessor>()
+            .AddSingleton<IPostSaveProcessor, PostSaveProcessor>()
+            .AddSingleton<IPostActions, PostActions>()
             .AddSingleton<IEmployeeService, EmployeeService>()
             .AddSingleton<IEmployeeActions, EmployeeActions>()
             .AddSingleton<IEmployeeAddProcessor, EmployeeAddProcessor>()
@@ -63,6 +72,19 @@ public class Startup : FunctionsStartup
 
 
 
+        var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+        services.AddCors(options =>
+        {
+            options.AddPolicy(name: MyAllowSpecificOrigins,
+                              policy =>
+                              {
+                                  policy
+                                    .WithOrigins("http://localhost", "http://127.0.0.1",
+                                    "http://localhost:5173", "http://127.0.0.1:5173")
+                                    .AllowAnyHeader()
+                                    .AllowAnyMethod();
+                              });
+        });
         services.AddHttpContextAccessor();
         services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
@@ -117,7 +139,8 @@ public class Startup : FunctionsStartup
             {
                 addTenantEndpoints(endpoints);
                 addEmployeeEndpoints(endpoints);
-                addUiShellConfigEndpoints(endpoints);
+                addUiConfigEndpoints(endpoints);
+                addPostEndpoints(endpoints);
             });
     }
 
@@ -227,8 +250,8 @@ public class Startup : FunctionsStartup
             Description = "Read employee by Employee ID - Guid generated when the employee is created"
         });
 
-        endpoints.MapGet("/employees/{tenantId}", async (IEmployeeService service, IUserContext requestContext, string tenantId, string? employeeNumber, string? email, string? firstName, string? lastName, string? leaderEmployeeNumber) =>
-            (await service.SearchEmployee(requestContext, tenantId, employeeNumber, email, firstName, lastName, leaderEmployeeNumber)).GetAspNetResult())
+        endpoints.MapGet("/employees/{tenantId}", async (IEmployeeService service, IUserContext requestContext, string tenantId, string? employeeNumber, string? email, string? firstName, string? lastName, string? leaderEmployeeNumber, string? employeeUID) =>
+            (await service.SearchEmployee(requestContext, tenantId, employeeNumber, email, firstName, lastName, leaderEmployeeNumber, employeeUID)).GetAspNetResult())
         .RequireAuthorization(AuthorizationPolicies.GetTenantUserPolicy)
         .WithName("EmployeeSearch")
         .WithOpenApi(operation => new(operation)
@@ -238,7 +261,7 @@ public class Startup : FunctionsStartup
         });
     }
 
-    private void addUiShellConfigEndpoints(IEndpointRouteBuilder endpoints)
+    private void addUiConfigEndpoints(IEndpointRouteBuilder endpoints)
     {
         endpoints.MapGet("/uiconfig/{tenantId}",
           async (IUiConfigService service, IUserContext requestContext, string tenantId) =>
@@ -261,6 +284,41 @@ public class Startup : FunctionsStartup
             Summary = "Save UI config for tennant",
             Description = "Save UI Config by tenant ID"
         });
+    }
+
+    private void addPostEndpoints(IEndpointRouteBuilder endpoints)
+    {
+        //     endpoints.MapGet("/post/{tenantId}",
+        //       async (IPostService service, IUserContext requestContext, string tenantId, string postId) =>
+        //          (await service.Read(requestContext, tenantId, postId)).GetAspNetResult())
+        //    .RequireAuthorization(AuthorizationPolicies.GetTenantUserPolicy)
+        //    .WithName("ReadPost")
+        //    .WithOpenApi(operation => new(operation)
+        //    {
+        //        Summary = "Read Post by user",
+        //        Description = "Read Post by user and tenant ID"
+        //    });
+
+        endpoints.MapPost("/post/{tenantId}",
+          async (IPostService service, IUserContext requestContext, PostSaveRequest saveRequest, string tenantId) =>
+             (await service.Save(requestContext, tenantId, saveRequest)).GetAspNetResult())
+        .RequireAuthorization(AuthorizationPolicies.TenantAdmin)
+        .WithName("Save Post")
+        .WithOpenApi(operation => new(operation)
+        {
+            Summary = "Save Post by user",
+            Description = "Save Post by user and tenant ID"
+        });
+
+        endpoints.MapGet("/post/{tenantId}", async (IPostService service, IUserContext requestContext, string tenantId, string? postId, string? timeSent, string? status, string? sendTo, string? employeeUID, string? message) =>
+             (await service.SearchPost(requestContext, tenantId, postId, timeSent, sendTo, status, employeeUID, message)).GetAspNetResult())
+         .RequireAuthorization(AuthorizationPolicies.GetTenantUserPolicy)
+         .WithName("PostSearch")
+         .WithOpenApi(operation => new(operation)
+         {
+             Summary = "Search for posts",
+             Description = "Search for posts via various criteria"
+         });
     }
 
     private bool InDevMode()

@@ -1,0 +1,16 @@
+meta {
+  name: Read Tenant 2 Config
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://{{LOCALDEVURL}}/UiConfig/tenant2
+  body: none
+  auth: inherit
+}
+
+headers {
+  tenantId: tenant1
+  uId: tester
+}

@@ -105,11 +105,11 @@ public class EmployeeActions : IEmployeeActions
         }
     }
 
-    async Task<Tuple<DalResponse, List<Employee>>> IEmployeeActions.Search(string tenantId, string? employeeNumber, string? email, string? firstName, string? lastName, string? leaderEmployeeNumber)
+    async Task<Tuple<DalResponse, List<Employee>>> IEmployeeActions.Search(string tenantId, string? employeeNumber, string? email, string? firstName, string? lastName, string? leaderEmployeeNumber, string? employeeUID)
     {
         try
         {
-            _logger.LogInformation($"EmployeeActions.Search starting with parameters: tenantId: {tenantId} | employeeNumber: {employeeNumber} | email: {email} | firstName: {firstName} | lastName: {lastName} | leaderEmployeeNumber: {leaderEmployeeNumber}");
+            _logger.LogInformation($"EmployeeActions.Search starting with parameters: tenantId: {tenantId} | employeeNumber: {employeeNumber} | email: {email} | firstName: {firstName} | lastName: {lastName} | leaderEmployeeNumber: {leaderEmployeeNumber} | employeeUID: {employeeUID}");
 
             var db = Utilities.connectToFirestore();
             Query employeeQuery = db.Collection(EmployeeContants.employeeCollection);
@@ -140,6 +140,10 @@ public class EmployeeActions : IEmployeeActions
             {
                 employeeQuery = employeeQuery.WhereEqualTo(EmployeeContants.leaderEmployeeNumber, leaderEmployeeNumber);
             }
+            if (!string.IsNullOrEmpty(employeeUID))
+            {
+                employeeQuery = employeeQuery.WhereEqualTo(EmployeeContants.employeeUID, employeeUID);
+            }
 
             QuerySnapshot employeeQuerySnapshot = await employeeQuery.GetSnapshotAsync();
 
@@ -165,6 +169,7 @@ public class EmployeeActions : IEmployeeActions
             return new Tuple<DalResponse, List<Employee>>(new DalResponse(DalResponse.ResponseStatus.Ok), new List<Employee>());
         }
     }
+
 
     async Task<DalResponse> IEmployeeActions.Save(string tenantId, string userUID, Employee employeeModel)
     {
@@ -229,7 +234,7 @@ public class EmployeeActions : IEmployeeActions
 
             var favoritesCollection = employeeRef.Collection("Favorites");
 
-            var favorite= new FavoritedEmployeeModel();
+            var favorite = new FavoritedEmployeeModel();
             favorite.employeeNumber = favoriteEmployeeUID;
 
             var result = await favoritesCollection.AddAsync(favorite);

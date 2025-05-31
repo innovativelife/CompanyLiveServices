@@ -42,9 +42,9 @@ public class EmployeeReadProcessor : IEmployeeReadProcessor
         }
     }
 
-    public async Task<EmployeeSearchResponse> SearchEmployee(IUserContext requestContext, string tenantId, string? employeeNumber, string? email, string? firstName, string? lastName, string? leaderEmployeeNumber)
+    public async Task<EmployeeSearchResponse> SearchEmployee(IUserContext requestContext, string tenantId, string? employeeNumber, string? email, string? firstName, string? lastName, string? leaderEmployeeNumber, string? employeeUID)
     {
-        var searchResult = await _employeeActions.Search(requestContext.tenantId, employeeNumber, email, firstName, lastName, leaderEmployeeNumber);
+        var searchResult = await _employeeActions.Search(requestContext.tenantId, employeeNumber, email, firstName, lastName, leaderEmployeeNumber, employeeUID);
 
         if (searchResult.Item1.Success)
         {
