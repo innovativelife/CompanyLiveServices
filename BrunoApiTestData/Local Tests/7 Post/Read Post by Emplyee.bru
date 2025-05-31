@@ -1,0 +1,20 @@
+meta {
+  name: Read Post by Emplyee
+  type: http
+  seq: 5
+}
+
+get {
+  url: http://{{LOCALDEVURL}}/post/tenant1?employeeUID=23d12c5e-18ac-4e37-a69b-8380413e172c
+  body: none
+  auth: inherit
+}
+
+params:query {
+  employeeUID: 23d12c5e-18ac-4e37-a69b-8380413e172c
+}
+
+headers {
+  uId: tester
+  tenantId: tenant1
+}

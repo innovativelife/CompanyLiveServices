@@ -1,0 +1,25 @@
+meta {
+  name: Create Post
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://{{LOCALDEVURL}}/post/tenant1
+  body: json
+  auth: inherit
+}
+
+headers {
+  uId: localDev
+  tenantId: tenant1
+}
+
+body:json {
+  {
+    "message": "Hello, this is a message",
+    "employeeUID": "23d12c5e-18ac-4e37-a69b-8380413e172c",
+    "status":"sent",
+    "sendTo":"all"
+  }
+}

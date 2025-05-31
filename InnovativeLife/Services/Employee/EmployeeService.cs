@@ -56,7 +56,7 @@ public class EmployeeService : IEmployeeService
 
     public async Task<EmployeeReadResponse> ReadByEmployeeUID(IUserContext requestContext, string tenantId, string employeeUID, bool allowRoot)
     {
-       var validation = validateTenantId(requestContext, tenantId, allowRoot);
+        var validation = validateTenantId(requestContext, tenantId, allowRoot);
         if (validation.Item1 != ServiceResponseBase.ResponseStatus.Ok)
         {
             return new EmployeeReadResponse(validation.Item1, validation.Item2);
@@ -76,7 +76,7 @@ public class EmployeeService : IEmployeeService
         return await _employeeSaveProcessor.SaveEmployee(requestContext, tenantId, employeeUID, request);
     }
 
-    public async Task<EmployeeSearchResponse> SearchEmployee(IUserContext requestContext, string tenantId, string? employeeNumber, string? email, string? firstName, string? lastName, string? leaderEmployeeNumber)
+    public async Task<EmployeeSearchResponse> SearchEmployee(IUserContext requestContext, string tenantId, string? employeeNumber, string? email, string? firstName, string? lastName, string? leaderEmployeeNumber, string? employeeUID)
     {
         var validation = validateTenantId(requestContext, tenantId, false);
         if (validation.Item1 != ServiceResponseBase.ResponseStatus.Ok)
@@ -84,7 +84,7 @@ public class EmployeeService : IEmployeeService
             return new EmployeeSearchResponse(validation.Item1, validation.Item2);
         }
 
-        return await _employeeReadProcessor.SearchEmployee(requestContext, tenantId, employeeNumber, email, firstName, lastName, leaderEmployeeNumber);
+        return await _employeeReadProcessor.SearchEmployee(requestContext, tenantId, employeeNumber, email, firstName, lastName, leaderEmployeeNumber, employeeUID);
     }
 
     public async Task<EmployeeResetPasswordResponse> ResetPassword(IUserContext requestContext, string tenantId, string employeeUID, string newPassword)

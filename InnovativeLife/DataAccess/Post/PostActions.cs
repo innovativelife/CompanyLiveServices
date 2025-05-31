@@ -1,0 +1,124 @@
+using Google.Cloud.Firestore;
+using InnovativeLife.DataAccess.Common;
+using Microsoft.Extensions.Logging;
+
+namespace InnovativeLife.DataAccess.Post;
+
+public class PostActions : IPostActions
+{
+    private ILogger<PostActions> _logger;
+    public PostActions(ILogger<PostActions> logger)
+    {
+        _logger = logger;
+    }
+
+    public async Task<Tuple<DalResponse, PostModel?>> ReadByPostId(string tenantId, string postId)
+    {
+        try
+        {
+            var db = Utilities.connectToFirestore();
+            Query PostQuery = db.Collection(PostConstants.PostCollectionName).WhereEqualTo(PostConstants.postId, postId);
+            QuerySnapshot PostQuerySnapshot = await PostQuery.GetSnapshotAsync();
+
+            if (PostQuerySnapshot.Count == 0)
+            {
+                return new Tuple<DalResponse, PostModel?>(new DalResponse(DalResponse.ResponseStatus.NotFound), new PostModel());
+            }
+
+            var value = PostQuerySnapshot[0].ConvertTo<PostModel>();
+
+            _logger.LogInformation("PostActions.Read: GetPost Read Complete");
+
+            return new Tuple<DalResponse, PostModel?>(new DalResponse(DalResponse.ResponseStatus.Ok), value);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"PostActions.Read: Exception {ex.Message}");
+            return new Tuple<DalResponse, PostModel?>(new DalResponse(DalResponse.ResponseStatus.Exception), new PostModel());
+        }
+    }
+
+    async Task<Tuple<DalResponse, List<PostModel>>> IPostActions.Search(string tenantId, string? postId, string? timeSent, string? status, string? sendTo, string? employeeUID, string? message)
+    {
+        try
+        {
+            _logger.LogInformation($"EmployeeActions.Search starting with parameters: tenantId: {tenantId} | postId: {postId} | timeSent: {timeSent} | status: {status} | sendTo: {sendTo} | employeeUID: {employeeUID} | message: {message}");
+
+            var db = Utilities.connectToFirestore();
+            Query employeeQuery = db.Collection(PostConstants.PostCollectionName);
+
+            employeeQuery = employeeQuery.WhereEqualTo(PostConstants.tenantId, tenantId);
+
+            employeeQuery = employeeQuery.WhereEqualTo(PostConstants.status, "sent");
+
+            if (!string.IsNullOrEmpty(postId))
+            {
+                employeeQuery = employeeQuery.WhereEqualTo(PostConstants.postId, postId);
+            }
+
+            if (!string.IsNullOrEmpty(timeSent))
+            {
+                employeeQuery = employeeQuery.WhereEqualTo(PostConstants.timeSent, timeSent);
+            }
+
+            if (!string.IsNullOrEmpty(sendTo))
+            {
+                employeeQuery = employeeQuery.WhereEqualTo(PostConstants.sendTo, status);
+            }
+
+            if (!string.IsNullOrEmpty(employeeUID))
+            {
+                employeeQuery = employeeQuery.WhereEqualTo(PostConstants.employeeUID, employeeUID);
+            }
+
+            if (!string.IsNullOrEmpty(message))
+            {
+                employeeQuery = employeeQuery.WhereEqualTo(PostConstants.message, message);
+            }
+
+            QuerySnapshot employeeQuerySnapshot = await employeeQuery.GetSnapshotAsync();
+
+            if (employeeQuerySnapshot.Count == 0)
+            {
+                return new Tuple<DalResponse, List<PostModel>>(new DalResponse(DalResponse.ResponseStatus.NotFound), new List<PostModel>());
+            }
+
+            var employees = new List<PostModel>();
+            foreach (DocumentSnapshot documentSnapshot in employeeQuerySnapshot.Documents)
+            {
+                employees.Add(documentSnapshot.ConvertTo<PostModel>());
+            }
+
+            _logger.LogInformation($"EmployeeActions.Search: Complete with {employees.Count} employees returned");
+
+            return new Tuple<DalResponse, List<PostModel>>(new DalResponse(DalResponse.ResponseStatus.Ok), employees);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogInformation($"EmployeeActions.Save: Exception {ex.Message}");
+
+            return new Tuple<DalResponse, List<PostModel>>(new DalResponse(DalResponse.ResponseStatus.Ok), new List<PostModel>());
+        }
+    }
+
+    public async Task<DalResponse> Save(string tenantId, PostModel postModel)
+    {
+        try
+        {
+            _logger.LogInformation("PostActions.Save: Saving post {0}", postModel.employeeUID);
+
+            var db = Utilities.connectToFirestore();
+            CollectionReference collection = db.Collection(PostConstants.PostCollectionName);
+            DocumentReference postRef = db.Collection(PostConstants.PostCollectionName).Document(postModel.postId);
+
+            var result = await postRef.SetAsync(postModel);
+
+            return new DalResponse(DalResponse.ResponseStatus.Ok);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"PostActions.Save: Exception - {ex.Message}");
+            return new DalResponse(DalResponse.ResponseStatus.Exception);
+        }
+    }
+}

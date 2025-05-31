@@ -13,6 +13,7 @@
     <PackageReference Include="Google.Apis.Firebaseappcheck.v1" Version="1.68.0.3476" />
     <PackageReference Include="Google.Cloud.Firestore" Version="3.8.0" />
     <PackageReference Include="Google.Cloud.Functions.Hosting" Version="2.2.1" />
+    <PackageReference Include="NUlid" Version="1.7.2" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.2" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.0" />
     <None Include="appsettings*.json" CopyToOutputDirectory="PreserveNewest" />
