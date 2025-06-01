@@ -84,7 +84,7 @@ public class GoogleIdentityAuthenticationHandler : BaseAuthenticationHandler
     {
         _logger.LogInformation("GoogleIdentityAuthenticationHandler.GetTenantFromHeader: About to validate tenant Id");
 
-        // All URL's are of form: /[EntityName]/[tenantId]/{extra segments as required}  eg. Employees/tenant1 for operations on employees in Tenant 1
+        // All URL's are of form: /api/v1/Tenants/[tenantId]/[EntityName]/{extra segments as required}  eg. /api/v1/Tenants/tenant1/Employees for operations on employees in Tenant 1
         if (request == null || request.Path == null || String.IsNullOrEmpty(request.Path.Value))
         {
             _logger.LogError("Null request or path?");
@@ -93,19 +93,22 @@ public class GoogleIdentityAuthenticationHandler : BaseAuthenticationHandler
 
         var urlParts = request.Path.Value.Split("/");
 
-        // If a tenant operation, then tenant is not required.  This operation must be performed by user in Root tenant.
-        if (urlParts.Length <= 3 && urlParts[1].ToLower() == "tenants")
-        {
-            return new Tuple<bool, string?>(true, GcpConstants.RootTenantId);
-        }
+        // TODo: Can this code be deleted?
+        // // If a tenant operation, then tenant is not required.  This operation must be performed by user in Root tenant.
+        // if (urlParts.Length <= 3 && urlParts[1].ToLower() == "tenants")
+        // {
+        //     return new Tuple<bool, string?>(true, GcpConstants.RootTenantId);
+        // }
 
         // Otherwise, Tenant must be second URL parameter
-        if (urlParts.Length < 3)
+        if (urlParts.Length < 5)
         {
             _logger.LogError("Invalid URL path");
             return new Tuple<bool, string?>(false, "Invalid URL");
         }
 
-        return new Tuple<bool, string?>(true, urlParts[2]);
+        var tenantId = urlParts[4];
+        _logger.LogError($"Tenant found in URL: {tenantId}");
+        return new Tuple<bool, string?>(true, tenantId);
     }
 }
