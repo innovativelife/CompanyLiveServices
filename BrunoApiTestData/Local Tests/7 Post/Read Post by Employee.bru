@@ -1,11 +1,11 @@
 meta {
-  name: Read Post by Emplyee
+  name: Read Post by Employee
   type: http
   seq: 5
 }
 
 get {
-  url: http://{{LOCALDEVURL}}/post/tenant1?employeeUID=23d12c5e-18ac-4e37-a69b-8380413e172c
+  url: http://{{LOCALDEVURL}}/api/v1/tenants/tenant1/post?employeeUID=23d12c5e-18ac-4e37-a69b-8380413e172c
   body: none
   auth: inherit
 }

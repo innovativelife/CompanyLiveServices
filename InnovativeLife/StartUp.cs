@@ -146,7 +146,7 @@ public class Startup : FunctionsStartup
 
     private void addTenantEndpoints(IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapGet("/tenants/", async (ITenantService service, IUserContext requestContext) =>
+        endpoints.MapGet("/api/v1/tenants/", async (ITenantService service, IUserContext requestContext) =>
             (await service.ReadSet(requestContext)).GetAspNetResult())
         .WithName("TenantReadSet")
         .RequireAuthorization(AuthorizationPolicies.SuperUserRequired)
@@ -156,17 +156,17 @@ public class Startup : FunctionsStartup
             Description = "Get list of tenants that have been configured."
         });
 
-        endpoints.MapGet("/tenants/{tenantId}", async (ITenantService service, IUserContext requestContext, string tenantId) =>
+        endpoints.MapGet("/api/v1/tenants/{tenantId}", async (ITenantService service, IUserContext requestContext, string tenantId) =>
             (await service.ReadSingleton(requestContext, tenantId)).GetAspNetResult())
         .WithName("TenantRead")
         .RequireAuthorization(AuthorizationPolicies.SuperUserRequired)
         .WithOpenApi(operation => new(operation)
         {
-            Summary = "Get tenant by ID",
+            Summary = "Read tenant by ID",
             Description = "Returns details for a single tenant"
         });
 
-        endpoints.MapPost("/tenants/", async (ITenantService service, TenantAddRequest addRequest, IUserContext requestContext) =>
+        endpoints.MapPost("/api/v1/tenants/", async (ITenantService service, TenantAddRequest addRequest, IUserContext requestContext) =>
             (await service.Add(requestContext, addRequest)).GetAspNetResult())
         .WithName("TenantAdd")
         .RequireAuthorization(AuthorizationPolicies.SuperUserRequired)
@@ -177,7 +177,7 @@ public class Startup : FunctionsStartup
             Description = "Add a new tenant."
         });
 
-        endpoints.MapPut("/tenants/{tenantId}", async (ITenantService service, string tenantId, TenantSaveRequest saveRequest, IUserContext requestContext) =>
+        endpoints.MapPatch("/api/v1/tenants/{tenantId}", async (ITenantService service, string tenantId, TenantSaveRequest saveRequest, IUserContext requestContext) =>
             (await service.Save(requestContext, tenantId, saveRequest)).GetAspNetResult())
         .WithName("TenantSave")
         .RequireAuthorization(AuthorizationPolicies.SuperUserRequired)
@@ -190,7 +190,7 @@ public class Startup : FunctionsStartup
 
     private void addEmployeeEndpoints(IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapPost("/employees/{tenantId}", async (IEmployeeService service, IUserContext requestContext, string tenantId, EmployeeAddRequest addRequest) =>
+        endpoints.MapPost("/api/v1/tenants/{tenantId}/employees", async (IEmployeeService service, IUserContext requestContext, string tenantId, EmployeeAddRequest addRequest) =>
             (await service.Add(requestContext, tenantId, addRequest, false)).GetAspNetResult())
         .RequireAuthorization(AuthorizationPolicies.TenantAdmin)
         .WithName("EmployeeAdd")
@@ -200,7 +200,7 @@ public class Startup : FunctionsStartup
             Description = "Add a new employee to a tenant."
         });
 
-        endpoints.MapPut("/employees/{tenantId}/{employeeUID}/admin/{adminPrivilege}", async (IEmployeeService service, IUserContext requestContext, string tenantId, string employeeUID, bool adminPrivilege) =>
+        endpoints.MapPatch("/api/v1/tenants/{tenantId}/employees/{employeeUID}/admin/{adminPrivilege}", async (IEmployeeService service, IUserContext requestContext, string tenantId, string employeeUID, bool adminPrivilege) =>
             (await service.SetAdminPrivilege(requestContext, tenantId, employeeUID, adminPrivilege, false)).GetAspNetResult())
         .RequireAuthorization(AuthorizationPolicies.TenantAdmin)
         .WithName("EmployeeSetAdminPrivilege")
@@ -210,7 +210,7 @@ public class Startup : FunctionsStartup
             Description = "Set admin privilege for an employee. This allows them to perform admin functions within their organisation's tenant."
         });
 
-        endpoints.MapPut("/employees/{tenantId}/{employeeUID}/resetPassword/{newPassword}", async (IEmployeeService service, IUserContext requestContext, string tenantId, string employeeUID, string newPassword) =>
+        endpoints.MapPatch("/api/v1/tenants/{tenantId}/employees/{employeeUID}/resetPassword/{newPassword}", async (IEmployeeService service, IUserContext requestContext, string tenantId, string employeeUID, string newPassword) =>
             (await service.ResetPassword(requestContext, tenantId, employeeUID, newPassword)).GetAspNetResult())
         .RequireAuthorization(AuthorizationPolicies.TenantAdmin)
         .WithName("EmployeeResetPassword")
@@ -220,50 +220,50 @@ public class Startup : FunctionsStartup
             Description = "Reset password for an employee."
         });
 
-        // endpoints.MapPut("/employees/{tenantId}/AddFavorite/{favoriteEmployeeUID}", async (IEmployeeService service, IUserContext requestContext, string tenantId, string favoriteEmployeeUID) =>
-        //     (await service.AddFavorite(requestContext, tenantId, favoriteEmployeeUID)).GetAspNetResult())
-        // .RequireAuthorization(AuthorizationPolicies.TenantAdmin)
-        // .WithName("EmployeeAddFavorite")
-        // .WithOpenApi(operation => new(operation)
-        // {
-        //     Summary = "Add employee favorite",
-        //     Description = "Add favorite for the current user"
-        // });
+        endpoints.MapPatch("/api/v1/tenants/{tenantId}/employees/addFavorite/{favoriteEmployeeUID}", async (IEmployeeService service, IUserContext requestContext, string tenantId, string favoriteEmployeeUID) =>
+            (await service.AddFavorite(requestContext, tenantId, favoriteEmployeeUID)).GetAspNetResult())
+        .RequireAuthorization(AuthorizationPolicies.TenantAdmin)
+        .WithName("EmployeeAddFavorite")
+        .WithOpenApi(operation => new(operation)
+        {
+            Summary = "Add employee favorite",
+            Description = "Add favorite for the current user"
+        });
 
-        // endpoints.MapPost("/employees/{tenantId}/{employeeUID}", async (IEmployeeService service, IUserContext requestContext, string tenantId, EmployeeAddRequest addRequest) =>
-        //     (await service.Add(requestContext, tenantId, addRequest, false)).GetAspNetResult())
-        // .RequireAuthorization(AuthorizationPolicies.TenantAdmin)
-        // .WithName("EmployeeAdd")
-        // .WithOpenApi(operation => new(operation)
-        // {
-        //     Summary = "Add employee",
-        //     Description = "Add a new employee to a tenant."
-        // });
+        endpoints.MapPut("/api/v1/tenants/{tenantId}/employees/{employeeUID}", async (IEmployeeService service, IUserContext requestContext, string tenantId, string employeeUID, EmployeeSaveRequest saveRequest) =>
+            (await service.Save(requestContext, tenantId, employeeUID, saveRequest)).GetAspNetResult())
+        .RequireAuthorization(AuthorizationPolicies.TenantAdmin)
+        .WithName("EmployeeUpdate")
+        .WithOpenApi(operation => new(operation)
+        {
+            Summary = "Update employee",
+            Description = "Update existing employee"
+        });
 
-        endpoints.MapGet("/employees/{tenantId}/{employeeUID}", async (IEmployeeService service, IUserContext requestContext, string tenantId, string employeeUID) =>
+        endpoints.MapGet("/api/v1/tenants/{tenantId}/employees/{employeeUID}", async (IEmployeeService service, IUserContext requestContext, string tenantId, string employeeUID) =>
             (await service.ReadByEmployeeUID(requestContext, tenantId, employeeUID, false)).GetAspNetResult())
         .RequireAuthorization(AuthorizationPolicies.GetTenantUserPolicy)
-        .WithName("ReadEmployeeByNumber")
+        .WithName("EmployeeReadByUID")
         .WithOpenApi(operation => new(operation)
         {
             Summary = "Read employee by employee uid",
-            Description = "Read employee by Employee ID - Guid generated when the employee is created"
+            Description = "Read employee by Employee UID - Guid generated when the employee is created"
         });
 
-        endpoints.MapGet("/employees/{tenantId}", async (IEmployeeService service, IUserContext requestContext, string tenantId, string? employeeNumber, string? email, string? firstName, string? lastName, string? leaderEmployeeNumber, string? employeeUID) =>
+        endpoints.MapGet("/api/v1/tenants/{tenantId}/employees", async (IEmployeeService service, IUserContext requestContext, string tenantId, string? employeeNumber, string? email, string? firstName, string? lastName, string? leaderEmployeeNumber, string? employeeUID) =>
             (await service.SearchEmployee(requestContext, tenantId, employeeNumber, email, firstName, lastName, leaderEmployeeNumber, employeeUID)).GetAspNetResult())
         .RequireAuthorization(AuthorizationPolicies.GetTenantUserPolicy)
         .WithName("EmployeeSearch")
         .WithOpenApi(operation => new(operation)
         {
-            Summary = "Search for employees",
+            Summary = "Employee Search",
             Description = "Search for employees via various criteria"
         });
     }
 
     private void addUiConfigEndpoints(IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapGet("/uiconfig/{tenantId}",
+        endpoints.MapGet("/api/v1/tenants/{tenantId}/uiconfig",
           async (IUiConfigService service, IUserContext requestContext, string tenantId) =>
              (await service.Read(requestContext, tenantId)).GetAspNetResult())
        .RequireAuthorization(AuthorizationPolicies.GetTenantUserPolicy)
@@ -274,7 +274,7 @@ public class Startup : FunctionsStartup
            Description = "Read UI Config by tenant ID"
        });
 
-        endpoints.MapPost("/uiconfig/{tenantId}",
+        endpoints.MapPost("/api/v1/tenants/{tenantId}/uiconfig",
           async (IUiConfigService service, IUserContext requestContext, UiConfigSaveRequest saveRequest, string tenantId) =>
              (await service.Save(requestContext, tenantId, saveRequest)).GetAspNetResult())
         .RequireAuthorization(AuthorizationPolicies.TenantAdmin)
@@ -299,7 +299,7 @@ public class Startup : FunctionsStartup
         //        Description = "Read Post by user and tenant ID"
         //    });
 
-        endpoints.MapPost("/post/{tenantId}",
+        endpoints.MapPost("/api/v1/tenants/{tenantId}/post",
           async (IPostService service, IUserContext requestContext, PostSaveRequest saveRequest, string tenantId) =>
              (await service.Save(requestContext, tenantId, saveRequest)).GetAspNetResult())
         .RequireAuthorization(AuthorizationPolicies.TenantAdmin)
@@ -310,7 +310,7 @@ public class Startup : FunctionsStartup
             Description = "Save Post by user and tenant ID"
         });
 
-        endpoints.MapGet("/post/{tenantId}", async (IPostService service, IUserContext requestContext, string tenantId, string? postId, string? timeSent, string? status, string? sendTo, string? employeeUID, string? message) =>
+        endpoints.MapGet("/api/v1/tenants/{tenantId}/post", async (IPostService service, IUserContext requestContext, string tenantId, string? postId, string? timeSent, string? status, string? sendTo, string? employeeUID, string? message) =>
              (await service.SearchPost(requestContext, tenantId, postId, timeSent, sendTo, status, employeeUID, message)).GetAspNetResult())
          .RequireAuthorization(AuthorizationPolicies.GetTenantUserPolicy)
          .WithName("PostSearch")

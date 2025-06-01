@@ -4,8 +4,8 @@ meta {
   seq: 6
 }
 
-put {
-  url: https://{{URL}}/Tenants/tenant999
+patch {
+  url: https://{{URL}}/api/v1/Tenants/tenant999
   body: json
   auth: bearer
 }
@@ -39,7 +39,7 @@ tests {
   });
   
   test("updated customerName correct)", function () {
-      expect(jsonResponse.tenant.customerName).to.equal("999 Inc Pty Ltd");
+      expect(jsonResponse.tenant.customerName).to.equal("999 Levi Ltd");
   });
   
   test("identityManagerTenantId rerurned)", function () {
