@@ -146,7 +146,7 @@ public class Startup : FunctionsStartup
 
     private void addTenantEndpoints(IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapGet("/api/v1/tenants/", async (ITenantService service, IUserContext requestContext) =>
+        endpoints.MapGet("/api/v1/admin/tenants/", async (ITenantService service, IUserContext requestContext) =>
             (await service.ReadSet(requestContext)).GetAspNetResult())
         .WithName("TenantReadSet")
         .RequireAuthorization(AuthorizationPolicies.SuperUserRequired)
@@ -156,7 +156,7 @@ public class Startup : FunctionsStartup
             Description = "Get list of tenants that have been configured."
         });
 
-        endpoints.MapGet("/api/v1/tenants/{tenantId}", async (ITenantService service, IUserContext requestContext, string tenantId) =>
+        endpoints.MapGet("/api/v1/admin/tenants/{tenantId}", async (ITenantService service, IUserContext requestContext, string tenantId) =>
             (await service.ReadSingleton(requestContext, tenantId)).GetAspNetResult())
         .WithName("TenantRead")
         .RequireAuthorization(AuthorizationPolicies.SuperUserRequired)
@@ -166,7 +166,7 @@ public class Startup : FunctionsStartup
             Description = "Returns details for a single tenant"
         });
 
-        endpoints.MapPost("/api/v1/tenants/", async (ITenantService service, TenantAddRequest addRequest, IUserContext requestContext) =>
+        endpoints.MapPost("/api/v1/admin/tenants/", async (ITenantService service, TenantAddRequest addRequest, IUserContext requestContext) =>
             (await service.Add(requestContext, addRequest)).GetAspNetResult())
         .WithName("TenantAdd")
         .RequireAuthorization(AuthorizationPolicies.SuperUserRequired)
@@ -177,7 +177,7 @@ public class Startup : FunctionsStartup
             Description = "Add a new tenant."
         });
 
-        endpoints.MapPatch("/api/v1/tenants/{tenantId}", async (ITenantService service, string tenantId, TenantSaveRequest saveRequest, IUserContext requestContext) =>
+        endpoints.MapPatch("/api/v1/admin/tenants/{tenantId}", async (ITenantService service, string tenantId, TenantSaveRequest saveRequest, IUserContext requestContext) =>
             (await service.Save(requestContext, tenantId, saveRequest)).GetAspNetResult())
         .WithName("TenantSave")
         .RequireAuthorization(AuthorizationPolicies.SuperUserRequired)

@@ -93,12 +93,11 @@ public class GoogleIdentityAuthenticationHandler : BaseAuthenticationHandler
 
         var urlParts = request.Path.Value.Split("/");
 
-        // TODo: Can this code be deleted?
-        // // If a tenant operation, then tenant is not required.  This operation must be performed by user in Root tenant.
-        // if (urlParts.Length <= 3 && urlParts[1].ToLower() == "tenants")
-        // {
-        //     return new Tuple<bool, string?>(true, GcpConstants.RootTenantId);
-        // }
+        // If a admin operation, then tenant is not required.  This operation must be performed by user in Root tenant.
+        if (urlParts.Length <= 4 && urlParts[3].ToLower() == "admin")
+        {
+            return new Tuple<bool, string?>(true, GcpConstants.RootTenantId);
+        }
 
         // Otherwise, Tenant must be second URL parameter
         if (urlParts.Length < 5)
@@ -108,7 +107,7 @@ public class GoogleIdentityAuthenticationHandler : BaseAuthenticationHandler
         }
 
         var tenantId = urlParts[4];
-        _logger.LogError($"Tenant found in URL: {tenantId}");
+        _logger.LogInformation($"Tenant found in URL: {tenantId}");
         return new Tuple<bool, string?>(true, tenantId);
     }
 }
