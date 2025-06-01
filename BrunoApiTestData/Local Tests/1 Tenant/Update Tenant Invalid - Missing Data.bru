@@ -4,8 +4,8 @@ meta {
   seq: 11
 }
 
-put {
-  url: http://{{LOCALDEVURL}}/Tenants/tenant1
+patch {
+  url: http://{{LOCALDEVURL}}/api/v1/Tenants/tenant1
   body: json
   auth: bearer
 }

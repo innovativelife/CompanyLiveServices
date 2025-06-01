@@ -4,8 +4,8 @@ meta {
   seq: 6
 }
 
-put {
-  url: http://{{LOCALDEVURL}}/Employees/tenant1/{{employeeUID}}/admin/true
+patch {
+  url: http://{{LOCALDEVURL}}/api/v1/tenants/tenant1/Employees/{{employeeUID}}/admin/true
   body: json
   auth: bearer
 }
