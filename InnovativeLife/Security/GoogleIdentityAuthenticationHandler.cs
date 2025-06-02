@@ -94,8 +94,9 @@ public class GoogleIdentityAuthenticationHandler : BaseAuthenticationHandler
         var urlParts = request.Path.Value.Split("/");
 
         // If a admin operation, then tenant is not required.  This operation must be performed by user in Root tenant.
-        if (urlParts.Length <= 4 && urlParts[3].ToLower() == "admin")
+        if (urlParts.Length >= 5 && urlParts[4].ToLower() == "admin")
         {
+            _logger.LogInformation("Admin function - must be root tenant");
             return new Tuple<bool, string?>(true, GcpConstants.RootTenantId);
         }
 
