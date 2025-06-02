@@ -94,20 +94,20 @@ public class GoogleIdentityAuthenticationHandler : BaseAuthenticationHandler
         var urlParts = request.Path.Value.Split("/");
 
         // If a admin operation, then tenant is not required.  This operation must be performed by user in Root tenant.
-        if (urlParts.Length >= 5 && urlParts[4].ToLower() == "admin")
+        if (urlParts.Length >= 3 && urlParts[2].ToLower() == "admin")
         {
             _logger.LogInformation("Admin function - must be root tenant");
             return new Tuple<bool, string?>(true, GcpConstants.RootTenantId);
         }
 
         // Otherwise, Tenant must be second URL parameter
-        if (urlParts.Length < 5)
+        if (urlParts.Length < 4)
         {
             _logger.LogError("Invalid URL path");
             return new Tuple<bool, string?>(false, "Invalid URL");
         }
 
-        var tenantId = urlParts[4];
+        var tenantId = urlParts[3];
         _logger.LogInformation($"Tenant found in URL: {tenantId}");
         return new Tuple<bool, string?>(true, tenantId);
     }
