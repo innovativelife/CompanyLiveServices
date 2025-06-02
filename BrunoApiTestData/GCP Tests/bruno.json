@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "name": "CompanyLive - Super User",
+  "name": "CompanyLive - Remote Tests",
   "type": "collection",
   "ignore": [
     "node_modules",
