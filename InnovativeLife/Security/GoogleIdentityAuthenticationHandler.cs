@@ -93,21 +93,29 @@ public class GoogleIdentityAuthenticationHandler : BaseAuthenticationHandler
 
         var urlParts = request.Path.Value.Split("/");
 
-        // If a admin operation, then tenant is not required.  This operation must be performed by user in Root tenant.
-        if (urlParts.Length >= 3 && urlParts[2].ToLower() == "admin")
+        // If a admin operation, url is: /api/v1/admin
+        // This operation must be performed by user in Root tenant (checked later).
+        if (urlParts.Length >= 4 && urlParts[3].ToLower() == Constants.AdminUrlParameterName)
         {
             _logger.LogInformation("Admin function - must be root tenant");
             return new Tuple<bool, string?>(true, GcpConstants.RootTenantId);
         }
 
-        // Otherwise, Tenant must be second URL parameter
-        if (urlParts.Length < 4)
+        // Otherwise, Tenant must be 4th URL parameter
+        // ie. /api/v1/tenants/[tenantId]
+        if (urlParts.Length < 5)
         {
-            _logger.LogError("Invalid URL path");
+            _logger.LogError("Invalid URL path - Not admin function Url not long enough");
             return new Tuple<bool, string?>(false, "Invalid URL");
         }
 
-        var tenantId = urlParts[3];
+        if (urlParts[3].ToLower() != Constants.TenantsUrlParameterName)
+        {
+            _logger.LogError($"Invalid URL path - Not admin function and '{Constants.TenantsUrlParameterName}' url parameter missing");
+            return new Tuple<bool, string?>(false, "Invalid URL");
+        }
+
+        var tenantId = urlParts[4];
         _logger.LogInformation($"Tenant found in URL: {tenantId}");
         return new Tuple<bool, string?>(true, tenantId);
     }
