@@ -109,6 +109,15 @@ public class UiConfigModel
     public string messageSvg { get; set; }
     [FirestoreProperty]
     public string phoneCallSvg { get; set; }
+
+    [FirestoreProperty]
+    public string primaryColor { get; set; }
+    [FirestoreProperty]
+    public string secondaryColor { get; set; }
+    [FirestoreProperty]
+    public string tertiaryColor { get; set; }
+    [FirestoreProperty]
+    public string inputsColor { get; set; }
 }
 
 //  public string primaryColorHex { get; set; }

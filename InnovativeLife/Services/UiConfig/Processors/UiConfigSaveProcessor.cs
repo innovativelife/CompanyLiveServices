@@ -79,7 +79,11 @@ public class UiConfigSaveProcessor : IUiConfigSaveProcessor
             backSvg = saveRequest.backSvg,
             favouriteSvg = saveRequest.favouriteSvg,
             messageSvg = saveRequest.messageSvg,
-            phoneCallSvg = saveRequest.phoneCallSvg
+            phoneCallSvg = saveRequest.phoneCallSvg,
+            primaryColor = saveRequest.primaryColor,
+            secondaryColor = saveRequest.secondaryColor,
+            tertiaryColor = saveRequest.tertiaryColor,
+            inputsColor = saveRequest.inputsColor
         };
 
         var saveResponse = await _uiConfigActions.Save(tenantId, uiConfigModel);
@@ -143,7 +147,11 @@ public class UiConfigSaveProcessor : IUiConfigSaveProcessor
                     uiConfigModel.backSvg,
                     uiConfigModel.favouriteSvg,
                     uiConfigModel.messageSvg,
-                    uiConfigModel.phoneCallSvg
+                    uiConfigModel.phoneCallSvg,
+                    uiConfigModel.primaryColor,
+                    uiConfigModel.secondaryColor,
+                    uiConfigModel.tertiaryColor,
+                    uiConfigModel.inputsColor
                 )
             };
             return processorResponse;

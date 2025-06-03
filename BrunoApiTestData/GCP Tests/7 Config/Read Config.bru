@@ -1,7 +1,7 @@
 meta {
   name: Read Config
   type: http
-  seq: 2
+  seq: 3
 }
 
 get {
@@ -12,4 +12,53 @@ get {
 
 auth:bearer {
   token: {{Admin1-AuthToken}}
+}
+
+tests {
+  test("Status code is 200 (Ok)", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const jsonResponse = res.getBody();
+  test("correct Config configId returned", function () {
+      expect(jsonResponse.uiConfig.configId).to.equal("Id");
+  });
+  test("correct Config configName returned", function () {
+      expect(jsonResponse.uiConfig.configName).to.equal("TEST");
+  });
+  test("correct Config googleFont returned", function () {
+      expect(jsonResponse.uiConfig.googleFont).to.equal("AFont");
+  });
+  test("correct Config appBannerUrl returned", function () {
+      expect(jsonResponse.uiConfig.appBannerUrl).to.equal("http://HelloWorld/Image.jpeg");
+  });
+  test("correct Config appTitle returned", function () {
+      expect(jsonResponse.uiConfig.appTitle).to.equal("Technology Two");
+  });
+  test("correct Config homeTitle returned", function () {
+      expect(jsonResponse.uiConfig.homeTitle).to.equal("Home");
+  });
+  test("correct Config peopleTitle returned", function () {
+      expect(jsonResponse.uiConfig.peopleTitle).to.equal("People");
+  });
+  test("correct Config calendarTitle returned", function () {
+      expect(jsonResponse.uiConfig.calendarTitle).to.equal("Calendar");
+  });
+  test("correct Config policyTitle returned", function () {
+      expect(jsonResponse.uiConfig.policyTitle).to.equal("Policy");
+  });
+  test("correct Config moreTitle returned", function () {
+      expect(jsonResponse.uiConfig.moreTitle).to.equal("Other")});
+  test("correct Config primaryColor returned", function () {
+      expect(jsonResponse.uiConfig.primaryColor).to.equal("#F2E6CE")});
+  test("correct Config secondaryColor returned", function () {
+      expect(jsonResponse.uiConfig.secondaryColor).to.equal("#827A69")});
+  test("correct Config tertiaryColor returned", function () {
+      expect(jsonResponse.uiConfig.tertiaryColor).to.equal("#FCFAF7")});
+  test("correct Config inputsColor returned", function () {
+      expect(jsonResponse.uiConfig.inputsColor).to.equal("#F5F2F2")});
+  test("correct Config backgroundColor returned", function () {
+      expect(jsonResponse.uiConfig.backgroundColor).to.equal("#FFFFFF")});
+  test("correct Config textColor returned", function () {
+      expect(jsonResponse.uiConfig.textColor).to.equal("#171412")});
 }
