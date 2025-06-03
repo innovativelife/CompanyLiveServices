@@ -65,7 +65,11 @@ public class UiConfigItem
         string backSvg,
         string favouriteSvg,
         string messageSvg,
-        string phoneCallSvg
+        string phoneCallSvg,
+        string primaryColor,
+        string secondaryColor,
+        string tertiaryColor,
+        string inputsColor
     )
     {
         this.tenantId = tenantId;
@@ -120,6 +124,10 @@ public class UiConfigItem
         this.favouriteSvg = favouriteSvg;
         this.messageSvg = messageSvg;
         this.phoneCallSvg = phoneCallSvg;
+        this.primaryColor = primaryColor;
+        this.secondaryColor = secondaryColor;
+        this.tertiaryColor = tertiaryColor;
+        this.inputsColor = inputsColor;
     }
     public string tenantId { get; set; }
     public string configId { get; set; }
@@ -180,5 +188,9 @@ public class UiConfigItem
     public string favouriteSvg { get; set; }
     public string messageSvg { get; set; }
     public string phoneCallSvg { get; set; }
+    public string primaryColor { get; set; }
+    public string secondaryColor { get; set; }
+    public string tertiaryColor { get; set; }
+    public string inputsColor { get; set; }
 }
 

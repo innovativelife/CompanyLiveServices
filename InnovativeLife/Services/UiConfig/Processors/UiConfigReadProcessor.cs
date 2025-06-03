@@ -89,7 +89,11 @@ public class UiConfigReadProcessor : IUiConfigReadProcessor
             uiConfigModel.backSvg,
             uiConfigModel.favouriteSvg,
             uiConfigModel.messageSvg,
-            uiConfigModel.phoneCallSvg
+            uiConfigModel.phoneCallSvg,
+            uiConfigModel.primaryColor,
+            uiConfigModel.secondaryColor,
+            uiConfigModel.tertiaryColor,
+            uiConfigModel.inputsColor
         );
     }
 }

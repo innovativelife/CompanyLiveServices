@@ -1,0 +1,34 @@
+meta {
+  name: Add Post Missing Data -Error-
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://{{LOCALDEVURL}}/api/v1/tenants/tenant1/UiConfig
+  body: json
+  auth: inherit
+}
+
+headers {
+  uId: localDev
+  tenantId: tenant1
+}
+
+body:json {
+  {
+    
+  }
+}
+
+tests {
+  test("Status code is 422 (Error)", function () {
+      expect(res.getStatus()).to.equal(422);
+  });
+  
+  const jsonResponse = res.getBody();
+  test("55 errors detected", function () {
+      expect(jsonResponse.success).to.equal(false);
+      expect(jsonResponse.messages.length).to.equal(55);
+  });
+}

@@ -157,4 +157,16 @@ public class UiConfigSaveRequest : RequestBase
 
     [Required(ErrorMessage = "phoneCallSvg must be provided.")]
     public string phoneCallSvg { get; set; } = "";
+
+    [Required(ErrorMessage = "primaryColor must be provided.")]
+    public string primaryColor { get; set; } = "";
+
+    [Required(ErrorMessage = "secondaryColor must be provided.")]
+    public string secondaryColor { get; set; } = "";
+
+    [Required(ErrorMessage = "tertiaryColor must be provided.")]
+    public string tertiaryColor { get; set; } = "";
+
+    [Required(ErrorMessage = "inputsColor must be provided.")]
+    public string inputsColor { get; set; } = "";
 }
