@@ -13,6 +13,8 @@ public class PostModel
     [FirestoreProperty]
     public string timeSent { get; set; }
     [FirestoreProperty]
+    public string imageURL { get; set; }
+    [FirestoreProperty]
     public string status { get; set; }
     [FirestoreProperty]
     public string sendTo { get; set; }

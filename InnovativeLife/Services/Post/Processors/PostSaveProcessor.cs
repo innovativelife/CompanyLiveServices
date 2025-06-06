@@ -28,7 +28,7 @@ public class PostSaveProcessor : IPostSaveProcessor
         }
 
         string postId = Ulid.NewUlid().ToString();
-        string timeSent = DateTimeOffset.UtcNow.ToString();
+        string timeSent = DateTime.Now.ToString();
 
         var postModel = new PostModel
         {
@@ -38,7 +38,8 @@ public class PostSaveProcessor : IPostSaveProcessor
             status = saveRequest.status,
             sendTo = saveRequest.sendTo,
             employeeUID = saveRequest.employeeUID,
-            message = saveRequest.message
+            message = saveRequest.message,
+            imageURL = saveRequest.imageURL
         };
 
         var saveResponse = await _postActions.Save(tenantId, postModel);
@@ -56,7 +57,8 @@ public class PostSaveProcessor : IPostSaveProcessor
                     postModel.status,
                     postModel.sendTo,
                     postModel.employeeUID,
-                    postModel.message
+                    postModel.message,
+                    postModel.imageURL
                 )
             };
             return processorResponse;

@@ -93,6 +93,7 @@ public class EmployeeSaveProcessor : IEmployeeSaveProcessor
                 leaderEmployeeNumber = request.leaderEmployeeNumber,
                 positionTitle = request.positionTitle,
                 personalDescription = request.personalDescription,
+                avatarURL = request.avatarURL,
                 active = request.active,
                 adminPrivilege = existingEmployee.Item2.adminPrivilege
             };
@@ -116,6 +117,7 @@ public class EmployeeSaveProcessor : IEmployeeSaveProcessor
                     employeeModel.leaderEmployeeNumber,
                     employeeModel.positionTitle,
                     employeeModel.personalDescription,
+                    employeeModel.avatarURL,
                     employeeModel.active,
                     employeeModel.adminPrivilege
                 );

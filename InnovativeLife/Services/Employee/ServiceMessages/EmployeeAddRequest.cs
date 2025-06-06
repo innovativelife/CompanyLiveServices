@@ -34,5 +34,6 @@ public class EmployeeAddRequest : RequestBase
     public string leaderEmployeeNumber { get; set; } = "";
     public string positionTitle { get; set; } = "";
     public string personalDescription { get; set; } = "";
+    public string avatarURL { get; set; } = "";
     public bool active { get; set; } = true;
 }

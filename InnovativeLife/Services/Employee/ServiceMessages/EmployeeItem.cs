@@ -5,8 +5,8 @@ namespace InnovativeLife.Services.Employee.ServiceMessages;
 public class EmployeeItem
 {
     public EmployeeItem()
-    {}
-    
+    { }
+
     public EmployeeItem(
         string tenantId,
         string employeeUID,
@@ -19,6 +19,7 @@ public class EmployeeItem
         string leaderEmployeeNumber,
         string positonTitle,
         string personalDescription,
+        string avatarURL,
         bool active,
         bool adminPrivilege)
     {
@@ -33,6 +34,7 @@ public class EmployeeItem
         this.leaderEmployeeNumber = leaderEmployeeNumber;
         this.positionTitle = positonTitle;
         this.personalDescription = personalDescription;
+        this.avatarURL = avatarURL;
         this.active = active;
         this.adminPrivilege = adminPrivilege;
     }
@@ -63,6 +65,7 @@ public class EmployeeItem
     public string leaderEmployeeNumber { get; set; } = "";
     public string positionTitle { get; set; } = "";
     public string personalDescription { get; set; } = "";
+    public string avatarURL { get; set; } = "";
     public bool active { get; set; } = true;
     public bool adminPrivilege { get; set; } = true;
 }

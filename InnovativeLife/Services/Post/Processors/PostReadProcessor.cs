@@ -63,7 +63,8 @@ public class PostReadProcessor : IPostReadProcessor
             postModel.status,
             postModel.sendTo,
             postModel.employeeUID,
-            postModel.message
+            postModel.message,
+            postModel.imageURL
         );
     }
 }
