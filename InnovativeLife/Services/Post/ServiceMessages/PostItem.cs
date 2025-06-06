@@ -20,7 +20,8 @@ public class PostItem
         string status,
         string sendTo,
         string employeeUID,
-        string message
+        string message,
+        string imageURL
     )
     {
         this.tenantId = tenantId;
@@ -30,6 +31,7 @@ public class PostItem
         this.sendTo = sendTo;
         this.employeeUID = employeeUID;
         this.message = message;
+        this.imageURL = imageURL;
     }
     public string tenantId { get; set; }
     public string postId { get; set; }
@@ -38,5 +40,6 @@ public class PostItem
     public string sendTo { get; set; }
     public string employeeUID { get; set; }
     public string message { get; set; }
+    public string imageURL { get; set; }
 }
 

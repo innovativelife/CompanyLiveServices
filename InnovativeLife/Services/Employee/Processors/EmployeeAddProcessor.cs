@@ -94,6 +94,7 @@ public class EmployeeAddProcessor : IEmployeeAddProcessor
                 employeeNumber = request.employeeNumber,
                 leaderEmployeeNumber = request.leaderEmployeeNumber,
                 positionTitle = request.positionTitle,
+                avatarURL = request.avatarURL,
                 personalDescription = request.personalDescription,
                 active = request.active,
                 adminPrivilege = false
@@ -118,6 +119,7 @@ public class EmployeeAddProcessor : IEmployeeAddProcessor
                     employeeModel.leaderEmployeeNumber,
                     employeeModel.positionTitle,
                     employeeModel.personalDescription,
+                    employeeModel.avatarURL,
                     employeeModel.active,
                     employeeModel.adminPrivilege
                 );

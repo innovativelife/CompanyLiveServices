@@ -60,8 +60,8 @@ public class IdentityService : IIdentityService
 
             identityManagerTenantId = readResult.Item2.identityManagerTenantId;
             userContext.customerName = readResult.Item2.customerName;
-            userContext.identityManagerTenantId   = readResult.Item2.identityManagerTenantId;
-            userContext.tenantId   = tenantId;
+            userContext.identityManagerTenantId = readResult.Item2.identityManagerTenantId;
+            userContext.tenantId = tenantId;
 
             _logger.LogInformation($"IdentityService.AuthenticateUserAndTenant: Swapped supplied tenant ID {tenantId} for identityManagerTenantId {identityManagerTenantId}");
         }

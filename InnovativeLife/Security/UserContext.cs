@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 
 namespace InnovativeLife.Security;
+
 public interface IUserContext
 {
     public string uId { get; set; }

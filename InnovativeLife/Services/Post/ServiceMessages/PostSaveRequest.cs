@@ -17,5 +17,6 @@ public class PostSaveRequest : RequestBase
 
     [Required(ErrorMessage = "employeeUID must be provided.")]
     public string employeeUID { get; set; } = "";
+    public string imageURL { get; set; } = "";
 
 }

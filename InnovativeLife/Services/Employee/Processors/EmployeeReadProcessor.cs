@@ -75,6 +75,7 @@ public class EmployeeReadProcessor : IEmployeeReadProcessor
             employee.leaderEmployeeNumber,
             employee.positionTitle,
             employee.personalDescription,
+            employee.avatarURL,
             employee.active,
             employee.adminPrivilege
         );
