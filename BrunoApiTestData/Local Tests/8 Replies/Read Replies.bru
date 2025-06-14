@@ -1,0 +1,17 @@
+meta {
+  name: Read Replies
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://{{LOCALDEVURL}}/api/v1/tenants/tenant1/{{firstPostId}}/replies
+  body: none
+  auth: inherit
+}
+
+headers {
+  tenantId: tenant1
+  uId: tester
+  ~postId: {{firstPostId}}
+}

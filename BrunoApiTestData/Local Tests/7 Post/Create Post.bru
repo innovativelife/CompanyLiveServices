@@ -24,3 +24,8 @@ body:json {
     "sendTo":"all"
   }
 }
+
+script:post-response {
+  const jsonResponse = res.getBody();
+  bru.setVar("firstPostId", jsonResponse.postItem.postId);
+}
