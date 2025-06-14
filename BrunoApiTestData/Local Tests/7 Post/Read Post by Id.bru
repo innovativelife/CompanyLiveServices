@@ -1,0 +1,20 @@
+meta {
+  name: Read Post by Id
+  type: http
+  seq: 6
+}
+
+get {
+  url: http://{{LOCALDEVURL}}/api/v1/tenants/tenant1/post?postId=01JX1MM3YBS1H6BMKF31W5SJE0
+  body: none
+  auth: inherit
+}
+
+params:query {
+  postId: 01JX1MM3YBS1H6BMKF31W5SJE0
+}
+
+headers {
+  uId: tester
+  tenantId: tenant1
+}

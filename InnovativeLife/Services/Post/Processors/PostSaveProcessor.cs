@@ -28,7 +28,7 @@ public class PostSaveProcessor : IPostSaveProcessor
         }
 
         string postId = Ulid.NewUlid().ToString();
-        string timeSent = DateTime.Now.ToString();
+        string timeSent = DateTime.UtcNow.ToString("o");
 
         var postModel = new PostModel
         {
@@ -69,4 +69,51 @@ public class PostSaveProcessor : IPostSaveProcessor
             return new PostSaveResponse(Common.ServiceResponseBase.ResponseStatus.Exception, "Post could not be added due to unexpected error");
         }
     }
+    async Task<PostAddReplyResponse> IPostSaveProcessor.AddPostReply(string tenantId, string postId, PostAddReplyResquest postReply)
+    {
+        _logger.LogInformation("Executing Post Reply Save");
+
+        var validationResult = postReply.Validate();
+        if (validationResult.Count > 0)
+        {
+            return new PostAddReplyResponse(Common.ServiceResponseBase.ResponseStatus.InvalidData, validationResult);
+
+        }
+
+        string postReplyId = Ulid.NewUlid().ToString();
+        string timeSent = DateTime.UtcNow.ToString("o");
+
+        var postModel = new PostReplyModel
+        {
+            timeSent = timeSent,
+            postReplyId = postReplyId,
+            employeeUID = postReply.employeeUID,
+            message = postReply.message
+        };
+
+        var replyResponse = await _postActions.AddPostReply(tenantId, postId, postModel);
+
+        if (replyResponse.Success)
+        {
+            _logger.LogInformation("Post Reply Saved successfully");
+
+            var processorResponse = new PostAddReplyResponse(Common.ServiceResponseBase.ResponseStatus.Ok, "Post reply updated successfully")
+            {
+                postReply = new PostReply(
+                    tenantId,
+                    postId,
+                    postModel.timeSent,
+                    postModel.employeeUID,
+                    postModel.message
+                )
+            };
+            return processorResponse;
+        }
+        else
+        {
+            _logger.LogError($"Error saving Post Reply");
+            return new PostAddReplyResponse(Common.ServiceResponseBase.ResponseStatus.Exception, "Post Reply could not be added due to unexpected error");
+        }
+    }
+
 }

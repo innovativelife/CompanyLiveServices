@@ -35,6 +35,34 @@ public class PostReadProcessor : IPostReadProcessor
         }
     }
 
+    public async Task<PostRepliesReadResponse> ReadReplies(IUserContext requestContext, string tenantId, string? postId)
+    {
+        _logger.LogInformation("Executing Post Replies Read by postId");
+
+        var searchResult = await _postActions.ReadPostReplies(requestContext.tenantId, postId);
+
+        if (searchResult.Item1.Success)
+        {
+            var responseList = new List<PostReply>();
+            foreach (var item in searchResult.Item2.PostReplies)
+            {
+                var postReply = new PostReply(
+                    tenantId,
+                    postId,
+                    item.timeSent,
+                    item.employeeUID,
+                    item.message
+                );
+                responseList.Add(getPostRepliesFromPostModel(tenantId, postReply));
+            }
+            var response = new PostRepliesReadResponse(Common.ServiceResponseBase.ResponseStatus.Ok, $"{responseList.Count} Post(s) Found");
+            response.replies = responseList;
+            return response;
+        }
+
+        return new PostRepliesReadResponse(Common.ServiceResponseBase.ResponseStatus.NotFound, "Post search returned no results");
+    }
+
     public async Task<PostSearchResponse> SearchPost(IUserContext requestContext, string tenantId, string? postId, string? timeSent, string? status, string? sendTo, string? employeeUID, string? message)
     {
         var searchResult = await _postActions.Search(requestContext.tenantId, postId, timeSent, status, sendTo, employeeUID, message);
@@ -67,4 +95,18 @@ public class PostReadProcessor : IPostReadProcessor
             postModel.imageURL
         );
     }
+
+    private PostReply getPostRepliesFromPostModel(string tenantId, PostReply postReply)
+    {
+        return new PostReply(
+            postReply.tenantId,
+            postReply.postId,
+            postReply.timeSent,
+            postReply.employeeUID,
+            postReply.message
+        );
+    }
+
+
+
 }

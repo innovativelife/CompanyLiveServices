@@ -38,6 +38,43 @@ public class PostActions : IPostActions
         }
     }
 
+    public async Task<Tuple<DalResponse, PostRepliesModel?>> ReadPostReplies(string tenantId, string postId)
+    {
+        try
+        {
+            var db = Utilities.connectToFirestore();
+            Query PostQuery = db.Collection(PostConstants.PostCollectionName).WhereEqualTo(PostConstants.postId, postId);
+            QuerySnapshot PostQuerySnapshot = await PostQuery.GetSnapshotAsync();
+
+            if (PostQuerySnapshot.Count == 0)
+            {
+                return new Tuple<DalResponse, PostRepliesModel?>(new DalResponse(DalResponse.ResponseStatus.NotFound), new PostRepliesModel());
+            }
+
+            var postRef = PostQuerySnapshot[0];
+            var replyResult = await postRef.Reference.Collection(PostConstants.PostRepliesCollectionName).GetSnapshotAsync();
+            var replyDocuments = replyResult.Documents;
+
+            var response = new PostRepliesModel();
+            response.tenantId = tenantId;
+            response.postId = postId;
+
+            foreach (DocumentSnapshot documentSnapshot in replyDocuments)
+            {
+                response.PostReplies.Add(documentSnapshot.ConvertTo<PostReplyModel>());
+            }
+
+            _logger.LogInformation("ReadByPostReplies.Read: GetPost Read Complete");
+
+            return new Tuple<DalResponse, PostRepliesModel?>(new DalResponse(DalResponse.ResponseStatus.Ok), response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"PostActions.Read: Exception {ex.Message}");
+            return new Tuple<DalResponse, PostRepliesModel?>(new DalResponse(DalResponse.ResponseStatus.Exception), new PostRepliesModel());
+        }
+    }
+
     async Task<Tuple<DalResponse, List<PostModel>>> IPostActions.Search(string tenantId, string? postId, string? timeSent, string? status, string? sendTo, string? employeeUID, string? message)
     {
         try
@@ -98,6 +135,35 @@ public class PostActions : IPostActions
             _logger.LogInformation($"EmployeeActions.Save: Exception {ex.Message}");
 
             return new Tuple<DalResponse, List<PostModel>>(new DalResponse(DalResponse.ResponseStatus.Ok), new List<PostModel>());
+        }
+    }
+
+    public async Task<DalResponse> AddPostReply(string tenantId, string postId, PostReplyModel postReply)
+    {
+        try
+        {
+            _logger.LogInformation("PostReplyActions.AddPostReply: Adding reply to post {0}", postId);
+
+            var db = Utilities.connectToFirestore();
+            Query PostQuery = db.Collection(PostConstants.PostCollectionName).WhereEqualTo(PostConstants.postId, postId);
+            QuerySnapshot PostQuerySnapshot = await PostQuery.GetSnapshotAsync();
+
+            if (PostQuerySnapshot.Count == 0)
+            {
+                return new DalResponse(DalResponse.ResponseStatus.NotFound);
+            }
+
+            var postRef = PostQuerySnapshot[0].Reference;
+            DocumentReference postReplyDocument = postRef.Collection(PostConstants.PostRepliesCollectionName).Document(postReply.postReplyId);
+
+            var result = await postReplyDocument.SetAsync(postReply);
+
+            return new DalResponse(DalResponse.ResponseStatus.Ok);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"PostActions.Save: Exception - {ex.Message}");
+            return new DalResponse(DalResponse.ResponseStatus.Exception);
         }
     }
 

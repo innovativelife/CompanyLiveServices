@@ -13,7 +13,6 @@ public class PostService : IPostService
 {
     private ILogger<PostService> _logger;
     private IPostReadProcessor _readPostProcessor;
-
     private IPostSaveProcessor _savePostProcessor;
 
     public PostService(ILogger<PostService> logger, IPostReadProcessor readPostProcessor, IPostSaveProcessor savePostProcessor)
@@ -28,6 +27,13 @@ public class PostService : IPostService
         _logger.LogInformation("PostService.Read: Executing PostService.Read Read");
 
         return await _readPostProcessor.ReadSingleton(requestContext, tenantId, postId);
+    }
+
+    public async Task<PostRepliesReadResponse> ReadReplies(IUserContext requestContext, string tenantId, string postId)
+    {
+        _logger.LogInformation("PostService.ReadReplies: Executing PostService.Read ReadReplies");
+
+        return await _readPostProcessor.ReadReplies(requestContext, tenantId, postId);
     }
 
     public async Task<PostSearchResponse> SearchPost(IUserContext requestContext, string tenantId, string? postId, string? timeSent, string? status, string? sendTo, string? employeeUID, string? message)
@@ -47,6 +53,13 @@ public class PostService : IPostService
         _logger.LogInformation("PostService.Save: Executing PostService.Save Save");
 
         return await _savePostProcessor.Save(requestContext, tenantId, postModel);
+    }
+
+    public async Task<PostAddReplyResponse> AddPostReply(IUserContext requestContext, string tenantId, string postId, PostAddReplyResquest postReply)
+    {
+        _logger.LogInformation("PostService.AddPostReply: Executing PostService.AddPostReply Reply");
+
+        return await _savePostProcessor.AddPostReply(tenantId, postId, postReply);
     }
 
     private Tuple<ServiceResponseBase.ResponseStatus, string> validateTenantId(IUserContext requestContext, string tenantId, bool allowRoot)
