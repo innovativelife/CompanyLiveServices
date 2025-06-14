@@ -80,7 +80,7 @@ public class Startup : FunctionsStartup
                               {
                                   policy
                                     .WithOrigins("http://localhost", "http://127.0.0.1",
-                                    "http://localhost:5173", "http://127.0.0.1:5173")
+                                    "http://localhost:5173", "http://127.0.0.1:5173", "https://companylive-c3879.web.app")
                                     .AllowAnyHeader()
                                     .AllowAnyMethod();
                               });
@@ -318,27 +318,6 @@ public class Startup : FunctionsStartup
          {
              Summary = "Search for posts",
              Description = "Search for posts via various criteria"
-         });
-
-        endpoints.MapPost("/api/v1/tenants/{tenantId}/{postId}/reply",
-         async (IPostService service, IUserContext requestContext, PostAddReplyResquest saveRequest, string tenantId, string postId) =>
-            (await service.AddPostReply(requestContext, tenantId, postId, saveRequest)).GetAspNetResult())
-       .RequireAuthorization(AuthorizationPolicies.TenantAdmin)
-       .WithName("Save Reply")
-       .WithOpenApi(operation => new(operation)
-       {
-           Summary = "Save Reply by user",
-           Description = "Save Reply by reply, user and tenant ID"
-       });
-
-        endpoints.MapGet("/api/v1/tenants/{tenantId}/{postId}/replies", async (IPostService service, IUserContext requestContext, string tenantId, string postId) =>
-             (await service.ReadReplies(requestContext, tenantId, postId)).GetAspNetResult())
-         .RequireAuthorization(AuthorizationPolicies.GetTenantUserPolicy)
-         .WithName("Post Reply Search")
-         .WithOpenApi(operation => new(operation)
-         {
-             Summary = "Search for replies",
-             Description = "Search for replies via various criteria"
          });
     }
 
