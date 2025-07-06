@@ -266,7 +266,8 @@ public class Startup : FunctionsStartup
         endpoints.MapGet("/api/v1/tenants/{tenantId}/uiconfig",
           async (IUiConfigService service, IUserContext requestContext, string tenantId) =>
              (await service.Read(requestContext, tenantId)).GetAspNetResult())
-       .RequireAuthorization(AuthorizationPolicies.GetTenantUserPolicy)
+       .AllowAnonymous()
+    //    .RequireAuthorization(AuthorizationPolicies.GetTenantUserPolicy)
        .WithName("ReadUiConfig")
        .WithOpenApi(operation => new(operation)
        {
@@ -302,7 +303,7 @@ public class Startup : FunctionsStartup
         endpoints.MapPost("/api/v1/tenants/{tenantId}/post",
           async (IPostService service, IUserContext requestContext, PostSaveRequest saveRequest, string tenantId) =>
              (await service.Save(requestContext, tenantId, saveRequest)).GetAspNetResult())
-        .RequireAuthorization(AuthorizationPolicies.TenantAdmin)
+        // .RequireAuthorization(AuthorizationPolicies.TenantAdmin)
         .WithName("Save Post")
         .WithOpenApi(operation => new(operation)
         {

@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 
 namespace InnovativeLife.Security;
 
@@ -20,6 +22,14 @@ public class LocalDevAuthenticationHandler : BaseAuthenticationHandler
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
         _logger.LogInformation("Executing LocalDevelopmentAuthenticationHandler.HandleAuthenticateAsync");
+
+        // Bypass authentciation if AllowAnonymous is set for end point - eg. GetConfig
+        var endpoint = Context.GetEndpoint();
+        if (endpoint?.Metadata?.GetMetadata<IAllowAnonymous>() != null)
+        {
+            Logger.LogInformation("Endpoint {EndpointName} allows anonymous access. Skipping authentication.", endpoint.DisplayName);
+            return AuthenticateResult.NoResult();
+        }
 
         if (Request == null || !Request.Headers.ContainsKey(Options.TentantIdHeader))
         {
