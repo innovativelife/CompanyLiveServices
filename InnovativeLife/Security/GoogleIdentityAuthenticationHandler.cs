@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using InnovativeLife.GcpServices.Identity;
 using System.Security.Claims;
 using InnovativeLife.Common;
+using Microsoft.AspNetCore.Authorization;
 
 namespace InnovativeLife.Security;
 
@@ -26,6 +27,14 @@ public class GoogleIdentityAuthenticationHandler : BaseAuthenticationHandler
         _logger.LogInformation("Executing GoogleIdentityAuthenticationHandler.HandleAuthenticateAsync");
 
         _userContext.developmentMode = false;
+
+        // Bypass authentciation if AllowAnonymous is set for end point - eg. GetConfig
+        var endpoint = Context.GetEndpoint();
+        if (endpoint?.Metadata?.GetMetadata<IAllowAnonymous>() != null)
+        {
+            Logger.LogInformation("Endpoint {EndpointName} allows anonymous access. Skipping authentication.", endpoint.DisplayName);
+            return AuthenticateResult.NoResult();
+        }
 
         if (!Request.Headers.ContainsKey(Options.TokenHeaderName))
         {
