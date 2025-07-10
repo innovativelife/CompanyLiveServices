@@ -35,13 +35,13 @@ public class UserContext : IUserContext
     public bool rootAdmin { get; set; } = false;
     public bool developmentMode { get; set; } = false;
 
-    public void SetDevelopmentModeContext(string requestTenantId, string requestUid)
+    public void SetDevelopmentModeContext(string uid, string tenantId)
     {
         this.developmentMode = true;
 
-        this.rootAdmin = requestTenantId == "Root";
-        this.uId = requestUid;
-        this.tenantId = requestTenantId;
+        this.rootAdmin = tenantId == "Root";
+        this.uId = uid;
+        this.tenantId = tenantId;
         this.identityManagerTenantId = Guid.NewGuid().ToString();
 
         this.preferredName = "Local Dev User";

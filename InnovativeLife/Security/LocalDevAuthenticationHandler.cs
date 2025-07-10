@@ -31,12 +31,13 @@ public class LocalDevAuthenticationHandler : BaseAuthenticationHandler
             return AuthenticateResult.NoResult();
         }
 
-        if (Request == null || !Request.Headers.ContainsKey(Options.TentantIdHeader))
+        var tenantId = GetTenantFromUrl(Request, _logger);
+        if (!tenantId.Item1)
         {
-            _logger.LogInformation($"LocalDevelopmentAuthenticationHandler.GetTenantFromHeader: {Options.TentantIdHeader} must be included in header in dev mode");
-            return AuthenticateResult.Fail($"{Options.TentantIdHeader} must be included in header in dev mode");
+            _logger.LogWarning("LocalDevelopmentAuthenticationHandler.HandleAuthenticateAsync: tenantId not included in url");
+            return AuthenticateResult.Fail($"tenantId not included in url");
         }
-        var tenantId = Request.Headers[Options.TentantIdHeader].ToString();
+        _logger.LogInformation($"GoogleIdentityAuthenticationHandler.HandleAuthenticateAsync: Tenant ID from URL is: {tenantId.Item2}");
 
         if (Request == null || !Request.Headers.ContainsKey(Options.UiDHeader))
         {
@@ -48,14 +49,14 @@ public class LocalDevAuthenticationHandler : BaseAuthenticationHandler
         _logger.LogInformation($"LocalDevelopmentAuthenticationHandler.GetTenantFromHeader: {Options.TentantIdHeader} from header is {tenantId}");
         _logger.LogInformation($"LocalDevelopmentAuthenticationHandler.GetTenantFromHeader: {Options.UiDHeader} from header is {uId}");
 
-        _userContext.SetDevelopmentModeContext(tenantId, uId);
+        _userContext.SetDevelopmentModeContext(uId, tenantId.Item2);
 
         var claims = AuthorizationPolicies.GetClaims(_userContext, _logger);
         var claimsIdentity = new ClaimsIdentity(claims, this.Scheme.Name);
         var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
 
         // Final check to ensure everything is set up as expected
-        finalCheck(Guid.NewGuid().ToString(), tenantId, _logger, _userContext);
+        finalCheck(Guid.NewGuid().ToString(), tenantId.Item2, _logger, _userContext);
 
         return AuthenticateResult.Success(new AuthenticationTicket(claimsPrincipal, this.Scheme.Name));
     }

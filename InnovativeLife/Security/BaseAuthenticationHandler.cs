@@ -4,6 +4,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
 using System.Security;
+using Microsoft.AspNetCore.Http;
+using InnovativeLife.Common;
 
 namespace InnovativeLife.Security;
 
@@ -18,6 +20,46 @@ public class BaseAuthenticationHandler : AuthenticationHandler<GoogleIdentityAut
         throw new NotImplementedException();
     }
 
+         // Extract the tenant id from the URL
+    internal Tuple<bool, string> GetTenantFromUrl(HttpRequest request, ILogger logger)
+    {
+        logger.LogInformation("GoogleIdentityAuthenticationHandler.GetTenantFromHeader: About to validate tenant Id");
+
+        // All URL's are of form: /api/v1/Tenants/[tenantId]/[EntityName]/{extra segments as required}  eg. /api/v1/Tenants/tenant1/Employees for operations on employees in Tenant 1
+        if (request == null || request.Path == null || String.IsNullOrEmpty(request.Path.Value))
+        {
+            logger.LogError("Null request or path?");
+            return new Tuple<bool, string>(false, "");
+        }
+
+        var urlParts = request.Path.Value.Split("/");
+
+        // If a admin operation, url is: /api/v1/admin
+        // This operation must be performed by user in Root tenant (checked later).
+        if (urlParts.Length >= 4 && urlParts[3].ToLower() == Constants.AdminUrlParameterName)
+        {
+            logger.LogInformation("Admin function - must be root tenant");
+            return new Tuple<bool, string>(true, GcpConstants.RootTenantId);
+        }
+
+        // Otherwise, Tenant must be 4th URL parameter
+        // ie. /api/v1/tenants/[tenantId]
+        if (urlParts.Length < 5)
+        {
+            logger.LogError("Invalid URL path - Not admin function Url not long enough");
+            return new Tuple<bool, string>(false, "Invalid URL");
+        }
+
+        if (urlParts[3].ToLower() != Constants.TenantsUrlParameterName)
+        {
+            logger.LogError($"Invalid URL path - Not admin function and '{Constants.TenantsUrlParameterName}' url parameter missing");
+            return new Tuple<bool, string>(false, "Invalid URL");
+        }
+
+        var tenantId = urlParts[4];
+        logger.LogInformation($"Tenant found in URL: {tenantId}");
+        return new Tuple<bool, string>(true, tenantId);
+    }
 
     // A series of tests to ensure everything is as expected - effectively a regression test of code
     internal bool finalCheck(string authToken, string tenantId, ILogger logger, IUserContext userContext)
