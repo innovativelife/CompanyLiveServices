@@ -1,7 +1,7 @@
 meta {
-  name: Add  Employee
+  name: Add  Employee - Greg Innovate
   type: http
-  seq: 4
+  seq: 12
 }
 
 post {
@@ -16,16 +16,16 @@ auth:bearer {
 
 body:json {
   {
-      "email": "got.you.jumpier@gmail.com",
-      "firstName": "Jumpier",
-      "lastName": "Brown",
-      "PreferredName": "Jim",
-      "phoneNumber": "+39924344355",
+      "email": "greg@innovativelife.studio",
+      "firstName": "Gregory",
+      "lastName": "Innovate",
+      "PreferredName": "Greg",
+      "phoneNumber": "+39924344999",
       "initialPassword": "TEshhde",
-      "employeeNumber": "59120358",
+      "employeeNumber": "59120999",
       "leaderEmployeeNumber": "",
-      "positionTitle": "CEO",
-      "personalDescription": "Chief Executive Office"
+      "positionTitle": "CTO",
+      "personalDescription": "Chief Technical Office"
   }
 }
 
@@ -41,39 +41,39 @@ tests {
   });
   
   test("email saved", function () {
-      expect(jsonResponse.employee.email).to.equal("got.you.jumpier@gmail.com");
+      expect(jsonResponse.employee.email).to.equal("greg@innovativelife.studio");
   });
   
   test("phoneNumber saved", function () {
-      expect(jsonResponse.employee.phoneNumber).to.equal("+39924344355");
+      expect(jsonResponse.employee.phoneNumber).to.equal("+39924344999");
   });
   
   test("firstName saved", function () {
-      expect(jsonResponse.employee.firstName).to.equal("Jumpier");
+      expect(jsonResponse.employee.firstName).to.equal("Gregory");
   });
   
   test("lastName saved", function () {
-      expect(jsonResponse.employee.lastName).to.equal("Brown");
+      expect(jsonResponse.employee.lastName).to.equal("Smith");
   });
   
   test("preferredName saved", function () {
-      expect(jsonResponse.employee.preferredName).to.equal("Jim");
+      expect(jsonResponse.employee.preferredName).to.equal("Greg");
   });
   
   test("displayName correct", function () {
-      expect(jsonResponse.employee.displayName).to.equal("Jim Brown");
+      expect(jsonResponse.employee.displayName).to.equal("Greg Brown");
   });
   
   test("employeeNumber saved", function () {
-      expect(jsonResponse.employee.employeeNumber).to.equal("59120358");
+      expect(jsonResponse.employee.employeeNumber).to.equal("59120999");
   });
   
   test("positionTitle saved", function () {
-      expect(jsonResponse.employee.positionTitle).to.equal("CEO");
+      expect(jsonResponse.employee.positionTitle).to.equal("CTO");
   });
   
   test("Chief Executive Office saved", function () {
-      expect(jsonResponse.employee.personalDescription).to.equal("Chief Executive Office");
+      expect(jsonResponse.employee.personalDescription).to.equal("Chief Technical Office");
   });
   
   test("active saved", function () {
@@ -84,6 +84,6 @@ tests {
       expect(jsonResponse.employee.adminPrivilege).to.equal(false);
   });
   
-  bru.setVar("Tenant999-AddedEmployeeUID", jsonResponse.employee.employeeUID)
+  bru.setVar("Tenant999-GregSmith", jsonResponse.employee.employeeUID)
   
 }
