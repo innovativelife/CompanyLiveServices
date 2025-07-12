@@ -1,0 +1,23 @@
+meta {
+  name: Read Identity Manager Tenant ID - not found
+  type: http
+  seq: 14
+}
+
+get {
+  url: http://{{LOCALDEVURL}}/api/v1/Admin/Tenants/xxxxx/getidentitymanagertenantId
+  body: none
+  auth: none
+}
+
+headers {
+  Accept-Language: en-GB
+  uId: Tester
+}
+
+tests {
+  test("Status code is 404 (Not found)", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+  
+}

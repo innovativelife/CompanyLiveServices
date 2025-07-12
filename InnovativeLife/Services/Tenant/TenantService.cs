@@ -37,4 +37,9 @@ public class TenantService : ITenantService
     {
         return await _tenantSaveProcessor.Save(requestContext, tenantId, request);
     }
+
+    public async Task<TenantGetIdentityManagerTenantIdResponse> GetIdentityManagerTenantId(IUserContext requestContext, string tenantId)
+    {
+        return await _tenantReadProcessor.GetIdentityManagerTenantId(requestContext, tenantId);
+    }
 }
