@@ -1,0 +1,26 @@
+meta {
+  name: Read Identity Manager Tenant ID (anon)
+  type: http
+  seq: 13
+}
+
+get {
+  url: http://{{LOCALDEVURL}}/api/v1/Admin/Tenants/tenant1/getidentitymanagertenantId
+  body: none
+  auth: none
+}
+
+headers {
+  Accept-Language: en-GB
+  uId: Tester
+}
+
+tests {
+  test("Status code is 200 (Ok)", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("correct id mgr tenant id", function () {
+      expect(jsonResponse.tenant.primaryAdministrator.employeeNumber).to.equal("DevMode");
+  });
+}

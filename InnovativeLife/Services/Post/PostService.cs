@@ -47,7 +47,6 @@ public class PostService : IPostService
         return await _readPostProcessor.SearchPost(requestContext, tenantId, postId, timeSent, status, sendTo, employeeUID, message);
     }
 
-
     public async Task<PostSaveResponse> Save(IUserContext requestContext, string tenantId, PostSaveRequest postModel)
     {
         _logger.LogInformation("PostService.Save: Executing PostService.Save Save");

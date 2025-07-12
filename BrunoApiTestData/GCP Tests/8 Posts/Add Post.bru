@@ -1,13 +1,13 @@
 meta {
-  name: Add Post Missing Data -Error-
+  name: Add Post
   type: http
   seq: 1
 }
 
 post {
-  url: 
+  url: https://{{URL}}/api/v1/tenants/tenant999/post
   body: json
-  auth: inherit
+  auth: bearer
 }
 
 headers {
@@ -15,9 +15,17 @@ headers {
   tenantId: tenant1
 }
 
+auth:bearer {
+  token: {{Greg-AuthToken}}
+}
+
 body:json {
   {
-    
+    "message": "Hello, this is a message",
+    "imageURL": "https://storage.googleapis.com/tenant1_assets/SamplePost",
+    "employeeUID": "{{Tenant999-GregSmith}}",
+    "status":"sent",
+    "sendTo":"all"
   }
 }
 

@@ -9,6 +9,8 @@ public interface ITenantService
 
     public Task<TenantReadResponse> ReadSingleton(IUserContext requestContext, string tenantId);
 
+    public Task<TenantGetIdentityManagerTenantIdResponse> GetIdentityManagerTenantId(IUserContext requestContext, string tenantId);
+
     public Task<TenantReadSetResponse> ReadSet(IUserContext requestContext);
 
     public Task<TenantSaveResponse> Save(IUserContext requestContext, string tenantId, TenantSaveRequest request);

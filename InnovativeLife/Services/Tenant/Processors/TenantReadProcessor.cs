@@ -75,9 +75,33 @@ public class TenantReadProcessor : ITenantReadProcessor
         }
     }
 
+    public async Task<TenantGetIdentityManagerTenantIdResponse> GetIdentityManagerTenantId(IUserContext requestContext, string tenantId)
+    {
+        _logger.LogInformation("Executing TenantService GetGcpTenantId");
+
+        if (string.IsNullOrWhiteSpace(tenantId))
+        {
+            return new TenantGetIdentityManagerTenantIdResponse(Common.ServiceResponseBase.ResponseStatus.NotFound, _messageService.GetMessage("Tenant_Id_Mandatory"));
+        }
+
+        var result = await _tenantActions.Read(tenantId);
+
+        if (result.Item1.Success)
+        {
+            var response = new TenantGetIdentityManagerTenantIdResponse(Common.ServiceResponseBase.ResponseStatus.Ok, "Tenant Found");
+            response.identityManagerTenantIdTenantId = getTenantItemFromTenantModel(result.Item2!).identityManagerTenantId;
+
+            return response;
+        }
+        else
+        {
+            return new TenantGetIdentityManagerTenantIdResponse(Common.ServiceResponseBase.ResponseStatus.NotFound, $"Tenant not found.  TenantId: {tenantId}");
+        }
+    }
+
     private async Task readPrimaryAndSecondaryEmployees(IUserContext requestContext, TenantItem tenantItem, TenantModel tenant)
     {
-        var primaryEmployeeReadResponse = await _employeeService.ReadByEmployeeUID(requestContext, tenant.tenantId,tenant.primaryAdministratorEmployeeUID, true);
+        var primaryEmployeeReadResponse = await _employeeService.ReadByEmployeeUID(requestContext, tenant.tenantId, tenant.primaryAdministratorEmployeeUID, true);
         if (primaryEmployeeReadResponse.Success)
         {
             tenantItem.primaryAdministrator = primaryEmployeeReadResponse.employee;
@@ -101,4 +125,5 @@ public class TenantReadProcessor : ITenantReadProcessor
             tenantModel.active
         );
     }
+
 }

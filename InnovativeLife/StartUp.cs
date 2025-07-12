@@ -166,6 +166,16 @@ public class Startup : FunctionsStartup
             Description = "Returns details for a single tenant"
         });
 
+        endpoints.MapGet("/api/v1/admin/tenants/{tenantId}/getidentitymanagertenantId", async (ITenantService service, IUserContext requestContext, string tenantId) =>
+            (await service.GetIdentityManagerTenantId(requestContext, tenantId)).GetAspNetResult())
+        .WithName("TenantGetIdentityManagerTenantId")
+        .AllowAnonymous()
+        .WithOpenApi(operation => new(operation)
+        {
+            Summary = "Read tenant by ID",
+            Description = "Returns details for a single tenant"
+        });
+
         endpoints.MapPost("/api/v1/admin/tenants/", async (ITenantService service, TenantAddRequest addRequest, IUserContext requestContext) =>
             (await service.Add(requestContext, addRequest)).GetAspNetResult())
         .WithName("TenantAdd")
@@ -267,7 +277,6 @@ public class Startup : FunctionsStartup
           async (IUiConfigService service, IUserContext requestContext, string tenantId) =>
              (await service.Read(requestContext, tenantId)).GetAspNetResult())
        .AllowAnonymous()
-    //    .RequireAuthorization(AuthorizationPolicies.GetTenantUserPolicy)
        .WithName("ReadUiConfig")
        .WithOpenApi(operation => new(operation)
        {
