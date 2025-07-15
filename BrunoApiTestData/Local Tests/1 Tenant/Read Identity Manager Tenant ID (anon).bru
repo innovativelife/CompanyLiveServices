@@ -20,7 +20,9 @@ tests {
       expect(res.getStatus()).to.equal(200);
   });
   
+  const jsonResponse = res.getBody();
+  
   test("correct id mgr tenant id", function () {
-      expect(jsonResponse.tenant.primaryAdministrator.employeeNumber).to.equal("DevMode");
+      expect(jsonResponse.identityManagerTenantIdTenantId).to.equal("DevMode");
   });
 }

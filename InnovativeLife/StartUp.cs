@@ -24,6 +24,9 @@ using InnovativeLife.Security;
 using InnovativeLife.Services.Employee.ServiceMessages;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using System.Linq; // Required for .Contains()
+using System.Text.RegularExpressions; // Required for Regex
+
 
 namespace InnovativeLife;
 
@@ -73,18 +76,33 @@ public class Startup : FunctionsStartup
 
 
         var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+        // services.AddCors(options =>
+        // {
+        //     options.AddPolicy(name: MyAllowSpecificOrigins,
+        //                       policy =>
+        //                       {
+        //                           policy
+        //                             .WithOrigins(
+        //                                 "http://localhost", "http://127.0.0.1", "http://localhost:5173", "http://127.0.0.1:5173", // Local development
+        //                                 "https://companylive-c3879.web.app", "https://companylive-c3879-pr.web.app/tenant999", "https://companylive-c3879-staging.web.app/tenant999") // Deployed to firebase
+        //                             .AllowAnyHeader()
+        //                             .AllowAnyMethod();
+        //                       });
+        // });
+
         services.AddCors(options =>
         {
             options.AddPolicy(name: MyAllowSpecificOrigins,
-                              policy =>
-                              {
-                                  policy
-                                    .WithOrigins("http://localhost", "http://127.0.0.1",
-                                    "http://localhost:5173", "http://127.0.0.1:5173", "https://companylive-c3879.web.app")
-                                    .AllowAnyHeader()
-                                    .AllowAnyMethod();
-                              });
+                policy =>
+                {
+                    // Use SetIsOriginAllowed for custom origin validation
+                    policy.SetIsOriginAllowed(origin => IsOriginAllowed(origin))
+                        .AllowAnyHeader() // Or .WithHeaders("Content-Type", "Authorization")
+                        .AllowAnyMethod(); // Or .WithMethods("GET", "POST", "PUT", "DELETE")
+                                // .AllowCredentials(); // Only if your frontend sends credentials (cookies, auth headers)
+                });
         });
+
         services.AddHttpContextAccessor();
         services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
@@ -341,5 +359,41 @@ public class Startup : FunctionsStartup
             // _logger.LogWarning("GoogleIdentityAuthenticationHandler.InDevMode: In Dev Mode");
         }
         return devMode;
+    }
+
+    private bool IsOriginAllowed(string origin)
+    {
+        // Define exact allowed origins
+        var allowedExactOrigins = new[]
+        {
+            "http://localhost", // Local development
+            "http://127.0.0.1", // Local development
+            "http://localhost:5173", // Local development
+            "http://127.0.0.1:5173", // Local development
+            "https://companylive-c3879.web.app",  // Main production URL
+        };
+
+        // Check if the origin is in the exact allowed list
+        if (allowedExactOrigins.Contains(origin, StringComparer.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        // Define Regex for dynamic Firebase Hosting Preview and PR Channels
+        // This regex allows anything between the project ID and ".web.app" as long as it's preceded by "--"
+        // It covers:
+        // - https://companylive-c3879--pr-123.web.app (if you change your GitHub Action to use PR number)
+        // - https://companylive-c3879--staging-o6rf2eif.web.app (your current observed format)
+        // - https://companylive-c3879--any-custom-channel-name.web.app
+        var firebasePreviewRegex = new Regex(@"^https:\/\/companylive-c3879--[a-zA-Z0-9-]+\.web\.app$", RegexOptions.IgnoreCase);
+
+        // Check if the origin matches the preview channel pattern
+        if (firebasePreviewRegex.IsMatch(origin))
+        {
+            return true;
+        }
+
+        // No match - the origin is not allowed
+        return false;
     }
 }

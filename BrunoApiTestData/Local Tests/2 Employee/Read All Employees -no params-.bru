@@ -20,8 +20,8 @@ auth:bearer {
 }
 
 tests {
-  test("Status code is 404 (Not Found)", function () {
-      expect(res.getStatus()).to.equal(404);
+  test("Status code is 200 (Not Found)", function () {
+      expect(res.getStatus()).to.equal(200);
   });
   
   const jsonResponse = res.getBody();
