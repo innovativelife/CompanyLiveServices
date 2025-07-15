@@ -1,5 +1,5 @@
 meta {
-  name: Two Employees in Tenant 6
+  name: No Employees in Tenant 6
   type: http
   seq: 3
 }
@@ -30,8 +30,8 @@ tests {
       expect(jsonResponse.employees.length=0);
   });
   
-  test("Tenant mismatch", function () {
-      expect(jsonResponse.message).to.equal("Tenant mismatch");
+  test("message - Employee search returned no results", function () {
+      expect(jsonResponse.message).to.equal("Employee search returned no results");
   });
   
 }
