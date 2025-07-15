@@ -1,0 +1,25 @@
+meta {
+  name: Create Post with user with no Avatar
+  type: http
+  seq: 7
+}
+
+post {
+  url: http://{{LOCALDEVURL}}/api/v1/tenants/tenant1/post
+  body: json
+  auth: inherit
+}
+
+headers {
+  uId: localDev
+  tenantId: tenant1
+}
+
+body:json {
+  {
+    "message": "Im Josh",
+    "employeeUID": "{{tenant2employeeUID}}",
+    "status":"sent",
+    "sendTo":"all"
+  }
+}

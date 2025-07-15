@@ -1,0 +1,39 @@
+meta {
+  name: Add employee with no avatar
+  type: http
+  seq: 23
+}
+
+post {
+  url: http://{{LOCALDEVURL}}/api/v1/tenants/tenant1/Employees
+  body: json
+  auth: bearer
+}
+
+headers {
+  uId: localDev
+  tenantId: tenant1
+}
+
+auth:bearer {
+  token: {{AuthToken}}
+}
+
+body:json {
+  {
+      "email": "got.you.Josh@gmail.com",
+      "firstName": "Josh",
+      "lastName": "Brown",
+      "PreferredName": "Josh",
+      "phoneNumber": "615672356",
+      "initialPassword": "TEshhde",
+      "employeeNumber": "12396",
+      "positionTitle": "Head of stuff",
+      "personalDescription": "Person in charge of lots of things"
+  }
+}
+
+script:post-response {
+  const jsonResponse = res.getBody();
+  bru.setVar("tenant2employeeUID", jsonResponse.employee.employeeUID);
+}
