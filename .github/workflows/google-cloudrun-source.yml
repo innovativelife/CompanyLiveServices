@@ -1,82 +1,138 @@
-# This workflow will deploy source code on Cloud Run when a commit is pushed to
-# the "main" branch.
-#
-# To configure this workflow:
-#
-# 1. Enable the following Google Cloud APIs:
-#
-#    - Artifact Registry (artifactregistry.googleapis.com)
-#    - Cloud Build (cloudbuild.googleapis.com)
-#    - Cloud Run (run.googleapis.com)
-#    - IAM Credentials API (iamcredentials.googleapis.com)
-#
-#    You can learn more about enabling APIs at
-#    https://support.google.com/googleapi/answer/6158841.
-#
-# 2. Create and configure a Workload Identity Provider for GitHub:
-#    https://github.com/google-github-actions/auth#preferred-direct-workload-identity-federation.
-#
-#    Depending on how you authenticate, you will need to grant an IAM principal
-#    permissions on Google Cloud:
-#
-#    - Artifact Registry Administrator (roles/artifactregistry.admin)
-#    - Cloud Run Source Developer (roles/run.sourceDeveloper)
-#
-#    You can learn more about setting IAM permissions at
-#    https://cloud.google.com/iam/docs/manage-access-other-resources.
-#
-# 3. Change the values in the "env" block to match your values.
+# This workflow automatically builds and deploys the .NET backend to Google Cloud Functions
+# for PRs, pushes to staging, and pushes to main (production).
+# It also allows manual triggering for specific environments.
 
-name: 'Deploy to Cloud Run from Source'
+name: Deploy Cloud Functions
 
-on: workflow_dispatch
-#  push:
-#    branches:
-#      - '"main"'
+# Define when this workflow should run
+on:
+  # Trigger on pull requests targeting the main branch (for PR preview functions)
+  pull_request:
+    branches:
+      - main
 
+  # Trigger on pushes to specific branches (for staging and production)
+  push:
+    branches:
+      - main      # For production deployment
+      - staging   # For staging deployment (adjust branch name if different)
+
+  # Allow manual triggering from the GitHub UI for specific environments
+  workflow_dispatch:
+    inputs:
+      target_environment:
+        description: 'Select environment to deploy to:'
+        required: true
+        type: choice
+        options:
+          - pr       # Deploy to a PR-specific Cloud Function
+          - staging  # Deploy to the staging Cloud Function
+          - prod     # Deploy to the production Cloud Function
+      pr_number:
+        description: 'PR number (required for "pr" environment via manual trigger)'
+        required: false
+        type: number # Use 'number' for integer input
+
+# Environment variables for common settings (can be overridden in steps)
 env:
-  CREDENTIALS: ${{ secrets.DEPLOYMENTSERVICEACCOUNT }}
-  PROJECT_ID: 'companylive-c3879' # TODO: update to your Google Cloud project ID
-  REGION: 'australia-southeast1' # TODO: update to your region
-  NAME: 'CompanyLiveServices_2' # TODO: update to your service name
+  CREDENTIALS: ${{ secrets.DEPLOYMENTSERVICEACCOUNT }} # Your Google Cloud Service Account JSON
+  DEFAULT_PROJECT_ID: 'companylive-c3879'             # Your main production project ID
+  REGION: 'australia-southeast1'                      # Cloud Functions region
+  DEFAULT_FUNCTION_NAME: 'CompanyLiveServices_2'      # Base name for your Cloud Function
   RUNTIME: 'dotnet8'
   ENTRY_POINT: 'InnovativeLife.WebApi.RequestHandler'
+  SOURCE_DIR: './InnovativeLife'                      # Path to your .NET project source
 
 jobs:
   deploy:
     runs-on: 'ubuntu-latest'
 
+    # Permissions required for actions/checkout and google-github-actions/auth
     permissions:
-      contents: 'read'
-      id-token: 'write'
+      contents: 'read'  # Allows checkout of code
+      id-token: 'write' # Required for Workload Identity Federation (google-github-actions/auth)
 
     steps:
-      - name: 'Checkout'
-        uses: 'actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332' # actions/checkout@v4
+      - name: 'Checkout code'
+        uses: 'actions/checkout@v4' # Use latest stable version
 
-      # Configure Workload Identity Federation and generate an access token.
-      #
-      # See https://github.com/google-github-actions/auth for more options,
-      # including authenticating via a JSON credentials file.
+      # Step to determine dynamic project ID and function name based on trigger
+      - name: Set dynamic deployment variables
+        id: set_vars # Assign an ID to this step to access its outputs
+        run: |
+          # Initialize with default (production) values
+          DEPLOY_PROJECT_ID="${{ env.DEFAULT_PROJECT_ID }}"
+          DEPLOY_FUNCTION_NAME="${{ env.DEFAULT_FUNCTION_NAME }}"
+
+          # Logic for Pull Request builds
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            DEPLOY_PROJECT_ID="companylive-c3879-pr" # Use the dedicated PR project ID
+            DEPLOY_FUNCTION_NAME="${{ env.DEFAULT_FUNCTION_NAME }}-pr-${{ github.event.number }}"
+            echo "Detected PR build. Deploying to project: $DEPLOY_PROJECT_ID, function: $DEPLOY_FUNCTION_NAME"
+          # Logic for Staging branch pushes
+          elif [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/staging" ]]; then
+            DEPLOY_PROJECT_ID="companylive-c3879-staging" # Use the dedicated Staging project ID
+            DEPLOY_FUNCTION_NAME="${{ env.DEFAULT_FUNCTION_NAME }}-staging"
+            echo "Detected Staging push. Deploying to project: $DEPLOY_PROJECT_ID, function: $DEPLOY_FUNCTION_NAME"
+          # Logic for Production (main branch) pushes
+          elif [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" ]]; then
+            # DEPLOY_PROJECT_ID and DEPLOY_FUNCTION_NAME already default to production values
+            echo "Detected Production push. Deploying to project: $DEPLOY_PROJECT_ID, function: $DEPLOY_FUNCTION_NAME"
+          # Logic for Manual Trigger (workflow_dispatch)
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            case "${{ github.event.inputs.target_environment }}" in
+              "pr")
+                if [[ -z "${{ github.event.inputs.pr_number }}" ]]; then
+                  echo "::error::Error: 'pr_number' input is required for 'pr' environment via manual trigger."
+                  exit 1
+                fi
+                DEPLOY_PROJECT_ID="companylive-c3879-pr"
+                DEPLOY_FUNCTION_NAME="${{ env.DEFAULT_FUNCTION_NAME }}-pr-${{ github.event.inputs.pr_number }}"
+                echo "Manual PR deploy. Project: $DEPLOY_PROJECT_ID, function: $DEPLOY_FUNCTION_NAME"
+                ;;
+              "staging")
+                DEPLOY_PROJECT_ID="companylive-c3879-staging"
+                DEPLOY_FUNCTION_NAME="${{ env.DEFAULT_FUNCTION_NAME }}-staging"
+                echo "Manual Staging deploy. Project: $DEPLOY_PROJECT_ID, function: $DEPLOY_FUNCTION_NAME"
+                ;;
+              "prod")
+                # Defaults are already prod (DEFAULT_PROJECT_ID, DEFAULT_FUNCTION_NAME)
+                echo "Manual Production deploy. Project: $DEPLOY_PROJECT_ID, function: $DEPLOY_FUNCTION_NAME"
+                ;;
+              *)
+                echo "::error::Error: Invalid 'target_environment' input for manual trigger."
+                exit 1
+                ;;
+            esac
+          fi
+
+          # Set outputs for subsequent steps to use
+          echo "DEPLOY_PROJECT_ID=$DEPLOY_PROJECT_ID" >> $GITHUB_OUTPUT
+          echo "DEPLOY_FUNCTION_NAME=$DEPLOY_FUNCTION_NAME" >> $GITHUB_OUTPUT
+
+      # Authenticate to Google Cloud using the determined project ID
       - id: 'auth'
         name: 'Authenticate to Google Cloud'
-        uses: 'google-github-actions/auth@f112390a2df9932162083945e46d439060d66ec2' # google-github-actions/auth@v2
+        uses: 'google-github-actions/auth@v2' # Use latest stable v2
         with:
           credentials_json: '${{ env.CREDENTIALS }}'
-        #  workload_identity_provider: 'projects/123456789/locations/global/workloadIdentityPools/my-pool/providers/my-provider' # TODO: replace with your workload identity provider
+          project_id: '${{ steps.set_vars.outputs.DEPLOY_PROJECT_ID }}' # Use the dynamically determined project ID
 
+      # Deploy the Cloud Function
       - name: 'Deploy to Cloud Function'
-        uses: 'google-github-actions/deploy-cloud-functions@v3.0.5' # 
+        uses: 'google-github-actions/deploy-cloud-functions@v3' # Use latest stable v3
         with:
+          project_id: '${{ steps.set_vars.outputs.DEPLOY_PROJECT_ID }}' # Use the dynamically determined project ID
           region: '${{ env.REGION }}'
-          name: '${{ env.NAME }}'
+          name: '${{ steps.set_vars.outputs.DEPLOY_FUNCTION_NAME }}' # Use the dynamically determined function name
           runtime: '${{ env.RUNTIME }}'
           entry_point: '${{ env.ENTRY_POINT }}'
-          # credentials_json: '${{ env.CREDENTIALS }}'
-          # NOTE: If using a different source folder, update the image name below:
-          source_dir: './InnovativeLife'
+          source_dir: '${{ env.SOURCE_DIR }}'
 
-      # If required, use the Cloud Run URL output in later steps
+      # Show the deployed Cloud Function URL
       - name: 'Show output'
-        run: |-
-          echo ${{ steps.deploy.outputs.url }}
+        run: |
+          echo "Deployment successful!"
+          echo "Deployed to Google Cloud Project ID: ${{ steps.set_vars.outputs.DEPLOY_PROJECT_ID }}"
+          echo "Cloud Function Name: ${{ steps.set_vars.outputs.DEPLOY_FUNCTION_NAME }}"
+          echo "Cloud Function URL: ${{ steps.deploy.outputs.url }}"
