@@ -138,6 +138,7 @@ jobs:
           runtime: ${{ env.RUNTIME }}
           entry_point: ${{ env.ENTRY_POINT }}
           source_dir: ${{ env.SOURCE_DIR }}
+          allow_unauthenticated: true
 
       - name: Comment PR with deployment info
         if: github.event_name == 'pull_request'
@@ -197,6 +198,7 @@ jobs:
           runtime: ${{ env.RUNTIME }}
           entry_point: ${{ env.ENTRY_POINT }}
           source_dir: ${{ env.SOURCE_DIR }}
+          allow_unauthenticated: true
 
       - name: Show deployment output (Staging)
         run: |
@@ -253,7 +255,8 @@ jobs:
           runtime: ${{ env.RUNTIME }}
           entry_point: ${{ env.ENTRY_POINT }}
           source_dir: ${{ env.SOURCE_DIR }}
-
+          allow_unauthenticated: true
+          
       - name: Show deployment output (Production)
         run: |
           echo "Production Deployment successful!"
