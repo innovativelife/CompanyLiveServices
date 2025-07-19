@@ -1,6 +1,6 @@
 # This workflow automatically builds and deploys the .NET backend to Google Cloud Functions
 # for PRs, pushes to staging, and pushes to main (production).
-# It also allows manual triggering for specific environments.
+# Each environment uses separate projects and service accounts for security isolation.
 
 name: Deploy Cloud Functions
 
@@ -31,53 +31,49 @@ on:
       pr_number:
         description: 'PR number (required for "pr" environment via manual trigger)'
         required: false
-        type: number # Use 'number' for integer input
+        type: number
 
-# Environment variables for common settings (can be overridden in steps)
+# Global environment variables
 env:
-  CREDENTIALS: ${{ secrets.DEPLOYMENTSERVICEACCOUNT }} # Your Google Cloud Service Account JSON
-  DEFAULT_PROJECT_ID: 'companylive-c3879'             # Your main production project ID
   REGION: 'australia-southeast1'                      # Cloud Functions region
   DEFAULT_FUNCTION_NAME: 'CompanyLiveServices_2'      # Base name for your Cloud Function
   RUNTIME: 'dotnet8'
   ENTRY_POINT: 'InnovativeLife.WebApi.RequestHandler'
   SOURCE_DIR: './InnovativeLife'                      # Path to your .NET project source
+  
+  # Project IDs for each environment
+  PR_PROJECT_ID: 'companylive-pr-sydney'
+  STAGING_PROJECT_ID: 'companylive-staging-sydney'
+  PROD_PROJECT_ID: 'company-live-c3879'
 
 jobs:
-  deploy:
-    runs-on: 'ubuntu-latest'
-
-    # Permissions required for actions/checkout and google-github-actions/auth
-    permissions:
-      contents: 'read'  # Allows checkout of code
-      id-token: 'write' # Required for Workload Identity Federation (google-github-actions/auth)
-
+  # Job to determine which environment we're deploying to
+  determine-environment:
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.determine.outputs.environment }}
+      project_id: ${{ steps.determine.outputs.project_id }}
+      function_name: ${{ steps.determine.outputs.function_name }}
+    
     steps:
-      - name: 'Checkout code'
-        uses: 'actions/checkout@v4' # Use latest stable version
-
-      # Step to determine dynamic project ID and function name based on trigger
-      - name: Set dynamic deployment variables
-        id: set_vars # Assign an ID to this step to access its outputs
+      - name: Determine deployment environment
+        id: determine
         run: |
-          # Initialize with default (production) values
-          DEPLOY_PROJECT_ID="${{ env.DEFAULT_PROJECT_ID }}"
-          DEPLOY_FUNCTION_NAME="${{ env.DEFAULT_FUNCTION_NAME }}"
-
           # Logic for Pull Request builds
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            DEPLOY_PROJECT_ID="companylive-c3879-pr" # Use the dedicated PR project ID
-            DEPLOY_FUNCTION_NAME="${{ env.DEFAULT_FUNCTION_NAME }}-pr-${{ github.event.number }}"
-            echo "Detected PR build. Deploying to project: $DEPLOY_PROJECT_ID, function: $DEPLOY_FUNCTION_NAME"
+            echo "environment=pr" >> $GITHUB_OUTPUT
+            echo "project_id=${{ env.PR_PROJECT_ID }}" >> $GITHUB_OUTPUT
+            echo "function_name=${{ env.DEFAULT_FUNCTION_NAME }}-pr-${{ github.event.number }}" >> $GITHUB_OUTPUT
           # Logic for Staging branch pushes
           elif [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/staging" ]]; then
-            DEPLOY_PROJECT_ID="companylive-c3879-staging" # Use the dedicated Staging project ID
-            DEPLOY_FUNCTION_NAME="${{ env.DEFAULT_FUNCTION_NAME }}-staging"
-            echo "Detected Staging push. Deploying to project: $DEPLOY_PROJECT_ID, function: $DEPLOY_FUNCTION_NAME"
+            echo "environment=staging" >> $GITHUB_OUTPUT
+            echo "project_id=${{ env.STAGING_PROJECT_ID }}" >> $GITHUB_OUTPUT
+            echo "function_name=${{ env.DEFAULT_FUNCTION_NAME }}-staging" >> $GITHUB_OUTPUT
           # Logic for Production (main branch) pushes
           elif [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" ]]; then
-            # DEPLOY_PROJECT_ID and DEPLOY_FUNCTION_NAME already default to production values
-            echo "Detected Production push. Deploying to project: $DEPLOY_PROJECT_ID, function: $DEPLOY_FUNCTION_NAME"
+            echo "environment=production" >> $GITHUB_OUTPUT
+            echo "project_id=${{ env.PROD_PROJECT_ID }}" >> $GITHUB_OUTPUT
+            echo "function_name=${{ env.DEFAULT_FUNCTION_NAME }}" >> $GITHUB_OUTPUT
           # Logic for Manual Trigger (workflow_dispatch)
           elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             case "${{ github.event.inputs.target_environment }}" in
@@ -86,53 +82,181 @@ jobs:
                   echo "::error::Error: 'pr_number' input is required for 'pr' environment via manual trigger."
                   exit 1
                 fi
-                DEPLOY_PROJECT_ID="companylive-c3879-pr"
-                DEPLOY_FUNCTION_NAME="${{ env.DEFAULT_FUNCTION_NAME }}-pr-${{ github.event.inputs.pr_number }}"
-                echo "Manual PR deploy. Project: $DEPLOY_PROJECT_ID, function: $DEPLOY_FUNCTION_NAME"
+                echo "environment=pr" >> $GITHUB_OUTPUT
+                echo "project_id=${{ env.PR_PROJECT_ID }}" >> $GITHUB_OUTPUT
+                echo "function_name=${{ env.DEFAULT_FUNCTION_NAME }}-pr-${{ github.event.inputs.pr_number }}" >> $GITHUB_OUTPUT
                 ;;
               "staging")
-                DEPLOY_PROJECT_ID="companylive-c3879-staging"
-                DEPLOY_FUNCTION_NAME="${{ env.DEFAULT_FUNCTION_NAME }}-staging"
-                echo "Manual Staging deploy. Project: $DEPLOY_PROJECT_ID, function: $DEPLOY_FUNCTION_NAME"
+                echo "environment=staging" >> $GITHUB_OUTPUT
+                echo "project_id=${{ env.STAGING_PROJECT_ID }}" >> $GITHUB_OUTPUT
+                echo "function_name=${{ env.DEFAULT_FUNCTION_NAME }}-staging" >> $GITHUB_OUTPUT
                 ;;
               "prod")
-                # Defaults are already prod (DEFAULT_PROJECT_ID, DEFAULT_FUNCTION_NAME)
-                echo "Manual Production deploy. Project: $DEPLOY_PROJECT_ID, function: $DEPLOY_FUNCTION_NAME"
+                echo "environment=production" >> $GITHUB_OUTPUT
+                echo "project_id=${{ env.PROD_PROJECT_ID }}" >> $GITHUB_OUTPUT
+                echo "function_name=${{ env.DEFAULT_FUNCTION_NAME }}" >> $GITHUB_OUTPUT
                 ;;
               *)
                 echo "::error::Error: Invalid 'target_environment' input for manual trigger."
                 exit 1
                 ;;
             esac
+          else
+            echo "::error::Error: Unable to determine deployment environment."
+            exit 1
           fi
 
-          # Set outputs for subsequent steps to use
-          echo "DEPLOY_PROJECT_ID=$DEPLOY_PROJECT_ID" >> $GITHUB_OUTPUT
-          echo "DEPLOY_FUNCTION_NAME=$DEPLOY_FUNCTION_NAME" >> $GITHUB_OUTPUT
+  # PR deployments - no environment protection needed
+  deploy-pr:
+    if: needs.determine-environment.outputs.environment == 'pr'
+    needs: determine-environment
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write  # To post comments on PRs
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      # Authenticate to Google Cloud using the determined project ID
-      - id: 'auth'
-        name: 'Authenticate to Google Cloud'
-        uses: 'google-github-actions/auth@v2' # Use latest stable v2
+      - name: Authenticate to Google Cloud (PR)
+        id: auth
+        uses: google-github-actions/auth@v2
         with:
-          credentials_json: '${{ env.CREDENTIALS }}'
-          project_id: '${{ steps.set_vars.outputs.DEPLOY_PROJECT_ID }}' # Use the dynamically determined project ID
+          credentials_json: ${{ secrets.PR_DEPLOYMENT_SERVICE_ACCOUNT }}  # PR-specific service account
+          project_id: ${{ needs.determine-environment.outputs.project_id }}
 
-      # Deploy the Cloud Function
-      - name: 'Deploy to Cloud Function'
-        uses: 'google-github-actions/deploy-cloud-functions@v3' # Use latest stable v3
+      - name: Deploy to Cloud Function (PR)
+        id: deploy
+        uses: google-github-actions/deploy-cloud-functions@v3
         with:
-          project_id: '${{ steps.set_vars.outputs.DEPLOY_PROJECT_ID }}' # Use the dynamically determined project ID
-          region: '${{ env.REGION }}'
-          name: '${{ steps.set_vars.outputs.DEPLOY_FUNCTION_NAME }}' # Use the dynamically determined function name
-          runtime: '${{ env.RUNTIME }}'
-          entry_point: '${{ env.ENTRY_POINT }}'
-          source_dir: '${{ env.SOURCE_DIR }}'
+          project_id: ${{ needs.determine-environment.outputs.project_id }}
+          region: ${{ env.REGION }}
+          name: ${{ needs.determine-environment.outputs.function_name }}
+          runtime: ${{ env.RUNTIME }}
+          entry_point: ${{ env.ENTRY_POINT }}
+          source_dir: ${{ env.SOURCE_DIR }}
 
-      # Show the deployed Cloud Function URL
-      - name: 'Show output'
+      - name: Comment PR with deployment info
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `🚀 **PR Preview Deployed Successfully!**
+              
+              **Environment:** PR Preview
+              **Project:** \`${{ needs.determine-environment.outputs.project_id }}\`
+              **Function:** \`${{ needs.determine-environment.outputs.function_name }}\`
+              **URL:** ${{ steps.deploy.outputs.url }}
+              
+              This preview will be available until the PR is closed.`
+            })
+
+      - name: Show deployment output (PR)
         run: |
-          echo "Deployment successful!"
-          echo "Deployed to Google Cloud Project ID: ${{ steps.set_vars.outputs.DEPLOY_PROJECT_ID }}"
-          echo "Cloud Function Name: ${{ steps.set_vars.outputs.DEPLOY_FUNCTION_NAME }}"
+          echo "PR Deployment successful!"
+          echo "Deployed to Google Cloud Project ID: ${{ needs.determine-environment.outputs.project_id }}"
+          echo "Cloud Function Name: ${{ needs.determine-environment.outputs.function_name }}"
           echo "Cloud Function URL: ${{ steps.deploy.outputs.url }}"
+
+  # Staging deployments - with staging environment protection
+  deploy-staging:
+    if: needs.determine-environment.outputs.environment == 'staging'
+    needs: determine-environment
+    runs-on: ubuntu-latest
+    environment: staging  # This enables environment protection rules in GitHub
+    
+    permissions:
+      contents: read
+      id-token: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud (Staging)
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.STAGING_DEPLOYMENT_SERVICE_ACCOUNT }}  # Staging-specific service account
+          project_id: ${{ needs.determine-environment.outputs.project_id }}
+
+      - name: Deploy to Cloud Function (Staging)
+        id: deploy
+        uses: google-github-actions/deploy-cloud-functions@v3
+        with:
+          project_id: ${{ needs.determine-environment.outputs.project_id }}
+          region: ${{ env.REGION }}
+          name: ${{ needs.determine-environment.outputs.function_name }}
+          runtime: ${{ env.RUNTIME }}
+          entry_point: ${{ env.ENTRY_POINT }}
+          source_dir: ${{ env.SOURCE_DIR }}
+
+      - name: Show deployment output (Staging)
+        run: |
+          echo "Staging Deployment successful!"
+          echo "Deployed to Google Cloud Project ID: ${{ needs.determine-environment.outputs.project_id }}"
+          echo "Cloud Function Name: ${{ needs.determine-environment.outputs.function_name }}"
+          echo "Cloud Function URL: ${{ steps.deploy.outputs.url }}"
+
+  # Production deployments - with production environment protection
+  deploy-production:
+    if: needs.determine-environment.outputs.environment == 'production'
+    needs: determine-environment
+    runs-on: ubuntu-latest
+    environment: production  # This enables environment protection rules in GitHub
+    
+    permissions:
+      contents: read
+      id-token: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud (Production)
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.DEPLOYMENTSERVICEACCOUNT }}  # Production-specific service account
+          project_id: ${{ needs.determine-environment.outputs.project_id }}
+
+      - name: Deploy to Cloud Function (Production)
+        id: deploy
+        uses: google-github-actions/deploy-cloud-functions@v3
+        with:
+          project_id: ${{ needs.determine-environment.outputs.project_id }}
+          region: ${{ env.REGION }}
+          name: ${{ needs.determine-environment.outputs.function_name }}
+          runtime: ${{ env.RUNTIME }}
+          entry_point: ${{ env.ENTRY_POINT }}
+          source_dir: ${{ env.SOURCE_DIR }}
+
+      - name: Show deployment output (Production)
+        run: |
+          echo "Production Deployment successful!"
+          echo "Deployed to Google Cloud Project ID: ${{ needs.determine-environment.outputs.project_id }}"
+          echo "Cloud Function Name: ${{ needs.determine-environment.outputs.function_name }}"
+          echo "Cloud Function URL: ${{ steps.deploy.outputs.url }}"
+
+      - name: Create GitHub Release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const tag = `v${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}`;
+            await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: tag,
+              name: `Production Release ${tag}`,
+              body: `Automated production deployment\n\n**Function URL:** ${{ steps.deploy.outputs.url }}`,
+              draft: false,
+              prerelease: false
+            });
