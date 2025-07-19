@@ -44,7 +44,7 @@ env:
   # Project IDs for each environment
   PR_PROJECT_ID: 'companylive-pr-sydney'
   STAGING_PROJECT_ID: 'companylive-staging-sydney'
-  PROD_PROJECT_ID: 'company-live-c3879'
+  PROD_PROJECT_ID: 'companylive-c3879'
 
 jobs:
   # Job to determine which environment we're deploying to
