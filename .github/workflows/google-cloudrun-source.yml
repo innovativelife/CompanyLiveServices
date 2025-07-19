@@ -36,7 +36,7 @@ on:
 # Global environment variables
 env:
   REGION: 'australia-southeast1'                      # Cloud Functions region
-  DEFAULT_FUNCTION_NAME: 'CompanyLiveServices_2'      # Base name for your Cloud Function
+  DEFAULT_FUNCTION_NAME: 'companyliveservices-2'      # Base name for your Cloud Function
   RUNTIME: 'dotnet8'
   ENTRY_POINT: 'InnovativeLife.WebApi.RequestHandler'
   SOURCE_DIR: './InnovativeLife'                      # Path to your .NET project source
