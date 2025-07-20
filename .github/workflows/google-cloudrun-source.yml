@@ -280,7 +280,6 @@ jobs:
           source_dir: ${{ env.SOURCE_DIR }}
           environment: GEN_2
           ingress_settings: ALLOW_ALL
-          update_only: true
           environment_variables: |
             TENANT_ID=Root-0ewfy
             PROJECT_ID=companylive-c3879
