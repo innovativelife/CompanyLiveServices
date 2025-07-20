@@ -142,8 +142,8 @@ jobs:
           ingress_settings: ALLOW_ALL
           service_account: TODO
           env_vars: |
-            TENANT_ID=TODO
-            PROJECT_ID=TODO
+            TENANT_ID: TODO
+            PROJECT_ID: TODO
             
       - name: Make function publicly accessible (PR)
         run: |
@@ -213,8 +213,8 @@ jobs:
           ingress_settings: ALLOW_ALL
           service_account: cloud-function-runtime@companylive-staging-sydney.iam.gserviceaccount.com
           env_vars: |
-            TENANT_ID=Root-8x3y3
-            PROJECT_ID=companylive-staging-sydney
+            TENANT_ID: Root-8x3y3
+            PROJECT_ID: companylive-staging-sydney
           
       - name: Make function publicly accessible (Staging)
         run: |
@@ -281,8 +281,8 @@ jobs:
           environment: GEN_2
           ingress_settings: ALLOW_ALL
           env_vars: |
-            TENANT_ID=Root-0ewfy
-            PROJECT_ID=companylive-c3879
+            TENANT_ID: Root-0ewfy
+            PROJECT_ID: companylive-c3879
 
       - name: Make function publicly accessible (Production)
         run: |
