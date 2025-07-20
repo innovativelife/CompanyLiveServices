@@ -207,6 +207,7 @@ jobs:
           source_dir: ${{ env.SOURCE_DIR }}
           environment: GEN_2
           ingress_settings: ALLOW_ALL
+          service_account: cloud-function-runtime@companylive-staging-sydney.iam.gserviceaccount.com
           
       - name: Make function publicly accessible (Staging)
         run: |
