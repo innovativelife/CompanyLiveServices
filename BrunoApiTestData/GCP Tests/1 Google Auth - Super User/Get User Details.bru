@@ -5,13 +5,13 @@ meta {
 }
 
 post {
-  url: https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=AIzaSyAR8KDfWu9alVLsiBBQEJpmLeg7Rd7Ao9g
+  url: https://identitytoolkit.googleapis.com/v1/accounts:lookup?key={{AUTHKEY}}
   body: json
   auth: none
 }
 
 params:query {
-  key: AIzaSyAR8KDfWu9alVLsiBBQEJpmLeg7Rd7Ao9g
+  key: {{AUTHKEY}}
 }
 
 body:json {

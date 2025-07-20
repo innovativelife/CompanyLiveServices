@@ -5,20 +5,20 @@ meta {
 }
 
 post {
-  url: https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=AIzaSyAR8KDfWu9alVLsiBBQEJpmLeg7Rd7Ao9g
+  url: https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key={{AUTHKEY}}
   body: json
   auth: none
 }
 
 params:query {
-  key: AIzaSyAR8KDfWu9alVLsiBBQEJpmLeg7Rd7Ao9g
+  key: {{AUTHKEY}}
 }
 
 body:json {
   {
-      "email": "greg+superuser@innovativelife.studio",
-      "password": "tra1nst0p!",
-      "tenantId": "Root-0ewfy",
+      "email": "{{ADMINID}}",
+      "password": "{{ADMINPWD}}",
+      "tenantId": "{{ROOTTENANT}}",
       "returnSecureToken": true
   }
 }
