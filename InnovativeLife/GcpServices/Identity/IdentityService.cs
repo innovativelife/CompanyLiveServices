@@ -66,6 +66,19 @@ public class IdentityService : IIdentityService
             _logger.LogInformation($"IdentityService.AuthenticateUserAndTenant: Swapped supplied tenant ID {tenantId} for identityManagerTenantId {identityManagerTenantId}");
         }
 
+        // Determine executing service account
+        var credential = GoogleCredential.GetApplicationDefault();
+        if (credential.UnderlyingCredential is ServiceAccountCredential serviceAccountCredential)
+        {
+            string serviceAccountEmail = serviceAccountCredential.Id;
+            _logger.LogInformation($"Using service account: {serviceAccountEmail}");
+        }
+        else
+        {
+            _logger.LogInformation("Not using a service account credential");
+            _logger.LogInformation($"Credential type: {credential.UnderlyingCredential.GetType().Name}");
+        }
+
         // Call Firebase tenant manager to get auth manager 
         _logger.LogInformation($"IdentityService.AuthenticateUserAndTenant: About to call AuthForTenant API for {identityManagerTenantId}");
         var authManager = FirebaseAuth.DefaultInstance!.TenantManager.AuthForTenant(identityManagerTenantId);
