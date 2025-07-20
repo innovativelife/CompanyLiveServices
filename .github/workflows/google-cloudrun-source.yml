@@ -280,7 +280,7 @@ jobs:
           source_dir: ${{ env.SOURCE_DIR }}
           environment: GEN_2
           ingress_settings: ALLOW_ALL
-          service_account: companylive-c3879@appspot.gserviceaccount.com
+          service_account: github-action-969928888@companylive-c3879.iam.gserviceaccount.com
           environment_variables: |
             TENANT_ID=Root-0ewfy
             PROJECT_ID=companylive-c3879
