@@ -208,6 +208,8 @@ jobs:
           environment: GEN_2
           ingress_settings: ALLOW_ALL
           service_account: cloud-function-runtime@companylive-staging-sydney.iam.gserviceaccount.com
+          env_vars: |
+            DOTNET_ENVIRONMENT=staging
           
       - name: Make function publicly accessible (Staging)
         run: |
