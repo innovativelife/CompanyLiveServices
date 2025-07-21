@@ -370,7 +370,8 @@ public class Startup : FunctionsStartup
             "http://127.0.0.1", // Local development
             "http://localhost:5173", // Local development
             "http://127.0.0.1:5173", // Local development
-            "https://companylive-c3879.web.app",  // Main production URL
+            "https://companylive-c3879.web.app",  // Production URL
+            "https://companylive-staging-sydney.web.app/"  // Staging URL
         };
 
         // Check if the origin is in the exact allowed list
@@ -385,7 +386,7 @@ public class Startup : FunctionsStartup
         // - https://companylive-c3879--pr-123.web.app (if you change your GitHub Action to use PR number)
         // - https://companylive-c3879--staging-o6rf2eif.web.app (your current observed format)
         // - https://companylive-c3879--any-custom-channel-name.web.app
-        var firebasePreviewRegex = new Regex(@"^https:\/\/companylive-c3879--[a-zA-Z0-9-]+\.web\.app$", RegexOptions.IgnoreCase);
+        var firebasePreviewRegex = new Regex(@"^https:\/\/companylive-pr-[a-zA-Z0-9-]+\.web\.app$", RegexOptions.IgnoreCase);
 
         // Check if the origin matches the preview channel pattern
         if (firebasePreviewRegex.IsMatch(origin))
