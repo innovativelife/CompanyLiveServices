@@ -280,7 +280,7 @@ jobs:
           source_dir: ${{ env.SOURCE_DIR }}
           environment: GEN_2
           ingress_settings: ALLOW_ALL
-          service_account: github-deployment@companylive-c3879.iam.gserviceaccount.com
+          service_account: 1051288677497-compute@developer.gserviceaccount.com
           environment_variables: |
             TENANT_ID=Root-0ewfy
             PROJECT_ID=companylive-c3879
