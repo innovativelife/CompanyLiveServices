@@ -371,7 +371,7 @@ public class Startup : FunctionsStartup
             "http://localhost:5173", // Local development
             "http://127.0.0.1:5173", // Local development
             "https://companylive-c3879.web.app",  // Production URL
-            "https://companylive-staging-sydney.web.app/"  // Staging URL
+            "https://companylive-staging-sydney.web.app"  // Staging URL
         };
 
         // Check if the origin is in the exact allowed list
