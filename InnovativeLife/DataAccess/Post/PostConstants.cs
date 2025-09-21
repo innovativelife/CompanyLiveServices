@@ -7,6 +7,9 @@ public static class PostConstants
 
     public static string PostRepliesCollectionName = "IL_CL_POST_REPLIES";
 
+    public static string PostReactionsCollectionName = "REACTIONS";
+
+
     public static string tenantId = "tenantId";
     public static string employeeUID = "employeeUID";
     public static string postId = "postId";

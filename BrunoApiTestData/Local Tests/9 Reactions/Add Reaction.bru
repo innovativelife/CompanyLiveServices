@@ -1,0 +1,23 @@
+meta {
+  name: Add Reaction
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://{{LOCALDEVURL}}/api/v1/tenants/tenant1/{{firstPostId}}/react
+  body: json
+  auth: inherit
+}
+
+headers {
+  uId: localDev
+  tenantId: tenant1
+}
+
+body:json {
+  {
+    "employeeUID": "{{tenant1employeeUID}}",
+    "reaction": 2
+  }
+}

@@ -61,6 +61,20 @@ public class PostService : IPostService
         return await _savePostProcessor.AddPostReply(tenantId, postId, postReply);
     }
 
+    public async Task<PostAddReactionResponse> AddPostReaction(IUserContext requestContext, string tenantId, string postId, PostAddReactionResquest postReaction)
+    {
+        _logger.LogInformation("PostService.AddPostReaction: Executing PostService.AddPostReaction Reaction");
+
+        return await _savePostProcessor.AddPostReaction(tenantId, postId, postReaction);
+    }
+
+    public async Task<PostReactionReadResponse> ReadReactions(IUserContext requestContext, string tenantId, string postId)
+    {
+        _logger.LogInformation("PostService.ReadReaction: Executing PostService.Read ReadReactions");
+
+        return await _readPostProcessor.ReadReactions(requestContext, tenantId, postId);
+    }
+
     private Tuple<ServiceResponseBase.ResponseStatus, string> validateTenantId(IUserContext requestContext, string tenantId, bool allowRoot)
     {
         if (allowRoot && requestContext.rootAdmin)

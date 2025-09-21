@@ -14,4 +14,9 @@ public interface IPostService
     public Task<PostSaveResponse> Save(IUserContext requestContext, string tenantId, PostSaveRequest postModel);
 
     public Task<PostAddReplyResponse> AddPostReply(IUserContext requestContext, string tenantId, string postId, PostAddReplyResquest postReply);
+
+    public Task<PostAddReactionResponse> AddPostReaction(IUserContext requestContext, string tenantId, string postId, PostAddReactionResquest reaction);
+
+    public Task<PostReactionReadResponse> ReadReactions(IUserContext requestContext, string tenantId, string postId);
+
 }

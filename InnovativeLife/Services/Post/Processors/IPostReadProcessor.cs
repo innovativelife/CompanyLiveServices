@@ -9,4 +9,5 @@ public interface IPostReadProcessor
     public Task<PostSearchResponse> SearchPost(IUserContext requestContext, string tenantId, string? postId, string? timeSent, string? status, string? sendTo, string? employeeUID, string? message);
 
     public Task<PostRepliesReadResponse> ReadReplies(IUserContext requestContext, string tenantId, string postId);
+    public Task<PostReactionReadResponse> ReadReactions(IUserContext requestContext, string tenantId, string postId);
 }

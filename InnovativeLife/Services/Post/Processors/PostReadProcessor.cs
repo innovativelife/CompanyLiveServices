@@ -63,6 +63,34 @@ public class PostReadProcessor : IPostReadProcessor
         return new PostRepliesReadResponse(Common.ServiceResponseBase.ResponseStatus.NotFound, "Post search returned no results");
     }
 
+    public async Task<PostReactionReadResponse> ReadReactions(IUserContext requestContext, string tenantId, string? postId)
+    {
+        _logger.LogInformation("Executing Post Reactions Read by postId");
+
+        var searchResult = await _postActions.ReadPostReactions(requestContext.tenantId, postId);
+
+        if (searchResult.Item1.Success)
+        {
+            var responseList = new List<PostReaction>();
+            foreach (var item in searchResult.Item2.PostReactionss)
+            {
+                var postReaction = new PostReaction(
+                    tenantId,
+                    postId,
+                    item.timeSent,
+                    item.employeeUID,
+                    item.reaction
+                );
+                responseList.Add(getPostReactionsFromPostModel(tenantId, postReaction));
+            }
+            var response = new PostReactionReadResponse(Common.ServiceResponseBase.ResponseStatus.Ok, $"{responseList.Count} Reaction(s) Found");
+            response.reactions = responseList;
+            return response;
+        }
+
+        return new PostReactionReadResponse(Common.ServiceResponseBase.ResponseStatus.NotFound, "Reaction search returned no results");
+    }
+
     public async Task<PostSearchResponse> SearchPost(IUserContext requestContext, string tenantId, string? postId, string? timeSent, string? status, string? sendTo, string? employeeUID, string? message)
     {
         var searchResult = await _postActions.Search(requestContext.tenantId, postId, timeSent, status, sendTo, employeeUID, message);
@@ -107,6 +135,15 @@ public class PostReadProcessor : IPostReadProcessor
         );
     }
 
-
+    private PostReaction getPostReactionsFromPostModel(string tenantId, PostReaction postReaction)
+    {
+        return new PostReaction(
+            postReaction.tenantId,
+            postReaction.postId,
+            postReaction.timeSent,
+            postReaction.employeeUID,
+            postReaction.reaction
+        );
+    }
 
 }

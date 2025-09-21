@@ -116,4 +116,50 @@ public class PostSaveProcessor : IPostSaveProcessor
         }
     }
 
+    async Task<PostAddReactionResponse> IPostSaveProcessor.AddPostReaction(string tenantId, string postId, PostAddReactionResquest postReaction)
+    {
+        _logger.LogInformation("Executing Post Reply Save");
+
+        var validationResult = postReaction.Validate();
+        if (validationResult.Count > 0)
+        {
+            return new PostAddReactionResponse(Common.ServiceResponseBase.ResponseStatus.InvalidData, validationResult);
+
+        }
+
+        string postReactionId = Ulid.NewUlid().ToString();
+        string timeSent = DateTime.UtcNow.ToString("o");
+
+        var postModel = new PostReactionModel
+        {
+            timeSent = timeSent,
+            postReactionId = postReactionId,
+            employeeUID = postReaction.employeeUID,
+            reaction = postReaction.reaction
+        };
+
+        var reactionResponse = await _postActions.AddPostReaction(tenantId, postId, postModel);
+
+        if (reactionResponse.Success)
+        {
+            _logger.LogInformation("Post Reaction Saved successfully");
+
+            var processorResponse = new PostAddReactionResponse(Common.ServiceResponseBase.ResponseStatus.Ok, "Post reaction updated successfully")
+            {
+                postReaction = new PostReaction(
+                    tenantId,
+                    postId,
+                    postModel.timeSent,
+                    postModel.employeeUID,
+                    postModel.reaction
+                )
+            };
+            return processorResponse;
+        }
+        else
+        {
+            _logger.LogError($"Error saving Post Reaction");
+            return new PostAddReactionResponse(Common.ServiceResponseBase.ResponseStatus.Exception, "Post Reaction could not be added due to unexpected error");
+        }
+    }
 }

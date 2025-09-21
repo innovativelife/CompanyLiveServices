@@ -9,4 +9,7 @@ public interface IPostSaveProcessor
     public Task<PostSaveResponse> Save(IUserContext requestContext, string tenantId, PostSaveRequest saveRequest);
 
     public Task<PostAddReplyResponse> AddPostReply(string tenantId, string postId, PostAddReplyResquest postReply);
+
+    public Task<PostAddReactionResponse> AddPostReaction(string tenantId, string postId, PostAddReactionResquest postReaction);
+
 }

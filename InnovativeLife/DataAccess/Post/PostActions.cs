@@ -75,6 +75,43 @@ public class PostActions : IPostActions
         }
     }
 
+    public async Task<Tuple<DalResponse, PostReactionsModel?>> ReadPostReactions(string tenantId, string postId)
+    {
+        try
+        {
+            var db = Utilities.connectToFirestore();
+            Query PostQuery = db.Collection(PostConstants.PostCollectionName).WhereEqualTo(PostConstants.postId, postId);
+            QuerySnapshot PostQuerySnapshot = await PostQuery.GetSnapshotAsync();
+
+            if (PostQuerySnapshot.Count == 0)
+            {
+                return new Tuple<DalResponse, PostReactionsModel?>(new DalResponse(DalResponse.ResponseStatus.NotFound), new PostReactionsModel());
+            }
+
+            var postRef = PostQuerySnapshot[0];
+            var reactionResult = await postRef.Reference.Collection(PostConstants.PostReactionsCollectionName).GetSnapshotAsync();
+            var reactionsDocuments = reactionResult.Documents;
+
+            var response = new PostReactionsModel();
+            response.tenantId = tenantId;
+            response.postId = postId;
+
+            foreach (DocumentSnapshot documentSnapshot in reactionsDocuments)
+            {
+                response.PostReactionss.Add(documentSnapshot.ConvertTo<PostReactionModel>());
+            }
+
+            _logger.LogInformation("PostActions.ReadPostReactions: GetPost Reactions Read Complete");
+
+            return new Tuple<DalResponse, PostReactionsModel?>(new DalResponse(DalResponse.ResponseStatus.Ok), response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"PostActions.ReadPostReactions: Exception {ex.Message}");
+            return new Tuple<DalResponse, PostReactionsModel?>(new DalResponse(DalResponse.ResponseStatus.Exception), new PostReactionsModel());
+        }
+    }
+
     async Task<Tuple<DalResponse, List<PostModel>>> IPostActions.Search(string tenantId, string? postId, string? timeSent, string? status, string? sendTo, string? employeeUID, string? message)
     {
         try
@@ -132,7 +169,7 @@ public class PostActions : IPostActions
         }
         catch (Exception ex)
         {
-            _logger.LogInformation($"EmployeeActions.Save: Exception {ex.Message}");
+            _logger.LogInformation($"EmployeeActions.Search: Exception {ex.Message}");
 
             return new Tuple<DalResponse, List<PostModel>>(new DalResponse(DalResponse.ResponseStatus.Ok), new List<PostModel>());
         }
@@ -162,7 +199,36 @@ public class PostActions : IPostActions
         }
         catch (Exception ex)
         {
-            _logger.LogError($"PostActions.Save: Exception - {ex.Message}");
+            _logger.LogError($"PostActions.AddPostReply: Exception - {ex.Message}");
+            return new DalResponse(DalResponse.ResponseStatus.Exception);
+        }
+    }
+
+    public async Task<DalResponse> AddPostReaction(string tenantId, string postId, PostReactionModel postReaction)
+    {
+        try
+        {
+            _logger.LogInformation("PostReactActions.AddPostReaction: Adding reaction to post {0}", postId);
+
+            var db = Utilities.connectToFirestore();
+            Query PostQuery = db.Collection(PostConstants.PostCollectionName).WhereEqualTo(PostConstants.postId, postId);
+            QuerySnapshot PostQuerySnapshot = await PostQuery.GetSnapshotAsync();
+
+            if (PostQuerySnapshot.Count == 0)
+            {
+                return new DalResponse(DalResponse.ResponseStatus.NotFound);
+            }
+
+            var postRef = PostQuerySnapshot[0].Reference;
+            DocumentReference postReactionDocument = postRef.Collection(PostConstants.PostReactionsCollectionName).Document(postReaction.postReactionId);
+
+            var result = await postReactionDocument.SetAsync(postReaction);
+
+            return new DalResponse(DalResponse.ResponseStatus.Ok);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"PostActions.AddPostReaction: Exception - {ex.Message}");
             return new DalResponse(DalResponse.ResponseStatus.Exception);
         }
     }

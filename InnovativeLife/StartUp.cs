@@ -99,7 +99,7 @@ public class Startup : FunctionsStartup
                     policy.SetIsOriginAllowed(origin => IsOriginAllowed(origin))
                         .AllowAnyHeader() // Or .WithHeaders("Content-Type", "Authorization")
                         .AllowAnyMethod(); // Or .WithMethods("GET", "POST", "PUT", "DELETE")
-                                // .AllowCredentials(); // Only if your frontend sends credentials (cookies, auth headers)
+                                           // .AllowCredentials(); // Only if your frontend sends credentials (cookies, auth headers)
                 });
         });
 
@@ -346,6 +346,46 @@ public class Startup : FunctionsStartup
          {
              Summary = "Search for posts",
              Description = "Search for posts via various criteria"
+         });
+
+        endpoints.MapPost("/api/v1/tenants/{tenantId}/{postId}/reply", async (IPostService service, IUserContext requestContext, PostAddReplyResquest saveRequest, string tenantId, string postId) =>
+            (await service.AddPostReply(requestContext, tenantId, postId, saveRequest)).GetAspNetResult())
+        .RequireAuthorization(AuthorizationPolicies.TenantAdmin)
+        .WithName("Save Reply")
+        .WithOpenApi(operation => new(operation)
+        {
+            Summary = "Save Reply by user",
+            Description = "Save Reply by reply, user and tenant ID"
+        });
+
+        endpoints.MapGet("/api/v1/tenants/{tenantId}/{postId}/replies", async (IPostService service, IUserContext requestContext, string tenantId, string postId) =>
+             (await service.ReadReplies(requestContext, tenantId, postId)).GetAspNetResult())
+         .RequireAuthorization(AuthorizationPolicies.GetTenantUserPolicy)
+         .WithName("Post Reply Search")
+         .WithOpenApi(operation => new(operation)
+         {
+             Summary = "Search for replies",
+             Description = "Search for replies via various criteria"
+         });
+
+        endpoints.MapPost("/api/v1/tenants/{tenantId}/{postId}/react", async (IPostService service, IUserContext requestContext, PostAddReactionResquest saveRequest, string tenantId, string postId) =>
+           (await service.AddPostReaction(requestContext, tenantId, postId, saveRequest)).GetAspNetResult())
+       .RequireAuthorization(AuthorizationPolicies.TenantAdmin)
+       .WithName("Save Reaction")
+       .WithOpenApi(operation => new(operation)
+       {
+           Summary = "Save Raction by user",
+           Description = "Save Reaction by reaction, user and tenant ID"
+       });
+
+        endpoints.MapGet("/api/v1/tenants/{tenantId}/{postId}/react", async (IPostService service, IUserContext requestContext, string tenantId, string postId) =>
+             (await service.ReadReactions(requestContext, tenantId, postId)).GetAspNetResult())
+         .RequireAuthorization(AuthorizationPolicies.GetTenantUserPolicy)
+         .WithName("Post Reaction Search")
+         .WithOpenApi(operation => new(operation)
+         {
+             Summary = "Search for reactions",
+             Description = "Search for reactions via various criteria"
          });
     }
 

@@ -11,4 +11,7 @@ public interface IPostActions
 
     public Task<DalResponse> AddPostReply(string tenantId, string PostReplyId, PostReplyModel postReply);
     public Task<Tuple<DalResponse, PostRepliesModel?>> ReadPostReplies(string tenantId, string PostId);
+
+    public Task<DalResponse> AddPostReaction(string tenantId, string PostReactionId, PostReactionModel postReaction);
+    public Task<Tuple<DalResponse, PostReactionsModel?>> ReadPostReactions(string tenantId, string PostId);
 }
